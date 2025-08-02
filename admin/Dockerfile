@@ -19,6 +19,8 @@ COPY app /app/app
 COPY app_run.py /app/
 COPY uwsgi.ini /app/
 
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+
 # 非rootで実行
 USER uwsgi
 
