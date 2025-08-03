@@ -44,3 +44,8 @@ dist/
 
 # Nginx 静的ファイルビルド結果
 nginx/html/
+
+# 自己署名証明書
+certs/
+*.crt
+*.key

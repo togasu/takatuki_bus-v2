@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    align-items: center;
+    justify-content: center;
+    background-image: url("https://www.kansai-u.ac.jp/Fc_inf/news/data/illum1.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: rgba(255, 255, 255, 0.8);
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+}
+
+.box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 80%;
+    max-width: 80%;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    text-align: center;
+    color: #333;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    box-sizing: content-box;
+}
+
+.box input[type="text"],
+.box input[type="password"] {
+    border: 2px solid #3498db;
+    background: rgba(255, 255, 255, 0.7);
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    padding: 14px 10px;
+    width: calc(100% - 25%);
+    outline: none;
+    color: #333;
+    border-radius: 24px;
+    transition: border-color 0.25s, box-shadow 0.25s, width 0.25s;
+    box-sizing: border-box;
+}
+
+.box input[type="text"]:focus,
+.box input[type="password"]:focus {
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    width: calc(100% - 15%);
+}
+
+.box input[type="submit"] {
+    border: 0;
+    background: #3498db;
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    padding: 14px 40px;
+    outline: none;
+    color: white;
+    border-radius: 24px;
+    transition: background 0.25s;
+    cursor: pointer;
+    font-size: 16px;
+    width: calc(100% - 15%);
+    box-sizing: border-box;
+}
+
+.box input[type="submit"]:hover {
+    background: #2ecc71;
+}
+
+.error {
+    color: red;
+}
+
+h1 {
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+h2 {
+    color: white;
+}
+
+@media screen and (min-width: 500px) {
+    body {
+        background-image: url("https://www.kansai-u.ac.jp/Fc_inf/ca/map/img/k/title_k.jpg");
+    }
+
+    .box {
+        width: 470px;
+    }
+}
