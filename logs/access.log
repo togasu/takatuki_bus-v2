@@ -15,3 +15,2543 @@
 2025-08-03 01:02:20,958 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
 2025-08-03 02:33:25,315 - IP: 172.22.0.1 - Path: /
 2025-08-03 02:33:25,705 - IP: 172.22.0.1 - Path: /favicon.ico
+2025-08-19 06:22:21,889 - Driver service: No existing tables found. Performing migration...
+2025-08-19 06:22:21,889 - Student service: No existing tables found. Performing migration...
+2025-08-19 06:22:21,891 - Driver service: Migration error: Can't find Python file migrations/env.py
+2025-08-19 06:22:21,892 - Student service: Migration error: Can't find Python file migrations/env.py
+2025-08-19 06:22:21,910 - Admin service: No existing tables found. Performing migration...
+2025-08-19 06:22:21,912 - Admin service: Migration error: Can't find Python file migrations/env.py
+2025-08-19 06:22:58,782 - Student service: No existing tables found. Performing migration...
+2025-08-19 06:22:58,785 - Student service: Migration error: Can't find Python file migrations/env.py
+2025-08-19 06:24:59,215 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 06:24:59,216 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:24:59,230 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 06:24:59,256 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 06:24:59,257 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:24:59,272 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 06:24:59,407 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 06:24:59,409 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:24:59,432 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 06:26:02,425 - IP: 172.22.0.1 - Path: /
+2025-08-19 06:26:10,536 - IP: 172.22.0.1 - Path: /api/students
+2025-08-19 06:26:18,782 - IP: 172.22.0.1 - Path: /api/students
+2025-08-19 06:26:35,470 - IP: 172.22.0.1 - Path: /api/students
+2025-08-19 06:26:49,790 - IP: 172.22.0.1 - Path: /api/students
+2025-08-19 06:27:00,019 - IP: 172.22.0.1 - Path: /health
+2025-08-19 06:37:15,809 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 06:37:15,814 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:37:15,840 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 06:40:31,403 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 06:40:31,404 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:40:31,424 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 06:44:45,260 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 06:44:45,261 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:44:45,278 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 06:55:27,357 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 06:55:27,357 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 06:55:27,358 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:55:27,358 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:55:27,374 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 06:55:27,374 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 06:55:27,425 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 06:55:27,427 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:55:27,441 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 06:55:28,046 - IP: 172.22.0.1 - Path: /
+2025-08-19 06:55:28,581 - IP: 172.22.0.1 - Path: /favicon.ico
+2025-08-19 06:59:56,024 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 06:59:56,026 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 06:59:56,048 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 06:59:59,983 - IP: 172.22.0.1 - Path: /
+2025-08-19 07:00:00,010 - Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/routes/top.py", line 7, in top
+    return render_template("top.html")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/usr/local/lib/python3.11/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/app/app/templates/top.html", line 29, in top-level template code
+    {% for i in range(len_count) %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'Undefined' object cannot be interpreted as an integer
+2025-08-19 07:10:21,486 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 07:10:21,487 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:10:21,504 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 07:10:21,701 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 07:10:21,702 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:10:21,719 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 07:10:21,936 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 07:10:21,937 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:10:21,953 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 07:10:29,612 - IP: 172.22.0.1 - Path: /
+2025-08-19 07:10:29,836 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 07:10:29,848 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 07:15:08,417 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 07:15:08,418 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:15:08,429 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 07:15:08,431 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:15:08,435 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 07:15:08,450 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 07:15:08,537 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 07:15:08,538 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:15:08,556 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 07:15:13,497 - IP: 172.22.0.1 - Path: /
+2025-08-19 07:15:13,551 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 07:15:13,557 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 07:23:15,638 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 07:23:15,639 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:23:15,652 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 07:23:15,708 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 07:23:15,709 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:23:15,718 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 07:23:15,742 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 07:23:15,742 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:23:15,760 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 07:23:41,604 - IP: 172.22.0.1 - Path: /
+2025-08-19 07:23:41,660 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 07:23:41,665 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 07:48:05,680 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 07:48:05,682 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:48:05,707 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 07:48:05,783 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 07:48:05,784 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:48:05,798 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 07:48:05,799 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 07:48:05,800 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 07:48:05,815 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 07:48:35,781 - IP: 172.22.0.1 - Path: /
+2025-08-19 07:48:36,033 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 07:48:36,045 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 07:48:36,752 - IP: 172.22.0.1 - Path: /favicon.ico
+2025-08-19 08:03:54,012 - Admin service: No existing tables found. Checking migration directory...
+2025-08-19 08:03:54,013 - Admin service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 08:03:54,026 - Admin service: Tables created directly using SQLAlchemy.
+2025-08-19 08:14:00,343 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:14:00,466 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'normal_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:14:00,576 - IP: 172.22.0.4 - Path: /driver/api/auth/login
+2025-08-19 08:14:00,664 - Exception on /api/auth/login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedTable: relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/routes/api.py", line 26, in auth_login
+    driver = Driver.query.filter_by(driver_id=username, is_active=True).first()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'normal_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:14:00,716 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:14:00,735 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:15:46,304 - IP: 172.22.0.1 - Path: /
+2025-08-19 08:15:46,366 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 08:15:46,394 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 08:15:58,210 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:15:58,214 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:15:58,222 - IP: 172.22.0.4 - Path: /driver/api/auth/login
+2025-08-19 08:15:58,226 - Exception on /api/auth/login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedTable: relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/routes/api.py", line 26, in auth_login
+    driver = Driver.query.filter_by(driver_id=username, is_active=True).first()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:15:58,233 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:15:58,235 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 296, in save_session
+    self._delete_session(store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 70, in _delete_session
+    self.client.delete(store_id)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 1712, in delete
+    return self.execute_command("DEL", *names)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:19:25,003 - Admin service: Database tables already exist. Migration aborted.
+2025-08-19 08:19:25,004 - Admin service: Migration error: Database tables already exist. Please check if migration is needed.
+2025-08-19 08:21:16,662 - Admin service: Database tables already exist. Migration aborted.
+2025-08-19 08:21:16,663 - Admin service: Migration error: Database tables already exist. Please check if migration is needed.
+2025-08-19 08:21:16,979 - Driver service: No existing tables found. Checking migration directory...
+2025-08-19 08:21:16,980 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 08:21:16,992 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-19 08:21:17,189 - Student service: No existing tables found. Checking migration directory...
+2025-08-19 08:21:17,191 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-19 08:21:17,201 - Student service: Tables created directly using SQLAlchemy.
+2025-08-19 08:22:37,056 - Admin service: Database tables already exist. Skipping migration.
+2025-08-19 08:23:00,550 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:23:09,064 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:23:17,319 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:23:23,703 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:23:59,372 - IP: 172.22.0.1 - Path: /
+2025-08-19 08:23:59,431 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 08:23:59,450 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 08:24:09,511 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:24:09,537 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:24:09,542 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-19 08:24:10,069 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:24:10,079 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:24:15,641 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:24:15,644 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:24:15,648 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-19 08:24:15,943 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:24:15,946 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:41:38,883 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:41:51,957 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-19 08:42:19,343 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-19 08:43:24,588 - IP: 172.22.0.1 - Path: /admin/api/auth/check
+2025-08-19 08:43:35,143 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-19 08:44:21,555 - Admin service: Database tables already exist. Skipping migration.
+2025-08-19 08:44:53,725 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:45:26,708 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-19 08:45:34,812 - IP: 172.22.0.1 - Path: /admin/api/permissions
+2025-08-19 08:45:41,796 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:45:49,086 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-19 08:46:41,710 - IP: 172.22.0.1 - Path: /
+2025-08-19 08:46:41,765 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 08:46:41,776 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 08:46:52,374 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:46:52,384 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:46:52,389 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-19 08:46:52,684 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:46:52,688 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:47:59,661 - IP: 172.22.0.1 - Path: /
+2025-08-19 08:47:59,726 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-19 08:47:59,731 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-19 08:49:47,447 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-19 08:49:55,764 - IP: 172.22.0.1 - Path: /admin/
+2025-08-19 08:50:03,640 - IP: 172.22.0.1 - Path: /auth
+2025-08-19 08:50:44,808 - IP: 172.22.0.1 - Path: /login
+2025-08-19 08:50:44,814 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-19 08:50:44,824 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-19 08:50:45,277 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-19 08:50:45,280 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:32:21,306 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:32:21,306 - Driver service: No existing tables found. Checking migration directory...
+2025-08-20 04:32:21,307 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:32:21,329 - Driver service: Tables created directly using SQLAlchemy.
+2025-08-20 04:32:21,380 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:32:21,381 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:32:21,397 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:32:47,012 - IP: 172.22.0.1 - Path: /auth
+2025-08-20 04:32:52,262 - IP: 172.22.0.1 - Path: /admin/
+2025-08-20 04:36:59,308 - IP: 172.22.0.1 - Path: /admin/api/auth/register
+2025-08-20 04:37:38,490 - IP: 172.22.0.1 - Path: /admin/api/users
+2025-08-20 04:37:52,374 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:37:58,574 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-20 04:38:04,270 - IP: 172.22.0.1 - Path: /admin/api/auth/login
+2025-08-20 04:38:13,330 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:38:13,383 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:38:13,398 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:38:13,894 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:38:13,919 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:43:12,695 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:43:12,696 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:43:12,715 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:44:51,942 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:44:51,990 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:44:52,035 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:44:52,755 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:44:52,802 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:46:01,457 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:46:01,458 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:46:01,482 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:46:15,200 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:46:15,227 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:46:15,235 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:46:15,800 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:46:15,807 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:46:58,680 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:46:58,732 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:46:58,762 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:47:04,628 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:47:04,653 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:47:04,661 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:47:05,255 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:47:05,264 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:51:31,199 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:51:58,857 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:52:12,838 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:52:41,913 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:52:41,916 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:52:41,932 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:52:59,743 - Admin service: Database tables already exist. Skipping migration.
+2025-08-20 04:53:22,632 - IP: 172.22.0.1 - Path: /
+2025-08-20 04:53:22,770 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-20 04:53:22,797 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-20 04:53:23,335 - IP: 172.22.0.1 - Path: /favicon.ico
+2025-08-20 04:53:40,531 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:53:40,557 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:53:40,563 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:53:41,096 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:53:41,106 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:55:47,591 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:55:47,592 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:55:47,613 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:56:08,726 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 04:56:08,727 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 04:56:08,742 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 04:56:14,924 - IP: 172.22.0.1 - Path: /
+2025-08-20 04:56:14,988 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-20 04:56:14,992 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-20 04:57:01,037 - IP: 172.22.0.1 - Path: /login
+2025-08-20 04:57:01,072 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 04:57:01,081 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 04:57:01,560 - Exception on /login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 04:57:01,568 - Request finalizing failed with an error while handling an error
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 920, in full_dispatch_request
+    return self.finalize_request(rv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 389, in connect_check_health
+    sock = self.retry.call_with_retry(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 105, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 390, in <lambda>
+    lambda: self._connect(), lambda error: self.disconnect(error)
+            ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 803, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 787, in _connect
+    sock.connect(socket_address)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 941, in finalize_request
+    response = self.process_response(response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1322, in process_response
+    self.session_interface.save_session(self, ctx.session, response)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/base.py", line 305, in save_session
+    self._upsert_session(app.permanent_session_lifetime, session, store_id)
+  File "/usr/local/lib/python3.11/site-packages/flask_session/redis/redis.py", line 81, in _upsert_session
+    self.client.set(
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 2305, in set
+    return self.execute_command("SET", *pieces, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 621, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 627, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 195, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1533, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 380, in connect
+    self.connect_check_health(check_health=True)
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 397, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+2025-08-20 05:12:56,995 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 05:12:56,996 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 05:12:57,011 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 06:06:12,767 - Student service: No existing tables found. Checking migration directory...
+2025-08-20 06:06:12,768 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-08-20 06:06:12,782 - Student service: Tables created directly using SQLAlchemy.
+2025-08-20 06:06:37,699 - IP: 172.22.0.1 - Path: /login
+2025-08-20 06:06:37,701 - Login attempt for username: admin_test
+2025-08-20 06:06:37,701 - Trying student authentication...
+2025-08-20 06:06:37,733 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 06:06:37,734 - Trying admin authentication...
+2025-08-20 06:06:37,747 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 06:06:38,352 - Admin authentication successful
+2025-08-20 06:11:26,496 - IP: 172.22.0.1 - Path: /admin/
+2025-08-20 06:18:32,608 - IP: 172.22.0.1 - Path: /
+2025-08-20 06:18:32,697 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-20 06:18:32,713 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-20 06:18:36,136 - IP: 172.22.0.1 - Path: /login
+2025-08-20 06:18:36,138 - Login attempt for username: admin_test
+2025-08-20 06:18:36,138 - Trying student authentication...
+2025-08-20 06:18:36,151 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 06:18:36,152 - Trying admin authentication...
+2025-08-20 06:18:36,163 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 06:18:36,655 - Trying driver authentication...
+2025-08-20 06:18:36,898 - IP: 172.22.0.5 - Path: /driver/api/auth/login
+2025-08-20 06:18:37,083 - Exception on /api/auth/login [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedTable: relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/app/routes/api.py", line 26, in auth_login
+    driver = Driver.query.filter_by(driver_id=username, is_active=True).first()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 06:18:37,146 - All authentication attempts failed
+2025-08-20 06:18:37,225 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-08-20 06:18:37,230 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-08-20 06:18:53,668 - IP: 172.22.0.1 - Path: /login
+2025-08-20 06:18:53,669 - Login attempt for username: admin_test
+2025-08-20 06:18:53,670 - Trying student authentication...
+2025-08-20 06:18:53,673 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-08-20 06:18:53,675 - Trying admin authentication...
+2025-08-20 06:18:53,683 - IP: 172.22.0.5 - Path: /admin/api/auth/login
+2025-08-20 06:18:54,192 - Admin authentication successful
+2025-08-20 06:18:54,263 - IP: 172.22.0.1 - Path: /admin/
+2025-08-20 06:19:20,882 - IP: 172.22.0.1 - Path: /health

@@ -18,10 +18,18 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
 COPY app /app/app
 COPY app_run.py /app/
 COPY uwsgi.ini /app/
+COPY init_migration.py /app/
 
-RUN mkdir -p /app/logs && chmod 777 /app/logs
+# ディレクトリの作成と権限設定
+RUN mkdir -p /app/logs /app/migrations && \
+    chown -R uwsgi:uwsgi /app && \
+    chmod -R 755 /app
+
+# Flask-Migrate用の環境変数
+ENV FLASK_APP=app_run.py
 
 # 非rootで実行
 USER uwsgi
 
-CMD ["uwsgi", "--ini", "uwsgi.ini"]
+# マイグレーション初期化とサービス起動
+CMD ["sh", "-c", "python init_migration.py && uwsgi --ini uwsgi.ini"]

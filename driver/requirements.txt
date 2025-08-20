@@ -1,8 +1,11 @@
 flask
 flask-socketio
+flask-sqlalchemy
+flask-migrate
 gevent
 gevent-websocket
 eventlet
 psycopg2-binary
 redis
 uwsgi
+bcrypt
