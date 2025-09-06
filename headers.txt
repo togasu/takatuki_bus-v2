@@ -1,0 +1,10 @@
+HTTP/1.1 302 FOUND
+Server: nginx/1.29.1
+Date: Sat, 06 Sep 2025 11:09:13 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 201
+Connection: keep-alive
+Location: /admin/
+Vary: Cookie
+Set-Cookie: session=Yh9e-UqgaQuMsFBSiZooU2nD9t_w-BOzBm8ufPYrJi0.pF7PH5JJfZDIrSxP0BGOekf6J-Y; HttpOnly; Path=/
+

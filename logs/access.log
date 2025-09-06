@@ -2555,3 +2555,203 @@ WHERE students.student_id = %(student_id_1)s
 2025-08-20 06:18:54,192 - Admin authentication successful
 2025-08-20 06:18:54,263 - IP: 172.22.0.1 - Path: /admin/
 2025-08-20 06:19:20,882 - IP: 172.22.0.1 - Path: /health
+2025-09-06 11:16:39,108 - Admin service: Database tables already exist. Skipping migration.
+2025-09-06 11:16:39,108 - Driver service: No existing tables found. Checking migration directory...
+2025-09-06 11:16:39,109 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-09-06 11:16:39,135 - Driver service: Tables created directly using SQLAlchemy.
+2025-09-06 11:16:39,174 - Student service: No existing tables found. Checking migration directory...
+2025-09-06 11:16:39,175 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-09-06 11:16:39,195 - Student service: Tables created directly using SQLAlchemy.
+2025-09-06 11:16:43,197 - IP: 172.22.0.1 - Path: /
+2025-09-06 11:17:22,179 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:18:22,135 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:19:22,162 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:20:22,133 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:21:22,144 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:22:22,171 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:23:22,130 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:24:22,119 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:25:22,134 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:26:22,136 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:27:22,133 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:28:22,151 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:29:22,124 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:30:22,126 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:31:22,141 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:32:22,139 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:33:22,132 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:34:22,134 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:35:22,133 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:36:22,130 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:37:22,132 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:38:22,163 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:39:22,126 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:40:22,137 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:41:22,129 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:42:22,141 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:43:22,120 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:44:22,158 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:45:22,123 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:46:22,136 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:47:22,111 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:48:22,134 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:49:22,129 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:50:22,129 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:50:35,405 - IP: 172.22.0.1 - Path: /api/ldap-status
+2025-09-06 11:50:37,017 - IP: 172.22.0.1 - Path: /login
+2025-09-06 11:50:38,794 - IP: 172.22.0.1 - Path: /login
+2025-09-06 11:50:40,233 - IP: 172.22.0.1 - Path: /login
+2025-09-06 11:50:42,400 - IP: 172.22.0.1 - Path: /
+2025-09-06 11:50:42,782 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-09-06 11:50:42,797 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-09-06 12:04:32,563 - Driver service: No existing tables found. Checking migration directory...
+2025-09-06 12:04:32,564 - Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-09-06 12:04:32,582 - Driver service: Tables created directly using SQLAlchemy.
+2025-09-06 12:04:32,700 - Admin service: Database tables already exist. Skipping migration.
+2025-09-06 12:04:32,722 - Student service: No existing tables found. Checking migration directory...
+2025-09-06 12:04:32,723 - Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.
+2025-09-06 12:04:32,738 - Student service: Tables created directly using SQLAlchemy.
+2025-09-06 12:04:36,248 - IP: 172.22.0.1 - Path: /
+2025-09-06 14:25:10,337 - IP: 172.22.0.1 - Path: /login
+2025-09-06 14:25:10,347 - Login attempt for username: admin_test
+2025-09-06 14:25:10,348 - Trying student authentication...
+2025-09-06 14:25:10,434 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'admin_test', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-06 14:25:10,435 - Trying admin authentication...
+2025-09-06 14:25:10,491 - IP: 172.22.0.6 - Path: /admin/api/auth/login
+2025-09-06 14:25:10,500 - REQUEST: POST http://admin:5000/api/auth/login from 172.22.0.6
+2025-09-06 14:25:11,186 - RESPONSE: POST http://admin:5000/api/auth/login completed successfully
+2025-09-06 14:25:11,198 - Admin authentication successful
+2025-09-06 14:25:11,218 - IP: 172.22.0.1 - Path: /admin/
+2025-09-06 14:25:14,995 - IP: 172.22.0.1 - Path: /logout
+2025-09-06 14:25:15,014 - IP: 172.22.0.1 - Path: /
+2025-09-06 14:25:15,101 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-09-06 14:25:15,116 - IP: 172.22.0.1 - Path: /static/css/header_footer.css
+2025-09-06 14:25:27,756 - IP: 172.22.0.1 - Path: /login
+2025-09-06 14:25:27,757 - Login attempt for username: k482833
+2025-09-06 14:25:27,757 - Trying student authentication...
+2025-09-06 14:25:27,761 - Student authentication error: (psycopg2.errors.UndefinedTable) relation "students" does not exist
+LINE 2: FROM students 
+             ^
+
+[SQL: SELECT students.id AS students_id, students.student_id AS students_student_id, students.name AS students_name, students.email AS students_email, students.phone AS students_phone, students.password_hash AS students_password_hash, students.password_salt AS students_password_salt, students.created_at AS students_created_at, students.updated_at AS students_updated_at 
+FROM students 
+WHERE students.student_id = %(student_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'student_id_1': 'k482833', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-06 14:25:27,762 - Trying admin authentication...
+2025-09-06 14:25:27,769 - IP: 172.22.0.6 - Path: /admin/api/auth/login
+2025-09-06 14:25:27,771 - REQUEST: POST http://admin:5000/api/auth/login from 172.22.0.6
+2025-09-06 14:25:27,775 - RESPONSE: POST http://admin:5000/api/auth/login completed successfully
+2025-09-06 14:25:27,779 - Trying driver authentication...
+2025-09-06 14:25:27,820 - IP: 172.22.0.6 - Path: /driver/api/auth/login
+2025-09-06 14:25:27,826 - REQUEST: POST http://driver:5000/api/auth/login from 172.22.0.6
+2025-09-06 14:25:27,887 - REQUEST: POST http://driver:5000/api/auth/login failed with error: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'k482833', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-06 14:25:27,931 - 
+ERROR: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'k482833', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+METHOD: POST
+URL: http://driver:5000/api/auth/login
+IP: 172.22.0.6
+USER_AGENT: UNKNOWN
+TRACEBACK: Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedTable: relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/app/app/utils/decorators.py", line 15, in decorated_function
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/app/app/utils/decorators.py", line 138, in decorated_function
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/app/app/utils/decorators.py", line 190, in decorated_function
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/app/app/routes/api.py", line 25, in auth_login
+    driver = Driver.query.filter_by(driver_id=username, is_active=True).first()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "drivers" does not exist
+LINE 2: FROM drivers 
+             ^
+
+[SQL: SELECT drivers.id AS drivers_id, drivers.driver_id AS drivers_driver_id, drivers.name AS drivers_name, drivers.email AS drivers_email, drivers.phone AS drivers_phone, drivers.license_number AS drivers_license_number, drivers.license_expiry AS drivers_license_expiry, drivers.hire_date AS drivers_hire_date, drivers.password_hash AS drivers_password_hash, drivers.password_salt AS drivers_password_salt, drivers.is_active AS drivers_is_active, drivers.created_at AS drivers_created_at, drivers.updated_at AS drivers_updated_at 
+FROM drivers 
+WHERE drivers.driver_id = %(driver_id_1)s AND drivers.is_active = true 
+ LIMIT %(param_1)s]
+[parameters: {'driver_id_1': 'k482833', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+        
+2025-09-06 14:25:27,939 - All authentication attempts failed
+2025-09-06 14:25:28,024 - IP: 172.22.0.1 - Path: /static/css/auth.css
+2025-09-06 14:25:28,028 - IP: 172.22.0.1 - Path: /static/css/header_footer.css

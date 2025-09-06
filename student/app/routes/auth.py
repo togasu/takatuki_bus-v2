@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.auth_checker import set_student_auth, set_admin_auth, set_driver_auth
+from app.utils.decorators import safe_route
+from app.utils.error_handlers import ErrorLogger
 import requests
 import os
 import logging
@@ -7,53 +9,50 @@ import logging
 bp = Blueprint("auth", __name__)
 
 @bp.route("/auth", methods=["GET"])
+@safe_route
 def auth():
     return render_template("auth.html")
 
 @bp.route("/login", methods=["POST"])
+@safe_route
 def login():
     """統一ログインエンドポイント - バックエンドで認証判定"""
-    try:
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        logging.info(f"Login attempt for username: {username}")
-        
-        if not username or not password:
-            flash("ユーザー名とパスワードを入力してください")
-            return render_template("auth.html")
-        
-        # 1. 学生認証を試行
-        logging.info("Trying student authentication...")
-        if try_student_auth(username, password):
-            set_student_auth(True)
-            logging.info("Student authentication successful")
-            return redirect("/")
-        
-        # 2. 管理者認証を試行
-        logging.info("Trying admin authentication...")
-        admin_token = try_admin_auth(username, password)
-        if admin_token:
-            logging.info("Admin authentication successful")
-            set_admin_auth(admin_token)
-            return redirect("/admin/")
-        
-        # 3. ドライバー認証を試行
-        logging.info("Trying driver authentication...")
-        driver_token = try_driver_auth(username, password)
-        if driver_token:
-            logging.info("Driver authentication successful")
-            set_driver_auth(driver_token)
-            return redirect("/driver/")
-        
-        # 全ての認証に失敗
-        logging.info("All authentication attempts failed")
-        flash("ログインに失敗しました。ユーザー名またはパスワードが正しくありません。")
+    username = request.form.get('username')
+    password = request.form.get('password')
+    
+    logging.info(f"Login attempt for username: {username}")
+    
+    if not username or not password:
+        flash("ユーザー名とパスワードを入力してください")
         return render_template("auth.html")
-    except Exception as e:
-        logging.error(f"Login error: {e}")
-        flash("システムエラーが発生しました。")
-        return render_template("auth.html"), 500
+    
+    # 1. 学生認証を試行
+    logging.info("Trying student authentication...")
+    if try_student_auth(username, password):
+        set_student_auth(True)
+        logging.info("Student authentication successful")
+        return redirect("/")
+    
+    # 2. 管理者認証を試行
+    logging.info("Trying admin authentication...")
+    admin_token = try_admin_auth(username, password)
+    if admin_token:
+        logging.info("Admin authentication successful")
+        set_admin_auth(admin_token)
+        return redirect("/admin/")
+    
+    # 3. ドライバー認証を試行
+    logging.info("Trying driver authentication...")
+    driver_token = try_driver_auth(username, password)
+    if driver_token:
+        logging.info("Driver authentication successful")
+        set_driver_auth(driver_token)
+        return redirect("/driver/")
+    
+    # 全ての認証に失敗
+    logging.info("All authentication attempts failed")
+    flash("ログインに失敗しました。ユーザー名またはパスワードが正しくありません。")
+    return render_template("auth.html")
 
 def try_student_auth(username, password):
     """学生認証を試行"""

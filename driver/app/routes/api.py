@@ -4,6 +4,8 @@ from app.models import Driver
 from datetime import datetime
 from app.utils.now_jst import now_jst
 from app.utils.auth_utils import SessionManager
+from app.utils.decorators import safe_api_route, safe_route
+from app.utils.error_handlers import create_error_response
 import secrets
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -12,13 +14,10 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 session_manager = SessionManager()
 
 @bp.route("/auth/login", methods=["POST"])
+@safe_api_route(required_fields=["username", "password"])
 def auth_login():
     """ドライバー認証処理"""
     data = request.get_json()
-    
-    if not data or not all(k in data for k in ["username", "password"]):
-        return jsonify({"error": "Missing username or password"}), 400
-    
     username = data["username"]
     password = data["password"]
     
@@ -41,15 +40,16 @@ def auth_login():
             "name": driver.name
         }), 200
     
-    return jsonify({"error": "Invalid credentials"}), 401
+    return create_error_response("認証に失敗しました", 401, "Authentication Failed")
 
 @bp.route("/auth/check", methods=["GET"])
+@safe_route
 def auth_check():
     """認証状態確認"""
     auth_header = request.headers.get('X-Service-Auth')
     
     if not auth_header:
-        return jsonify({"error": "No authentication token"}), 401
+        return create_error_response("認証トークンがありません", 401, "No Auth Token")
     
     # Redisセッションから認証状態を確認
     session_data = session_manager.validate_session(auth_header)
@@ -61,9 +61,10 @@ def auth_check():
             "driver_data": session_data['driver_data']
         }), 200
     
-    return jsonify({"error": "Invalid or expired token"}), 401
+    return create_error_response("無効または期限切れのトークンです", 401, "Invalid Token")
 
 @bp.route("/auth/logout", methods=["POST"])
+@safe_route
 def auth_logout():
     """ログアウト処理"""
     auth_header = request.headers.get('X-Service-Auth')
@@ -71,9 +72,10 @@ def auth_logout():
     if auth_header:
         session_manager.delete_session(auth_header)
     
-    return jsonify({"message": "Logged out successfully"}), 200
+    return jsonify({"message": "ログアウトしました"}), 200
 
 @bp.route("/drivers", methods=["GET"])
+@safe_route
 def get_drivers():
     """ドライバー一覧を取得"""
     drivers = Driver.query.all()

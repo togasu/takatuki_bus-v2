@@ -49,6 +49,10 @@ def create_app():
     from app import routes
     routes.register_blueprints(app)
 
+    # エラーハンドラーを登録
+    from app.utils.error_handlers import register_error_handlers
+    register_error_handlers(app)
+
     socketio.init_app(app)
     return app
 
