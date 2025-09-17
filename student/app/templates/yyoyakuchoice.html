@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/header_footer.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/choice.css')}}">
+    <title>Sojo Bus</title>
+  </head>
+  <body>
+    <header class="header">
+      <p><a href="{{url_for('main.personal')}}">Sojo Bus</a></p>
+    </header>
+
+    <main class="container">
+      <div class="row">
+        <div class="col-md-12">
+          {% if bus_data|length == 0 %}
+            <div class="alert alert-danger textcenter mt-20" role="alert">
+              {{ day }} {{ time }}以降には<br>{{ yukisaki }}バスが運行されていません。
+            </div>
+          {% else %}
+          {% for data in bus_data %}
+          {% if data['status'] == 0 %}
+            <button class="btn btn-primary mb-2 btn-block btn-round redirect-btn" data-url="{{ url_for('booking.seat', bus_id=data['id']) }}">
+              {{ data['departure_time']  }}発 {{ data['busid'] }}号車 空席{{ data['busseat'] }}
+            </button>
+          {% else %}
+            <button class="btn btn-primary mb-2 btn-block btn-round redirect-btn" data-url="{{ url_for('booking.seat', bus_id=data['id']) }}">
+              {{ data['departure_time']  }}発 {{ data['busid'] }}号車 キャンセル待ち
+            </button>
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-12">
+          <button class="btn btn-secondary btn-block redirect-btn" type="button" data-url="{{ url_for('booking.choice') }}">戻る</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div id=line></div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+      // data-url属性を使用して適切にリダイレクトする
+      document.addEventListener('DOMContentLoaded', function() {
+        const redirectBtns = document.querySelectorAll('.redirect-btn');
+        redirectBtns.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+              window.location.href = url;
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -77,29 +77,63 @@ def get_current_user():
     セッショントークンからユーザー情報を取得
     """
     from app.utils.auth_utils import SessionManager
+    from flask import session, g
     
-    # リクエストヘッダーからセッショントークンを取得
+    # まずgオブジェクトから取得を試行
+    if hasattr(g, 'current_user') and g.current_user:
+        return g.current_user
+    
+    # セッションからユーザーIDを取得
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            from app.models.user import User
+            user = User.query.get(user_id)
+            if user and user.is_active:
+                g.current_user = user
+                return user
+        except Exception:
+            pass
+    
+    # リクエストヘッダーからセッショントークンを取得（API用）
     auth_header = request.headers.get('X-Service-Auth')
     
-    if not auth_header:
-        return None
+    if auth_header:
+        # セッションマネージャーでトークンを検証
+        session_manager = SessionManager()
+        session_data = session_manager.validate_session(auth_header)
+        
+        if session_data:
+            # セッションデータからユーザー情報を取得
+            user_id = session_data.get('user_id')
+            if user_id:
+                try:
+                    from app.models.user import User
+                    user = User.query.get(user_id)
+                    if user and user.is_active:
+                        g.current_user = user
+                        return user
+                except Exception:
+                    pass
     
-    # セッションマネージャーでトークンを検証
-    session_manager = SessionManager()
-    session_data = session_manager.validate_session(auth_header)
+    # Cookieからセッショントークンを取得
+    session_token = request.cookies.get('admin_session_token')
+    if session_token:
+        session_manager = SessionManager()
+        session_data = session_manager.validate_session(session_token)
+        
+        if session_data:
+            user_id = session_data.get('user_id')
+            if user_id:
+                try:
+                    from app.models.user import User
+                    user = User.query.get(user_id)
+                    if user and user.is_active:
+                        g.current_user = user
+                        # セッションにもユーザー情報を保存
+                        session['user_id'] = user.id
+                        return user
+                except Exception:
+                    pass
     
-    if not session_data:
-        return None
-    
-    # セッションデータからユーザー情報を取得
-    user_id = session_data.get('user_id')
-    if not user_id:
-        return None
-    
-    # データベースからユーザーを取得
-    try:
-        from app.models.user import User
-        user = User.query.get(user_id)
-        return user
-    except Exception:
-        return None
+    return None

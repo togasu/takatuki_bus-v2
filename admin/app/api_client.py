@@ -42,6 +42,46 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to create student: {e}")
             return None
     
+    def get_student_by_id(self, student_id):
+        """特定の学生情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/students/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get student {student_id}: {e}")
+            return None
+    
+    def update_student(self, student_id, student_data):
+        """学生情報を更新"""
+        try:
+            response = requests.put(
+                f'http://student:5000/api/students/{student_id}',
+                json=student_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update student {student_id}: {e}")
+            return None
+    
+    def delete_student(self, student_id):
+        """学生を削除"""
+        try:
+            response = requests.delete(
+                f'http://student:5000/api/students/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete student {student_id}: {e}")
+            return None
+    
     def get_buses(self):
         """バス一覧を取得"""
         try:
@@ -80,6 +120,46 @@ class AdminAPIClient:
             return response.json() if response.status_code == 201 else None
         except Exception as e:
             current_app.logger.error(f"Failed to create driver: {e}")
+            return None
+    
+    def get_driver_by_id(self, driver_id):
+        """特定のドライバー情報を取得"""
+        try:
+            response = requests.get(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver {driver_id}: {e}")
+            return None
+    
+    def update_driver(self, driver_id, driver_data):
+        """ドライバー情報を更新"""
+        try:
+            response = requests.put(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                json=driver_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update driver {driver_id}: {e}")
+            return None
+    
+    def delete_driver(self, driver_id):
+        """ドライバーを削除"""
+        try:
+            response = requests.delete(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete driver {driver_id}: {e}")
             return None
 
 # シングルトンインスタンス

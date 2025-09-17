@@ -1,10 +1,100 @@
-from flask import Blueprint, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for
+from datetime import datetime, timedelta
+import logging
+from ..models.bus import db, Bus
+from ..models.seat import Seat
+from ..models.reservation import Reservation
+from ..models.user import User_Penalty
+from ..models.cancel import Cancel
+from ..utils.auth_utils import check_session
 
-bp = Blueprint('cancel', __name__)
+cancel_bp = Blueprint('cancel', __name__)
 
-@bp.route('/cancelcheck', methods=['POST'])
+# ロガーの設定
+logger = logging.getLogger('sojo-bus-log')
+
+@cancel_bp.route('/cancel/check')
 def cancelcheck():
-    # 予約キャンセル処理を実装
-    flash('予約がキャンセルされました。', 'success')
-    return redirect(url_for('top.index'))
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+    
+    username = data['student_id']
+    
+    bus_data = db.session.query(Reservation).filter_by(user_id=username).order_by(Reservation.bus_id).all()
+    for bus in bus_data[:]:
+        reservation = db.session.query(Bus).filter_by(id=bus.bus_id).first()
+        if datetime.now() >= reservation.departure_time:
+            bus_data.remove(bus)
+    print(bus_data)
+    
+    bus_info_list = []
+    if len(bus_data) != 0:
+        for bus in bus_data:
+            bus_data_info = db.session.query(Bus).filter_by(id=bus.bus_id).first()
+            print(bus.bus_id, bus_data_info.busid)
+            bus_info = {
+                "id": bus.bus_id,
+                "busid": bus_data_info.busid,
+                "departure_time": str(bus_data_info.departure_time.strftime('%m/%d %H:%M')),
+                "busseat": bus.seat_number,
+                "int": True
+            }
+            bus_info_list.append(bus_info)
+            
+        # 再変換いる？？？
+        for bus in bus_info_list:
+            bus['departure_time'] = datetime.strptime(bus['departure_time'], "%m/%d %H:%M")
+            bus['departure_time'] = bus['departure_time'].strftime('%m/%d %H:%M')
+            print(bus['departure_time'])
+            
+        return render_template('yyoyakucancel.html', bus_data=bus_info_list)
+    else:
+        return render_template('yyoyakucancel.html')
 
+@cancel_bp.route('/cancel/<bus_id>')
+def cancel(bus_id):
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+    
+    return render_template('cancel.html', bus_id=bus_id)
+
+@cancel_bp.route('/cancel/<bus_id>/delete')
+def cancelation(bus_id):
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+    
+    username = data['student_id']
+
+    print(username, bus_id)
+    reservationdata = db.session.query(Reservation).filter_by(user_id=username, bus_id=bus_id).first()
+    print(reservationdata)
+    if reservationdata:
+        bus_reservation = db.session.query(Reservation).filter_by(bus_id=bus_id).count()
+        bus = db.session.query(Bus).filter_by(id=bus_id).first()
+        print(f"delete by {reservationdata.user_id} ,bus_id : {reservationdata.bus_id}, seat_number : {reservationdata.seat_number}")
+        seat_number = reservationdata.seat_number
+        cancel = Cancel(student_id=username, bus_id=bus_id, seat_number=seat_number, cancel_time=datetime.now(), status="Cancel")
+        db.session.add(cancel)
+        db.session.commit()
+        db.session.delete(reservationdata)
+        db.session.commit()
+        logger.info(f"success to cancel from {username}. The bus_id is {bus_id}, seat_number is {seat_number}. The time is {datetime.now()}.")
+
+        if bus_reservation == bus.seats:
+            try:
+                with open('wait_cancel.json', mode='a') as f:
+                    f.write(f"{bus_id} {seat_number}")
+                    f.write("\n")
+                return render_template('cancel_success.html'), 200
+            except:
+                return render_template('cancel_failed.html'), 400
+        else:
+            return render_template('cancel_success.html'), 200
+    else:
+        return render_template('cancel_failed.html'), 400

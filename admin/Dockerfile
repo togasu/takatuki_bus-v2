@@ -19,6 +19,7 @@ COPY app /app/app
 COPY app_run.py /app/
 COPY uwsgi.ini /app/
 COPY init_migration.py /app/
+COPY create_test_admin.py /app/
 
 # ディレクトリの作成と権限設定
 RUN mkdir -p /app/logs /app/migrations && \

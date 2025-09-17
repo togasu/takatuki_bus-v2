@@ -1,0 +1,239 @@
+from flask import Blueprint, render_template, request, redirect, url_for
+from datetime import datetime, timedelta
+from ..models.bus import db, Bus
+from ..models.seat import Seat
+from ..models.reservation import Reservation
+from ..utils.auth_utils import check_session
+
+booking_bp = Blueprint('booking', __name__)
+
+@booking_bp.route('/select')
+def choice():
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    today = datetime.date(datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d")
+    nextday = (datetime.now() + timedelta(days=1) + timedelta(hours=1)).strftime("%Y-%m-%d")
+
+    return render_template('yukisaki.html', today=today, nextday=nextday)
+
+@booking_bp.route('/select/ud', methods=['POST'])
+def ud():
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    selecteddate = request.form.get('selected-date')
+    selecteddestination = request.form.get('selected-destination')
+    print(selecteddate, selecteddestination)
+    if selecteddate:
+        if selecteddestination == "高槻キャンパス":
+            return redirect(url_for('booking.upchoice', selecteddate=selecteddate))
+        elif selecteddestination == "高槻駅":
+            return redirect(url_for('booking.downchoice', selecteddate=selecteddate))
+        else:
+            return redirect(url_for('booking.choice'))
+    else:
+        return redirect(url_for('booking.choice'))
+
+@booking_bp.route('/choice/up/<selecteddate>')
+def upchoice(selecteddate):
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    if selecteddate is None:
+        return redirect(url_for('booking.choice'))
+
+    selecteddate = datetime.strptime(selecteddate, '%Y-%m-%d')
+    print(selecteddate)
+
+    # その日の予約可能なバスを取得
+    bus_data = db.session.query(Bus).filter(Bus.ud == 0, Bus.status != 2).order_by(Bus.departure_time).all()
+    for bus in bus_data[:]:
+        time = bus.departure_time.strftime('%Y-%m-%d')
+        time = datetime.strptime(time, '%Y-%m-%d')
+        if time == selecteddate:
+            dt = bus.departure_time
+            if datetime.now() >= dt:
+                bus_data.remove(bus)
+        else:
+            bus_data.remove(bus)
+
+    # 必要データを抽出してリストに格納
+    bus_info_list = []
+    if len(bus_data) != 0:
+        for bus in bus_data:
+            total_seats = bus.seats
+            reserved_seats = db.session.query(Reservation).filter_by(bus_id=bus.id).count()
+            available_seats = total_seats - reserved_seats
+
+            bus_info = {
+                "id": bus.id,
+                "busid": bus.busid,
+                "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
+                "busseat": available_seats,
+                "status": bus.status
+            }
+            bus_info_list.append(bus_info)
+
+    time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
+    yukisaki = '高槻キャンパス行き'
+    return render_template('yyoyakuchoice.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
+
+@booking_bp.route('/choice/down/<selecteddate>')
+def downchoice(selecteddate):
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    if selecteddate is None:
+        return redirect(url_for('booking.choice'))
+
+    selecteddate = datetime.strptime(selecteddate, '%Y-%m-%d')
+    print(selecteddate)
+
+    # その日の予約可能なバスを取得
+    bus_data = db.session.query(Bus).filter(Bus.ud == 1, Bus.status != 2).order_by(Bus.departure_time).all()
+    for bus in bus_data[:]:
+        time = bus.departure_time.strftime('%Y-%m-%d')
+        time = datetime.strptime(time, '%Y-%m-%d')
+        if time == selecteddate:
+            dt = bus.departure_time
+            if datetime.now() >= dt:
+                bus_data.remove(bus)
+        else:
+            bus_data.remove(bus)
+
+    # 必要データを抽出してリストに格納
+    bus_info_list = []
+    if len(bus_data) != 0:
+        for bus in bus_data:
+            total_seats = bus.seats
+            reserved_seats = db.session.query(Reservation).filter_by(bus_id=bus.id).count()
+            available_seats = total_seats - reserved_seats
+
+            bus_info = {
+                "id": bus.id,
+                "busid": bus.busid,
+                "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
+                "busseat": available_seats,
+                "status": bus.status
+            }
+            bus_info_list.append(bus_info)
+
+    time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
+    yukisaki = '高槻駅行き'
+    return render_template('yyoyakuchoice.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
+
+@booking_bp.route('/choice/<bus_id>')
+def seat(bus_id):
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    username = data['student_id']
+    seat = list(range(0, 28))
+
+    bus = db.session.query(Bus).filter_by(id=bus_id).first()
+    if bus.status != 0:
+        return redirect(url_for('booking.wait_cancel_check', bnum=bus_id))
+    
+    seat_data = db.session.query(Seat).filter_by(bus_id=bus_id).all()
+    reservation_date = db.session.query(Reservation).filter_by(bus_id=bus_id).all()
+    i = 0
+    reservedtf = []
+    for seat in seat_data:
+        reserved = any(reservation.seat_number == seat.number for reservation in reservation_date)
+        my_reserve = db.session.query(Reservation).filter_by(bus_id=bus_id, seat_number=seat.number, user_id=username).first()
+        if reserved and my_reserve is None:
+            i += 1
+        if my_reserve:
+            reservedtf.append('2')
+        else:
+            reservedtf.append('1' if reserved else '0')
+    
+    if i == bus.seats or bus.status >= 1:
+        return render_template('wait_cancel.html', bnum=bus_id)
+    
+    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id, seat_number=seat)
+
+@booking_bp.route('/choice/<bus_id>/reserve', methods=['POST'])
+def reserve(bus_id):
+    from flask import Flask
+    from flask_mail import Mail, Message
+    import logging
+    from ..models.user import User_Penalty
+    
+    token = request.cookies.get('token')
+    data = check_session(token)
+    if data['flag'] == False:
+        return redirect(url_for('auth.top'))
+
+    # User名を保存情報として持つ
+    booked = request.form.get('selected_seat')
+    username = data['student_id']
+    k_number = data['k_number']
+    
+    print(booked, username, bus_id, k_number)
+
+    penalty = db.session.query(User_Penalty).filter_by(student_id=username).first()
+    if penalty and penalty.penalty_count >= 2:
+        date = (penalty.penalty_time.date() - datetime.now().date()).days
+        error_message = f'ペナルティ期間です:残り{date}日。すでに予約済みの席はそのままお乗りいただけます。'
+        return render_template('error.html', error_message=error_message), 410
+
+    # その人が同じ日の２つ目の上りか下りの便を予約しようとしているか確認
+    departure = db.session.query(Bus).filter_by(id=bus_id).first()
+    
+    if not(datetime.date(datetime.now() + timedelta(hours=1)) == departure.departure_time.date() or 
+           datetime.date(datetime.now() + timedelta(hours=1)) == departure.departure_time.date() + timedelta(days=-1)):
+        error_message = "予約可能な日付ではありません"
+        return render_template('error.html', error_message=error_message)
+    
+    departure_seat = db.session.query(Seat).filter(Seat.bus_id == bus_id, Seat.number == booked).first()
+    if departure_seat is None:
+        error_message = "座席を指定してください"
+        return render_template('error.html', error_message=error_message)
+
+    # そのバスの日時と上りか下りかを取得
+    departure_day = departure.departure_time.date()
+    departure_ud = departure.ud
+    print(departure_day, departure_ud)
+
+    # 予約しようとしている人の今までの予約情報を取得
+    busses = db.session.query(Reservation).filter_by(user_id=username).order_by(Reservation.id.desc()).all()
+    for bus in busses:
+        # 今までの予約情報のバスの情報を取得
+        bus_data = db.session.query(Bus).filter_by(id=bus.bus_id).first()
+        if departure_day == bus_data.departure_time.date() and departure_ud == bus_data.ud:
+            error_message = "既に別の座席を予約済みです"
+            return render_template('error.html', error_message=error_message)
+        
+    # 席が空いているか確認
+    seat = db.session.query(Reservation).filter_by(bus_id=bus_id, seat_number=booked).all()
+    if seat:
+        error_message = "別の利用者が登録済みです"
+        return render_template('error.html', error_message=error_message)
+
+    reservation = Reservation(seat_number=booked, user_id=username, bus_id=bus_id, approved=0, reserved_time=datetime.now())
+    db.session.add(reservation)
+
+    # メール送信とログ記録
+    try:
+        logger = logging.getLogger('sojo-bus-log')
+        logger.info(f"success to reserve {username},{k_number}. The bus_id is {bus_id}, seat_number is {booked}")
+        db.session.commit()
+
+        # メール送信の実装は省略（Mailオブジェクトの初期化が必要）
+        return render_template('success.html'), 200
+    except:
+        db.session.rollback()
+        error_message = "別の利用者が予約済みです"
+        return render_template('error.html', error_message=error_message)

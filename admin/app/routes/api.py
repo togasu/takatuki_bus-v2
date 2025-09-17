@@ -157,3 +157,35 @@ def update_user(user_id):
         "username": user.username,
         "message": "ユーザーが正常に更新されました"
     })
+
+@bp.route("/auth/set-session", methods=["POST"])
+@safe_api_route(required_fields=["token"])
+def set_session():
+    """外部からのトークンを使用してローカルセッションを設定"""
+    data = request.get_json()
+    token = data["token"]
+    
+    # トークンの有効性を確認
+    session_data = session_manager.validate_session(token)
+    
+    if session_data:
+        from app.models.user import User  # 遅延インポート
+        user = User.query.get(session_data['user_id'])
+        
+        if user and user.is_active:
+            # Flask sessionにユーザー情報を保存
+            from flask import session
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['role'] = user.role
+            
+            # Cookieにも設定
+            response = jsonify({
+                "status": "session_set",
+                "user_id": user.id,
+                "username": user.username
+            })
+            response.set_cookie('admin_session_token', token, httponly=True, secure=True)
+            return response, 200
+    
+    return create_error_response("無効なトークンです", 401, "Invalid Token")

@@ -18,6 +18,8 @@ services:
 
   student:
     build: ./student
+    ports:
+      - "5000:5000"
     volumes:
       - ./logs:/app/logs
     environment:
@@ -28,6 +30,7 @@ services:
       REDIS_HOST: redis
       ADMIN_SERVICE_TOKEN: admin-secret-token-2024
       API_SECRET_KEY: bus-system-api-key-2024
+      TEST_MODE: true
     depends_on:
       - postgres
       - redis

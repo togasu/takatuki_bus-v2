@@ -12,38 +12,35 @@ from flask_migrate import Migrate, init, migrate as flask_migrate, upgrade
 
 def init_migration():
     """マイグレーション環境を初期化"""
-    app = Flask(__name__)
     
-    # 環境変数から設定を読み込み
-    app.config["POSTGRES_HOST"] = os.getenv("POSTGRES_HOST", "postgres")
-    app.config["POSTGRES_DB"] = os.getenv("POSTGRES_DB", "mydb")
-    app.config["POSTGRES_USER"] = os.getenv("POSTGRES_USER", "user")
-    app.config["POSTGRES_PASSWORD"] = os.getenv("POSTGRES_PASSWORD", "pass")
+    # アプリケーションファクトリーを使用
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from app import create_app
     
-    # データベース設定
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"postgresql://{app.config['POSTGRES_USER']}:"
-        f"{app.config['POSTGRES_PASSWORD']}@"
-        f"{app.config['POSTGRES_HOST']}/"
-        f"{app.config['POSTGRES_DB']}"
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
-    # SQLAlchemy とマイグレーション初期化
-    from app.database import db, migrate
-    db.init_app(app)
-    migrate.init_app(app, db)
-    
-    # モデルをインポート
-    from app import models
+    # アプリケーション作成
+    app = create_app()
     
     with app.app_context():
+        # 全てのモデルがインポートされていることを確認
+        from app import models
+        print(f"Loaded models: {models.__all__}")
+        
+        # データベース接続確認
+        from app.database import db
+        try:
+            # 簡単な接続テスト - データベースに接続できるかテスト
+            db.create_all()
+            print("Database connection successful")
+        except Exception as e:
+            print(f"Database connection failed: {e}")
+            return False
+        
         # migrations フォルダが存在しない場合は初期化
         if not os.path.exists('migrations'):
             print("Initializing migration repository...")
             init()
             print("Migration repository initialized. Waiting for files to be created...")
-            time.sleep(2)  # ファイル作成を待機
+            time.sleep(3)  # ファイル作成を待機
         
         # env.pyファイルが存在することを確認してからマイグレーション作成
         if os.path.exists('migrations/env.py'):
@@ -51,10 +48,19 @@ def init_migration():
             flask_migrate(message='Initial migration for student service')
             print("Applying migrations to database...")
             upgrade()
+            print("Migration completed successfully!")
         else:
             print("Warning: Migration repository not properly initialized. Skipping migration creation.")
+            return False
         
         print("Student service migration initialization completed!")
+        return True
 
 if __name__ == "__main__":
-    init_migration()
+    success = init_migration()
+    if success:
+        print("Migration initialization completed successfully")
+    else:
+        print("Migration initialization failed, but continuing...")
+    # Always exit with success to allow the server to start
+    sys.exit(0)

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sojo Bus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        main {
+            margin-top: 100px;
+        }
+
+        #schedule{
+            padding-top: 90px;
+            margin-top:-90px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #000b69;
+            margin-bottom: 10px;
+        }
+
+        .schedule-table {
+            margin-bottom: 30px;
+            overflow-x: auto; /* 横スクロールを有効にする */
+        }
+
+        .caption {
+            padding-top: 120px;
+            margin-top:-120px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000b69;
+            margin-bottom: 10px;
+            caption-side: top; 
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .schedule-table th {
+            background-color: #000b69;
+            color: #fff;
+        }
+
+        .schedule-table tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        .boarding-guide {
+            margin-bottom: 30px;
+        }
+
+        .boarding-guide h2 {
+            padding-top: 90px;
+            margin-top:-90px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000b69;
+            margin-bottom: 10px;
+        }
+
+        .boarding-guide h3 {
+            padding-top: 90px;
+            margin-top:-90px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000b69;
+            margin-bottom: 10px;
+        }
+
+        .boarding-guide p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .route-info {
+            margin-bottom: 30px;
+        }
+
+        .route-info h3 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #000b69;
+            margin-bottom: 10px;
+        }
+
+        .route-info p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            background-color: #000b69;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .footer #line {
+            margin-top: 10px;
+            width: 100%;
+            height: 2px;
+            background-color: #fff;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .header {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .header-content {
+            background-color: #000b69;
+            color: #ffffff;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-content a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 24px;
+        }
+
+        .header-content p {
+            margin: 0;
+        }
+
+        .tips {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .tips p {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #007bff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .tips p:hover {
+            background-color: #0056b3;
+        }
+
+        .tiptext {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            border: 1px solid #555;
+            padding: 10px;
+            z-index: 1;
+            right: 0;
+            top: 40px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        article {
+            overflow: hidden;
+            background-color: #f8d7da;
+            height: 30px;
+        }
+
+        .loop_wrap {
+            display: flex;
+            width: 100%;
+            height: 30px; /* Adjusted height to match the article */
+            overflow: hidden;
+        }
+
+        .loop_wrap div {
+            flex: 0 0 auto;
+            white-space: nowrap;
+            font-size: 16px;
+            overflow: hidden;
+        }
+
+        .loop_wrap div:nth-child(odd) {
+            animation: loop linear infinite;
+        }
+
+        .alert-info {
+        font-size: 16px;
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
+
+        ul, ol {
+            list-style: none;
+        }
+
+        .breadcrumb-item {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        a{
+            text-decoration:none;
+        }
+        .breadcrumb-item-a {
+            color: #000b69;
+        }
+
+        .frame {
+ width: 80%;
+ margin: 30px auto 20px;
+ padding: 30px 20px 0;
+ border: 3px solid #aaa;
+ position: relative;
+ border-radius: 3px;
+ background-color: #fff;
+}
+.frame-title {
+ position: absolute;
+ top: -13px;
+ left: 20px;
+ padding: 0 5px;
+ background-color: #fff;
+}
+.frame-title .fa {
+ margin-right: 5px;
+}
+.caution {
+ background-color: #ff4500;
+ border: 2px solid #ff4500;
+ color: #fff;
+ border-radius: 3px;
+}
+.frame-red {
+ border-color: #ff4500;
+}
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a>Sojo Bus</a>
+        </div>
+        <article>
+            <div class="loop_wrap">
+                <div>
+                    {{ text }}
+                </div>
+            </div>
+        </article>
+    </header>
+    <main>
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#schedule" class="breadcrumb-item-a">時刻表</a></li>
+                    <li class="breadcrumb-item"><a href="#boarding-guide" class="breadcrumb-item-a">乗り場案内</a></li>
+                    <li class="breadcrumb-item"><a href="#regist-howto" class="breadcrumb-item-a">事前登録方法</a></li>
+                    <li class="breadcrumb-item"><a href="#reservation-howto"class="breadcrumb-item-a">予約・キャンセルについて</a></li>
+                    <li class="breadcrumb-item"><a href="#penalty" class="breadcrumb-item-a">ペナルティについて</a></li>
+                    <li class="breadcrumb-item"><a href="#link" class="breadcrumb-item-a">関連リンク</a></li>
+                </ol>
+            </nav>
+        </div>
+        <div class="container">
+              <div class="alert-info">
+                <ul>
+                  <li>学期定期のみしか登録できません。</li>
+                  <li>予約開始は前々日23:00からです。</li>
+                  <li>23:00頃はサイトが重くなり、通信に時間がかかったり予約時のメールが届かない等発生する可能性がございます。ご了承ください。</li>
+                </ul>
+              </div>
+                <h1 id="schedule">春学期時刻表</h1>
+        <p class="caption">高槻キャンパス行き</p>
+		<div class="schedule-table">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">時間</th>
+                            <th colspan="4">月曜日</th>
+                            <th colspan="4">火曜日</th>
+                            <th colspan="4">水曜日</th>
+                            <th colspan="4">木曜日</th>
+                            <th colspan="4">金曜日</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2">8時</td>
+                            <td colspan="2">20分</td>
+                            <td colspan="2">30分</td>
+                            <td colspan="2">20分</td>
+                            <td colspan="2">30分</td>
+                            <td colspan="4">30分</td>
+                            <td colspan="2">20分</td>
+                            <td colspan="2">30分</td>
+                            <td colspan="2">20分</td>
+                            <td colspan="2">30分</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">10時</td>
+                            <td colspan="2">00分</td>
+                            <td colspan="2">10分</td>
+                            <td colspan="2">00分</td>
+                            <td colspan="2">10分</td>
+                            <td colspan="2">00分</td>
+                            <td colspan="2">10分</td>
+                            <td colspan="2">00分</td>
+                            <td colspan="2">10分</td>
+                            <td colspan="2">00分</td>
+                            <td colspan="2">10分</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td colspan="2">1</td>
+                            <td>2</td>
+                            <td>3</td>
+			</tr>
+                        <tr>
+                            <td rowspan="2">12時</td>
+                            <td colspan="4">30分</td>
+                            <td colspan="4">30分</td>
+                            <td colspan="4">30分</td>
+                            <td colspan="4">30分</td>
+                            <td colspan="4">30分</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                        </tr>
+                    </tbody>
+                </table>
+		</div>
+        <p class="caption">高槻駅行き</p>
+		<div class="schedule-table">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">時間</th>
+                            <th colspan="6">月曜日</th>
+                            <th colspan="6">火曜日</th>
+                            <th colspan="6">水曜日</th>
+                            <th colspan="6">木曜日</th>
+                            <th colspan="6">金曜日</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2">14時</td>
+                            <td colspan="6">40分</td>
+                            <td colspan="6">40分</td>
+                            <td colspan="6">40分</td>
+                            <td colspan="6">40分</td>
+                            <td colspan="6">40分</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">1</td>
+                            <td colspan="3">2</td>
+			    <td colspan="3">1</td>
+                            <td colspan="3">2</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+			    <td colspan="3">1</td>
+                            <td colspan="3">2</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">16時</td>
+                            <td colspan="6">20分</td>
+                            <td colspan="6">20分</td>
+                            <td colspan="6"></td>
+                            <td colspan="6">20分</td>
+                            <td colspan="6">20分</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td> 
+                            <td colspan="2">3</td>
+                            <td colspan="6"></td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+                            <td colspan="2">1</td>
+                            <td colspan="2">2</td>
+                            <td colspan="2">3</td>
+                        </tr>
+                        <tr>
+                          <td rowspan="2">18時</td>
+                          <td colspan="6">00分</td>
+                          <td colspan="6">00分</td>
+                          <td colspan="6"></td>
+                          <td colspan="6">00分</td>
+                          <td colspan="6">00分</td>
+                      </tr>
+                      <tr>
+                          <td colspan="2">1</td>
+                          <td colspan="2">2</td>
+                          <td colspan="2">3</td>
+                          <td colspan="2">1</td>
+                          <td colspan="2">2</td>
+                          <td colspan="2">3</td>
+                          <td colspan="6"></td>
+                          <td colspan="2">1</td>
+                          <td colspan="2">2</td>
+                          <td colspan="2">3</td>
+                          <td colspan="2">1</td>
+                          <td colspan="2">2</td>
+                          <td colspan="2">3</td>
+                      </tr>
+                    </tbody>
+                </table>
+            	</div>
+
+
+            <div id="boarding-guide" class="boarding-guide">
+                <h2>乗り場案内</h2>
+
+                <div class="route-info">
+                    <h3>高槻駅行き</h3>
+                    <p>バスは、A棟前から出発し、アル・プラザ前に止まります。</p>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d204.57049000751135!2d135.57533113903!3d34.87814956277264!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sja!2sjp!4v1726843309617!5m2!1sja!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+
+                <div class="route-info">
+                    <h3>キャンパス行き</h3>
+                    <p>バスは、アル・プラザ前から出発し、D棟前に止まります。</p>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m26!1m12!1m3!1d597.9041959068635!2d135.6168467164999!3d34.85163540095487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m11!3e3!4m5!1s0x600102b7a5a7cdf3%3A0x672d1e3e5b598856!2z5aSn6Ziq5bqc6auY5qe75biC6Iql5bed55S677yR5LiB55uu77yRIOmrmOanu-mnhQ!3m2!1d34.851731199999996!2d135.61774739999998!4m3!3m2!1d34.8516918!2d135.61675209999999!5e0!3m2!1sja!2sjp!4v1726843206754!5m2!1sja!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <div id="Auxiliary-seat" class="boarding-guide">
+                <h2>補助席の利用</h2>
+                <p>補助席の使用が開始されました。</p>
+                <p>補助席は補助席以外が埋まってからしか予約できません。</p>
+                <p>補助席予約者は後から乗ってください。</p>
+                <p>補助席の席は以下の黄色の座席です。</p>
+                <div class="seat-map"></div>
+                    <style>
+                        .seat-map {
+                            max-width: 300px;
+                            margin: 0 auto;
+                        }                   
+
+                        .seat {
+                              height: 40px;
+                        
+                            text-align: center;
+                            vertical-align: middle;
+                            background-color: #007bff !important;
+                            color: #fff !important;
+                                  border-radius: 5px !important;
+                               }
+            
+
+                         .auxi {
+                            background-color: #e6bf24 !important;
+                         }
+
+                    </style>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td class="seat">1</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="seat">2</td>
+                                <td></td>
+                                <td class="seat">3</td>
+                                <td class="seat">4</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td class="seat auxi">5</td>
+                                <td class="seat">6</td>
+                                <td class="seat">7</td>
+                            </tr>
+                            <tr>
+                                <td class="seat">8</td>
+                                <td class="seat auxi">9</td>
+                                <td class="seat">10</td>
+                                <td class="seat">11</td>
+                            </tr>
+                            <tr>
+                                <td class="seat">12</td>
+                                <td class="seat auxi">13</td>
+                                <td class="seat">14</td>
+                                <td class="seat">15</td>
+                            </tr>
+                            <tr>
+                                <td class="seat">16</td>
+                                <td class="seat auxi">17</td>
+                                <td class="seat">18</td>
+                                <td class="seat">19</td>
+                            </tr>
+                            <tr>
+                                <td class="seat">20</td>
+                                <td class="seat auxi">21</td>
+                                <td class="seat">22</td>
+                                <td class="seat">23</td>
+                            </tr>
+                            <tr>
+                                <td class="seat">24</td>
+                                <td class="seat">25</td>
+                                <td class="seat">26</td>
+                                <td class="seat">27</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <div id="regist-howto" class="boarding-guide">
+                <h2>事前登録方法</h2>
+                <p>事前登録は、以下の手順で行ってください。</p>
+                <ol>
+                    <li>①　高槻市営バス「関西大学総合情報学部の学期定期券（1期）」を購入する。
+                        <ul>
+                            <li style="color:red">①以外の定期券（１ヶ月定期券、３ヶ月定期券など）では登録することができません。</li>
+                        </ul>
+                    </li>
+                    <li>②　購入した定期券と学生証を<span style="color:rgb(192, 40, 40)">高槻キャンパスオフィス</span>に持参する。</li>
+                    <li>③　係員に②を提示し、登録機で登録を行う</li>
+                </ol>
+            </div>
+            <div id="reservation-howto" class="boarding-guide">
+                <h2>予約・キャンセルについて</h2>
+                <p>前々日23:00から予約を開始します。</p>
+                <p>予約は、以下の手順で行ってください。</p>
+                <ol>
+                    <li>①ログインする</li>
+                    <li>②「新規予約」を押す</li>
+                    <li>③予約したい日付・行先を選択する</li>
+                    <li>④予約したい時間・号車を選択する</li>
+                    <li>⑤座席をクリックして指定する</li>
+                    <li>⑥「予約確定」を押す</li>
+                </ol>
+                <p>キャンセルは、以下の手順で行ってください。</p>
+                <ol>
+                    <li>①ログインする</li>
+                    <li>②「予約取消」ボタンを押す</li>
+                    <li>③キャンセルしたいバスを選ぶ</li>
+                    <li>⑤「確定する」を押す</li>
+                </ol>
+
+            <div id="penalty" class="boarding-guide">
+                <h2>ペナルティについて</h2>
+                <p>ペナルティは2回不乗車において14日間のペナルティが課されます。</p>
+                <p>ペナルティが課せられる前に予約した便に関しては乗ることができます。また、キャンセルも可能です。</p>
+                <p>ペナルティ残日数は予約試行時に表示されます。</p>
+                <p>不乗車の便については予約試行時に現状のペナルティ残日数と当該バス便の状況がメールで送信されるため、システムの不具合と考える場合は高槻キャンパスオフィスへ申し出てください</p>
+                <p>また、その他ペナルティに不服のある場合は高槻キャンパスオフィスへ申し出てください。</p>
+                <p>ペナルティの解除は数日かかります。</p>
+            </div>
+            <div id="link" class="boarding-guide">
+                <h2>関連リンク</h2>
+                <a class="breadcrumb-item-a" href="https://www.edu.kutc.kansai-u.ac.jp/wsojo/sojo_bus/index.html">WebSojo | シャトルバスについて</a><br>
+                <a class="breadcrumb-item-a" href="https://www.citybus.city.takatsuki.osaka.jp/unchin/2018121000067/">高槻市営バス | 定期券について</a>
+            </div>
+	</div>
+	    <div class="d-flex justify-content-center mb-4">
+		<button onclick="redirectToNextPage('{{ url_for('personal')}}')" class="btn btn-secondary">戻る</button>
+	    </div>
+	</div>
+    </main>
+    <footer class="footer">
+        <div id="line"></div>
+    </footer>
+</body>
+<script>
+    function redirectToNextPage(nextPageURL) {
+        window.location.href = nextPageURL;
+    }
+
+    function setAnimation() {
+        const loopElement = document.querySelector('.loop_wrap div:nth-child(odd)');
+        const screenWidth = window.innerWidth;
+        const textWidth = loopElement.scrollWidth;
+
+        const animationDuration = Math.max(10, (textWidth + screenWidth) / 100);
+
+        // Set keyframes dynamically
+        const keyframes = `
+            @keyframes loop {
+                0% { transform: translateX(${screenWidth}px); }
+                100% { transform: translateX(-${textWidth}px); }
+            }
+        `;
+        const existingStyle = document.getElementById('dynamic-keyframes');
+        if (existingStyle) {
+            existingStyle.parentNode.removeChild(existingStyle);
+        }
+
+        const style = document.createElement('style');
+        style.id = 'dynamic-keyframes';
+        style.innerHTML = keyframes;
+        document.head.appendChild(style);
+
+        loopElement.style.animation = `loop ${animationDuration}s linear infinite`;
+    }
+
+    setAnimation();
+
+    window.addEventListener('resize', setAnimation);
+</script>
+</html>
+
+

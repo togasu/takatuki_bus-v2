@@ -90,7 +90,7 @@ if ((Test-Path "certs/server.crt") -and (Test-Path "certs/server.key")) {
 # 2. 既存のDockerコンテナを停止
 Write-Info "Step 2: 既存のDockerコンテナを停止"
 try {
-    $containers = docker ps -q --filter "name=test-"
+    $containers = docker ps -q --filter "name=takatuki_bus-v2-"
     if ($containers) {
         Write-Info "既存のコンテナを停止中..."
         docker-compose down
@@ -150,8 +150,8 @@ while ($retryCount -lt $maxRetries -and -not $allHealthy) {
     $retryCount++
     Write-Info "コンテナの状態確認中... ($retryCount/$maxRetries)"
     
-    $containers = docker ps --filter "name=test-" --format "table {{.Names}}\t{{.Status}}"
-    $runningContainers = (docker ps --filter "name=test-" -q | Measure-Object).Count
+    $containers = docker ps --filter "name=takatuki_bus-v2-" --format "table {{.Names}}\t{{.Status}}"
+    $runningContainers = (docker ps --filter "name=takatuki_bus-v2-" -q | Measure-Object).Count
     $expectedContainers = 6  # nginx, student, admin, driver, postgres, redis
     
     if ($runningContainers -eq $expectedContainers) {
@@ -172,21 +172,63 @@ if ($initDatabase) {
     Write-Info "Step 6: データベースの初期化"
     
     Write-Info "データベースの準備完了を待機中..."
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 15
     
-    # 各サービスのマイグレーション実行
+    # 各サービスのマイグレーション実行（独立して実行）
     $services = @("admin", "student", "driver")
     
     foreach ($service in $services) {
         Write-Info "$service サービスのマイグレーション実行中..."
         try {
-            docker exec "test-$service-1" python init_migration.py
+            # 既存のマイグレーションディレクトリを削除（クリーンスタート）
+            docker exec "takatuki_bus-v2-$service-1" rm -rf migrations 2>$null
+            
+            # Flask-Migrateを使用してマイグレーション実行
+            docker exec "takatuki_bus-v2-$service-1" flask db init 2>$null
+            docker exec "takatuki_bus-v2-$service-1" flask db migrate -m "Initial migration for $service"
+            docker exec "takatuki_bus-v2-$service-1" flask db upgrade
             Write-Success "$service サービスのマイグレーションが完了しました"
         } catch {
             Write-Warning "$service サービスのマイグレーションでエラーが発生しました: $_"
         }
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 5  # サービス間の待機時間を延長
     }
+    
+    # マイグレーション完了後の待機時間を追加
+    Write-Info "マイグレーション完了後の安定化を待機中..."
+    Start-Sleep -Seconds 10  # 待機時間を延長
+    
+    # テストユーザーの作成
+    Write-Info "テストユーザーの作成中..."
+    
+    # admin テストユーザーの作成（データベーステーブル確認付き）
+    Write-Info "admin テストユーザーを作成中..."
+    try {
+        # データベース接続確認
+        docker exec "takatuki_bus-v2-admin-1" python -c "
+from app import create_app
+from app.models import User
+app = create_app()
+with app.app_context():
+    print(f'Users table exists: {User.query.count()} users found')
+"
+        
+        docker exec "takatuki_bus-v2-admin-1" python create_test_admin.py
+        Write-Success "admin テストユーザーの作成が完了しました (admin_test / admin123)"
+    } catch {
+        Write-Warning "admin テストユーザーの作成でエラーが発生しました: $_"
+    }
+    Start-Sleep -Seconds 3
+    
+    # driver テストユーザーの作成
+    Write-Info "driver テストユーザーを作成中..."
+    try {
+        docker exec "takatuki_bus-v2-driver-1" python create_test_driver.py
+        Write-Success "driver テストユーザーの作成が完了しました (driver_test / driver123)"
+    } catch {
+        Write-Warning "driver テストユーザーの作成でエラーが発生しました: $_"
+    }
+    Start-Sleep -Seconds 3
 }
 
 # 7. 起動確認
@@ -202,7 +244,22 @@ try {
     Write-Warning "システムの起動確認でエラーが発生しました。手動で確認してください。"
 }
 
-# 8. 完了メッセージ
+# 8. LDAP接続確認（studentサービスのみ）
+Write-Info "Step 8: LDAP接続確認"
+try {
+    Write-Info "studentサービスのLDAP接続を確認中..."
+    $ldapResult = docker exec "takatuki_bus-v2-student-1" python check_ldap_connection.py 2>&1
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Success $ldapResult
+    } else {
+        Write-Warning $ldapResult
+    }
+} catch {
+    Write-Warning "LDAP接続確認でエラーが発生しました: $_"
+}
+
+# 9. 完了メッセージ
 Write-Info "==========================================="
 Write-Success "バスシステム開発環境の起動が完了しました！"
 Write-Info "==========================================="
@@ -213,6 +270,9 @@ Write-Info "🛑 停止方法: docker-compose down"
 
 if ($initDatabase) {
     Write-Info "📝 データベースが初期化されました"
+    Write-Info "👤 テストユーザー:"
+    Write-Info "   Admin: admin_test / admin123"
+    Write-Info "   Driver: driver_test / driver123"
 }
 
 Write-Info "==========================================="

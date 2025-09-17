@@ -57,7 +57,7 @@ def create_app():
     return app
 
 def perform_migration(app):
-    """マイグレーションを実行"""
+    """スマートマイグレーションを実行：テーブル構造の変更を検出して自動対応"""
     try:
         # データベース接続テスト
         conn = psycopg2.connect(
@@ -68,38 +68,87 @@ def perform_migration(app):
         )
         cursor = conn.cursor()
         
-        # テーブルの存在確認
-        cursor.execute("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'drivers'
-            );
-        """)
-        table_exists = cursor.fetchone()[0]
+        # 必要なテーブルとその期待される構造を定義
+        expected_tables = {
+            'drivers': {
+                'id': 'integer',
+                'driver_id': 'character varying(20)',
+                'name': 'character varying(100)',
+                'license_number': 'character varying(50)',
+                'phone': 'character varying(20)',
+                'email': 'character varying(120)',
+                'is_active': 'boolean',
+                'created_at': 'timestamp without time zone',
+                'updated_at': 'timestamp without time zone'
+            }
+        }
         
-        if table_exists:
-            # テーブルが既に存在する場合はエラー
-            logging.error("Driver service: Database tables already exist. Migration aborted.")
-            raise Exception("Database tables already exist. Please check if migration is needed.")
-        else:
-            # テーブルが存在しない場合はマイグレーションディレクトリの確認
-            logging.info("Driver service: No existing tables found. Checking migration directory...")
+        migration_needed = False
+        migration_reasons = []
+        
+        # 各テーブルの存在と構造をチェック
+        for table_name, expected_columns in expected_tables.items():
+            # テーブルの存在確認
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = %s
+                );
+            """, (table_name,))
             
+            table_exists = cursor.fetchone()[0]
+            
+            if not table_exists:
+                migration_needed = True
+                migration_reasons.append(f"テーブル '{table_name}' が存在しません")
+                logging.info(f"Driver service: Table '{table_name}' does not exist")
+                continue
+            
+            # テーブルが存在する場合、カラム構造をチェック
+            cursor.execute("""
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM information_schema.columns 
+                WHERE table_schema = 'public' 
+                AND table_name = %s
+                ORDER BY ordinal_position;
+            """, (table_name,))
+            
+            existing_columns = {row[0]: row[1] for row in cursor.fetchall()}
+            
+            # 期待されるカラムが存在するかチェック
+            for expected_col, expected_type in expected_columns.items():
+                if expected_col not in existing_columns:
+                    migration_needed = True
+                    migration_reasons.append(f"テーブル '{table_name}' にカラム '{expected_col}' が存在しません")
+                    logging.info(f"Driver service: Column '{expected_col}' missing in table '{table_name}'")
+                elif not _is_compatible_type(existing_columns[expected_col], expected_type):
+                    migration_needed = True
+                    migration_reasons.append(f"テーブル '{table_name}' のカラム '{expected_col}' の型が期待値と異なります")
+                    logging.info(f"Driver service: Column '{expected_col}' in table '{table_name}' has wrong type")
+        
+        # マイグレーションが必要かどうかの判定
+        if migration_needed:
+            logging.info("Driver service: Migration needed. Reasons:")
+            for reason in migration_reasons:
+                logging.info(f"  - {reason}")
+            
+            # マイグレーション実行
             if os.path.exists('migrations/env.py'):
-                # マイグレーションファイルが存在する場合はマイグレーション実行
-                logging.info("Driver service: Migration files found. Performing migration...")
-                from flask_migrate import upgrade
-                upgrade()
-                logging.info("Driver service: Migration completed successfully.")
+                logging.info("Driver service: Executing Flask-Migrate upgrade...")
+                try:
+                    from flask_migrate import upgrade
+                    upgrade()
+                    logging.info("Driver service: Migration completed successfully via Flask-Migrate")
+                except Exception as e:
+                    logging.warning(f"Driver service: Flask-Migrate failed: {e}. Falling back to direct table creation...")
+                    _create_tables_directly(app)
             else:
-                # マイグレーションファイルが存在しない場合は警告
-                logging.warning("Driver service: No migration files found. Tables need to be created manually or migration needs to be initialized.")
-                # テーブルを直接作成
-                from app.database import db
-                db.create_all()
-                logging.info("Driver service: Tables created directly using SQLAlchemy.")
-            
+                logging.info("Driver service: No migration files found. Creating tables directly...")
+                _create_tables_directly(app)
+        else:
+            logging.info("Driver service: Database schema is up to date. No migration needed.")
+        
         cursor.close()
         conn.close()
         
@@ -108,4 +157,48 @@ def perform_migration(app):
         raise
     except Exception as e:
         logging.error(f"Driver service: Migration error: {e}")
+        raise
+
+def _is_compatible_type(actual_type, expected_type):
+    """データ型の互換性をチェック"""
+    # PostgreSQLの型エイリアスを正規化
+    type_aliases = {
+        'varchar': 'character varying',
+        'int4': 'integer',
+        'int': 'integer',
+        'bool': 'boolean',
+        'timestamp': 'timestamp without time zone',
+        'timestamptz': 'timestamp with time zone'
+    }
+    
+    # 実際の型を正規化
+    normalized_actual = actual_type.lower()
+    for alias, canonical in type_aliases.items():
+        if normalized_actual.startswith(alias):
+            normalized_actual = normalized_actual.replace(alias, canonical)
+            break
+    
+    # 期待される型を正規化
+    normalized_expected = expected_type.lower()
+    for alias, canonical in type_aliases.items():
+        if normalized_expected.startswith(alias):
+            normalized_expected = normalized_expected.replace(alias, canonical)
+            break
+    
+    # 文字列型の長さは無視して比較
+    if 'character varying' in normalized_actual and 'character varying' in normalized_expected:
+        return True
+    
+    return normalized_actual == normalized_expected
+
+def _create_tables_directly(app):
+    """SQLAlchemyを使用してテーブルを直接作成"""
+    try:
+        from app.database import db
+        with app.app_context():
+            db.create_all()
+            logging.info("Driver service: Tables created successfully using SQLAlchemy")
+            
+    except Exception as e:
+        logging.error(f"Driver service: Direct table creation failed: {e}")
         raise

@@ -12,6 +12,7 @@ __pycache__/
 # ログファイル
 logs/
 *.log
+logs/*.log
 
 # データベースの永続化データ
 postgres_data/

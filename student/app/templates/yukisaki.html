@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date and Destination Selection</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+    <style>
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+	        font-size: 140%;
+            margin-top: 30px;
+            text-align: center;
+	        justify-content: center;
+        }
+        h2 {
+            color: #3498db;
+        }
+        .btn-group {
+            margin-top: 15px;
+        }
+        .btn-date,
+	    .btn-confirm,
+        .btn-destination {
+            background-color: #3498db;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .selected-values {
+            margin-top: 30px;
+        }
+        .btn-back,
+        .btn-confirm {
+	        padding: 10px 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <a>Sojo Bus</a>
+</header>
+
+<div class="container">
+    <h2 class="my-4">日付と行き先を選んでください</h2>
+
+    <div class="btn-group">
+        <button class="btn btn-date" data-category="date">{{today}}</button>
+        <button class="btn btn-date" data-category="date">{{nextday}}</button>
+        <!-- Add more date buttons here -->
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-destination" data-category="destination">高槻キャンパス</button>
+        <button class="btn btn-destination" data-category="destination">高槻駅</button>
+        <!-- Add more destination buttons here -->
+    </div>
+
+    <div class="selected-values">
+        <p><strong>日付:</strong> <span id="selected-date"></span></p>
+        <p><strong>行き先:</strong> <span id="selected-destination"></span></p>
+    </div>
+    <div class="container">
+        <div class = "row justify-content-center"> 
+            <form method='post' action="{{ url_for('booking.ud') }}">
+                <input type="hidden" name="selected-date" id="selected-date-hidden">
+                <input type="hidden" name="selected-destination" id="selected-destination-hidden">
+                <button class="btn btn-confirm mr-2" onclick="confirmSelection()">検索</button>
+            </form>
+            <form action="{{ url_for('main.personal') }}">
+	        <button class="btn btn-secondary btn-block" onclick="goBack()">戻る</button>
+            </form>
+        </div>
+    </div>
+</div>
+<footer class="footer">
+    <div id=line></div>
+  </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let selectedDate = null;
+    let selectedDestination = null;
+
+    function updateSelection(category, value) {
+        if (category === 'date') {
+            selectedDate = value;
+            document.getElementById('selected-date').innerText = selectedDate;
+            document.getElementById('selected-date-hidden').value = selectedDate;
+        } else if (category === 'destination') {
+            selectedDestination = value;
+            document.getElementById('selected-destination').innerText = selectedDestination;
+            document.getElementById('selected-destination-hidden').value = selectedDestination;
+        }
+    }
+
+    function goBack() {
+        selectedDate = null;
+        selectedDestination = null;
+        document.getElementById('selected-date').innerText = '';
+        document.getElementById('selected-destination').innerText = '';
+    }
+
+    function confirmSelection() {
+		    if (selectedDate && selectedDestination){
+            // Add logic to handle the confirmation, e.g., form submission
+           // alert(`Confirmed\nSelected Date: ${selectedDate}\nSelected Destination: ${selectedDestination}`);
+        } else {
+
+            alert('日付と行き先を両方選択してください。');
+        }
+    }
+
+    const buttons = document.querySelectorAll('.btn-date, .btn-destination');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const category = button.getAttribute('data-category');
+            const value = button.textContent;
+
+            updateSelection(category, value);
+        });
+    });
+</script>
+
+</body>
+</html>
+

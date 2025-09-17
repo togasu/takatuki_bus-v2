@@ -1,136 +1,64 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app.auth_checker import set_student_auth, set_admin_auth, set_driver_auth
-from app.utils.decorators import safe_route
-from app.utils.error_handlers import ErrorLogger
+from flask import Blueprint, render_template, request, redirect, url_for, make_response
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import requests
-import os
-import logging
+from datetime import datetime
+from ..utils.auth_utils import user_password_exist, add_token_str, check_session
+from ..utils.user_utils import check_user_registration
 
-bp = Blueprint("auth", __name__)
+auth_bp = Blueprint('auth', __name__)
 
-@bp.route("/auth", methods=["GET"])
-@safe_route
-def auth():
-    return render_template("auth.html")
+# Rate limiter should be initialized in the main app
+limiter = None
 
-@bp.route("/login", methods=["POST"])
-@safe_route
+def init_limiter(app):
+    global limiter
+    limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minutes"])
+
+@auth_bp.route('/')
+def top():
+    return render_template('top.html')
+
+@auth_bp.route('/login', methods=['POST'])
 def login():
-    """統一ログインエンドポイント - バックエンドで認証判定"""
+    if limiter:
+        limiter.limit("5 per 10 minute")(lambda: None)()
+    
     username = request.form.get('username')
+    print(f'k_number={username}')
     password = request.form.get('password')
     
-    logging.info(f"Login attempt for username: {username}")
+    API_URL = "http://192.168.100.5:49155"  # TODO: 設定ファイルから読み込み
+    REGIST_API = "http://192.168.100.5:49160"
     
-    if not username or not password:
-        flash("ユーザー名とパスワードを入力してください")
-        return render_template("auth.html")
+    # 学生（k番号）のみ対応
+    if username[0] != 'k':
+        return render_template('top.html', message="学生用システムです。k番号でログインしてください。")
     
-    # 1. 学生認証を試行
-    logging.info("Trying student authentication...")
-    if try_student_auth(username, password):
-        set_student_auth(True)
-        logging.info("Student authentication successful")
-        return redirect("/")
-    
-    # 2. 管理者認証を試行
-    logging.info("Trying admin authentication...")
-    admin_token = try_admin_auth(username, password)
-    if admin_token:
-        logging.info("Admin authentication successful")
-        set_admin_auth(admin_token)
-        return redirect("/admin/")
-    
-    # 3. ドライバー認証を試行
-    logging.info("Trying driver authentication...")
-    driver_token = try_driver_auth(username, password)
-    if driver_token:
-        logging.info("Driver authentication successful")
-        set_driver_auth(driver_token)
-        return redirect("/driver/")
-    
-    # 全ての認証に失敗
-    logging.info("All authentication attempts failed")
-    flash("ログインに失敗しました。ユーザー名またはパスワードが正しくありません。")
-    return render_template("auth.html")
+    # LDAP認証
+    exist, student_id, user_full_name = user_password_exist(username, password)
+    print(f'user_full_name={user_full_name}')
 
-def try_student_auth(username, password):
-    """学生認証を試行"""
-    try:
-        # 学生データベースから認証を確認
-        from app.models.student import Student
+    if exist:
+        # 内部でユーザー登録状況をチェック
+        status_code, message = check_user_registration(student_id)
+        print(f"User registration status: {status_code} - {message}")
         
-        # 学生IDで学生を検索
-        student = Student.query.filter_by(student_id=username).first()
+        if status_code == 410:
+            return render_template('error.html', error_message=message)
+        elif status_code == 405:
+            return render_template('error.html', error_message=message)
         
-        if student and student.check_password(password):
-            # セッションに学生情報を保存
-            session['student_id'] = student.student_id
-            session['student_name'] = student.name
-            return True
+        session_str = add_token_str(username, student_id)
+        print(f"Session token: {session_str}")
         
-        return False
-    except Exception as e:
-        logging.error(f"Student authentication error: {e}")
-        return False
-
-def try_admin_auth(username, password):
-    """管理者認証を試行"""
-    try:
-        admin_host = os.getenv('ADMIN_HOST', 'admin')
-        admin_port = os.getenv('ADMIN_PORT', '5000')
+        if session_str is None:
+            # Redis接続エラー等でセッション作成に失敗した場合
+            return render_template('error.html', error_message="システムエラーが発生しました。しばらく時間をおいてから再度お試しください。")
         
-        auth_data = {
-            'username': username,
-            'password': password
-        }
-        
-        response = requests.post(
-            f'http://{admin_host}:{admin_port}/api/auth/login',
-            json=auth_data,
-            timeout=5
-        )
-        
-        if response.status_code == 200:
-            token_data = response.json()
-            return token_data.get('token')
-        
-        return None
-        
-    except Exception as e:
-        logging.error(f"Admin authentication error: {e}")
-        return None
-
-def try_driver_auth(username, password):
-    """ドライバー認証を試行"""
-    try:
-        driver_host = os.getenv('DRIVER_HOST', 'driver')
-        driver_port = os.getenv('DRIVER_PORT', '5000')
-        
-        auth_data = {
-            'username': username,
-            'password': password
-        }
-        
-        response = requests.post(
-            f'http://{driver_host}:{driver_port}/api/auth/login',
-            json=auth_data,
-            timeout=5
-        )
-        
-        if response.status_code == 200:
-            token_data = response.json()
-            return token_data.get('token')
-        
-        return None
-        
-    except Exception as e:
-        logging.error(f"Driver authentication error: {e}")
-        return None
-
-@bp.route("/logout", methods=["GET", "POST"])
-def logout():
-    """ログアウト処理"""
-    # 全ての認証状態をクリア
-    session.clear()
-    return redirect("/")
+        response = make_response(redirect(url_for('main.personal')))
+        response.set_cookie('token', session_str, max_age=900)
+        response.set_cookie('user_full_name', user_full_name, max_age=900)
+        return response
+    else:
+        return render_template('top.html', message="ログインに失敗しました")

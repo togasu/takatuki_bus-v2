@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/bnum.css')}}">      
+  <title>Sojo Bus</title>
+</head>
+
+<body>
+  <header class="header">
+    <p><a href="{{url_for('main.personal')}}">Sojo Bus</a></p>
+  </header>
+  <main>
+    <div class="container">
+      <table>
+      {% for seat in reservedtf %}
+        <!-- 4x4の四角形を生成 -->
+        <!--予約可能-->
+        {% if seat == '0' %}
+        {% if loop.index == 1 %}
+        <tr>
+          <td>
+            <div class="seat" id="{{ seat_number[loop.index] }}">○<div class="senaka"></div></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden">運転席</div>
+          </td>
+        </tr>
+        {% elif loop.index == 2 %}
+        <tr>
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat">○<div class="senaka"></div></div>
+          </td>
+          <td>
+            <p>補助席<br>↓</p>
+          </td>
+        {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24%}
+        <tr>
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat">○<div class="senaka"></div></div>
+          </td>
+          {% elif loop.index == 3 or loop.index == 6 or loop.index == 10 or loop.index == 14 or loop.index == 18 or loop.index == 22 or loop.index == 25 or loop.index == 26%}
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat">○<div class="senaka"></div></div>
+          </td>
+	  {% elif loop.index == 5 or loop.index == 9 or loop.index == 13 or loop.index == 17 or loop.index == 21 %}
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat auxiliary">○<div class="senaka"></div></div>
+          </td>
+          {% elif loop.index == 4 %}
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat">○<div class="senaka"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="hidden">搭乗口</div>
+          </td>
+
+          {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
+          <td>
+            <div id="{{ seat_number[loop.index] }}" class="seat">○<div class="senaka"></div></div>
+          </td>
+        </tr>
+        {% endif %}
+        <!--誰かが予約している-->
+        {% elif seat == '1' %}
+        {% if loop.index == 1 %}
+        <tr>
+          <td>
+            <div class="reserved">×<div class="senaka"></div></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden">運転席</div>
+          </td>
+        </tr>
+        {% elif loop.index == 2 %}
+        <tr>
+          <td>
+            <div class="reserved">×<div class="senaka"></div></div>
+          </td>
+          <td>
+            <p>補助席<br>↓</p>
+          </td>
+          {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24 %}
+          <tr>
+            <td>
+              <div class="reserved">×<div class="senaka"></div></div>
+            </td>
+          {% elif loop.index == 3 or loop.index == 5 or loop.index == 6 or loop.index == 9 or loop.index == 10 or
+            loop.index == 13 or loop.index == 14 or loop.index == 17 or loop.index == 18 or loop.index == 21 or loop.index == 22 or loop.index == 25 or loop.index == 26 %}
+          <td>
+            <div class="reserved">×<div class="senaka"></div></div>
+          </td>
+          {% elif loop.index == 4 %}
+          <td>
+            <div class="reserved">×<div class="senaka"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="hidden">搭乗口</div>
+          </td>
+          {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
+          <td>
+            <div class="reserved">×<div class="senaka"></div></div>
+          </td>
+        </tr>
+        {% endif %}
+        <!--自分が予約している-->
+        {% else %}
+        {% if loop.index == 1 %}
+        <tr>
+          <td>
+            <div class="reserved me">×<div class="senaka"></div></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden"></div>
+          </td>
+          <td>
+            <div class="hidden">運転席</div>
+          </td>
+        </tr>
+        {% elif loop.index == 2 %}
+        <tr>
+          <td>
+            <div class="reserved me">×<div class="senaka"></div></div>
+          </td>
+          <td>
+            <p>補助席<br>↓</p>
+          </td>
+          {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24 %}
+          <tr>
+            <td>
+              <div class="reserved me">×<div class="senaka"></div></div>
+            </td>
+          {% elif loop.index == 3 or loop.index == 5 or loop.index == 6 or loop.index == 9 or loop.index == 10 or
+            loop.index == 13 or loop.index == 14 or loop.index == 17 or loop.index == 18 or loop.index == 21 or loop.index == 22 or loop.index == 25 or loop.index == 26 %}
+          <td>
+            <div class="reserved me">×<div class="senaka"></div></div>
+          {% elif loop.index == 4 %}
+          <td>
+            <div class="reserved me">×<div class="senaka"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="hidden">搭乗口</div>
+          </td>
+          {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
+          <td>
+            <div class="reserved me">×<div class="senaka"></div></div>
+          </td>
+        </tr>
+        {% endif %}
+        {% endif %}
+      {% endfor %}
+      </table>
+      <div class="btn-group d-flex justify-content-center">
+        <form id="back-form" action="/select" method="get">
+          <button type="submit" class="btn btn-secondary">戻る</button>
+        </form>
+        <form id="reservation-form" action="/choice/{{bus_id}}/reserve" method="post">
+          <input type="hidden" id="selected_seat" name="selected_seat">
+          <button type="submit" class="btn btn-success">予約確定</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div id=line></div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script>
+    let activeButton = null;
+
+    var seats = document.getElementsByClassName('seat');
+    var auxiliarySeats = document.getElementsByClassName('auxiliary');
+
+    // すべての補助席以外の席が予約済みかどうかを確認する関数
+    function areAllSeatsReserved() {
+      for (var i = 0; i < seats.length; i++) {
+        if (!seats[i].classList.contains('auxiliary') && seats[i].textContent.trim() === '○') {
+          return false; // 選択可能な席が見つかった場合、全てが予約済みではない
+        }
+      }
+      return true; // すべての補助席以外の席が予約済み
+    }
+
+// 補助席以外の席にクリックイベントリスナーを追加
+    for (var i = 0; i < seats.length; i++) {
+      seats[i].addEventListener('click', function () {
+    // 補助席がクリックされた場合
+       if (this.classList.contains('auxiliary')) {
+      // 補助席以外の席が全て予約済みかどうかを確認
+      　if (!areAllSeatsReserved()) {
+        alert('補助席は、他のすべての席が予約済みの時のみ選択できます。');
+        return; // 補助席を選択できないようにする
+      }
+    }
+
+    // 席を選択する処理を実行
+    var selectedSeat = document.querySelector('.selected');
+    if (selectedSeat) {
+      selectedSeat.classList.remove('selected');
+    }
+    this.classList.add('selected');
+    document.getElementById('selected_seat').value = this.id;
+  });
+}
+
+window.onpageshow = function (event) {
+  if (event.persisted) {
+    window.location.href = "{{ url_for('main.personal') }}";
+  }
+}
+
+  </script>
+
+</body>
+</html>
+
