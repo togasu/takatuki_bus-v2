@@ -17,6 +17,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default='admin')  # guest, normal, admin
     is_active = db.Column(db.Boolean, default=True)
     last_login = db.Column(db.DateTime)
+    last_logout = db.Column(db.DateTime)  # ログアウト時刻追加
     created_at = db.Column(db.DateTime, default=now_jst)
     updated_at = db.Column(db.DateTime, default=now_jst, onupdate=now_jst)
     
@@ -70,7 +71,8 @@ def get_users():
         "role": u.role,
         "is_active": u.is_active,
         "last_login": u.last_login.isoformat() if u.last_login else None,
-        "created_at": u.created_at.isoformat() if u.created_at else None
+        "created_at": u.created_at.isoformat() if u.created_at else None,
+        "last_logout": u.last_logout.isoformat() if u.last_logout else None,
     } for u in users])
 
 @user_bp.route("", methods=["POST"])

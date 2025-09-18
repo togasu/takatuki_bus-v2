@@ -23,6 +23,10 @@ def create_app():
         app = Flask(__name__)
         logger.info("Flask app instance created")
 
+        # Flask設定
+        app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'admin-secret-key-change-in-production-2024')
+        logger.info("Flask secret key configured")
+
         # ログ設定
         log_dir = "/app/logs"
         os.makedirs(log_dir, exist_ok=True)

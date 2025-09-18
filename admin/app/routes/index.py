@@ -124,39 +124,164 @@ def debug_routes():
     })
 
 @bp.route("/", methods=["GET"])
-def root_redirect():
-    """ルートアクセス時の処理"""
-    # 管理者ログインページにリダイレクト
-    return redirect(url_for('index.login'))
-
-@bp.route("/", methods=["GET"])
-@login_required
 def index():
     """管理者ダッシュボード"""
-    # APIリクエストの場合はJSONレスポンスを返す
-    if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Accept') == 'application/json':
-        return {
-            "service": "Admin",
-            "message": "HTTP route works!"
-        }
+    print(f"Admin index route accessed")
+    print(f"All cookies: {dict(request.cookies)}")
+    print(f"Session data: {dict(session)}")
     
-    # ブラウザからのアクセスの場合は管理画面を表示
-    return render_template("admin_dashboard.html")
+    # Cookieベースのセッションチェック
+    session_token = request.cookies.get('admin_session_token')
+    print(f"Checking session token from cookie: {session_token}")
+    
+    if session_token:
+        session_data = session_manager.validate_session(session_token)
+        print(f"Session validation result: {session_data}")
+        
+        if session_data:
+            from app.models.user import User
+            user = User.query.get(session_data['user_id'])
+            if user and user.is_active:
+                # セッションに情報を設定
+                session['user_id'] = user.id
+                session['username'] = user.username
+                print(f"User authenticated: {user.username}")
+                
+                # APIリクエストの場合はJSONレスポンスを返す
+                if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Accept') == 'application/json':
+                    return {
+                        "service": "Admin",
+                        "message": "HTTP route works!",
+                        "user": user.username
+                    }
+                
+                # ブラウザからのアクセスの場合は管理画面を表示
+                return render_template("admin_dashboard.html", user=user)
+    
+    # 通常のセッションベースの認証もチェック
+    user_id = session.get('user_id')
+    if user_id:
+        from app.models.user import User
+        user = User.query.get(user_id)
+        if user and user.is_active:
+            print(f"User authenticated via session: {user.username}")
+            # APIリクエストの場合はJSONレスポンスを返す
+            if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Accept') == 'application/json':
+                return {
+                    "service": "Admin", 
+                    "message": "HTTP route works!",
+                    "user": user.username
+                }
+            
+            # ブラウザからのアクセスの場合は管理画面を表示
+            return render_template("admin_dashboard.html", user=user)
+    
+    # 認証されていない場合はログインページにリダイレクト
+    print("User not authenticated, redirecting to login")
+    return redirect(url_for('index.login'))
 
 @bp.route("/logout", methods=["GET", "POST"])
 def logout():
     """ログアウト処理"""
     from app.utils.auth_utils import logout_user, create_logout_response
+    from app.models.user import User
     
-    # ユーティリティ関数でログアウト処理
-    cookie_token = logout_user()
+    # 現在のユーザー情報を取得（ログ記録用）
+    current_user = None
+    username = "不明"
+    user_id = session.get('user_id')
     
-    # セッションマネージャーからもトークンを削除
-    if cookie_token:
-        session_manager.delete_session(cookie_token)
+    try:
+        if user_id:
+            current_user = User.query.get(user_id)
+            if current_user:
+                username = current_user.username
+    except Exception as e:
+        print(f"Error getting current user: {e}")
     
-    # セッションをクリア
+    # Cookieからのトークンも取得
+    session_token = request.cookies.get('admin_session_token')
+    
+    # ログアウト処理の詳細ログ
+    print(f"Logout process started for user_id: {user_id}")
+    print(f"Session token from cookie: {session_token}")
+    
+    # 1. Redisからセッショントークンを削除
+    tokens_deleted = []
+    if session_token:
+        try:
+            session_manager.delete_session(session_token)
+            tokens_deleted.append(session_token)
+            print(f"Redis session token deleted: {session_token}")
+        except Exception as e:
+            print(f"Error deleting Redis session: {e}")
+    
+    # 2. ユーティリティ関数でログアウト処理（追加のトークンがあれば削除）
+    try:
+        cookie_token = logout_user()
+        if cookie_token and cookie_token not in tokens_deleted:
+            session_manager.delete_session(cookie_token)
+            tokens_deleted.append(cookie_token)
+            print(f"Additional token deleted: {cookie_token}")
+    except Exception as e:
+        print(f"Error in logout_user utility: {e}")
+    
+    # 3. ユーザーのログアウト時刻を記録
+    if current_user:
+        try:
+            current_user.last_logout = now_jst()
+            db.session.commit()
+            print(f"Logout time recorded for user: {current_user.username}")
+        except Exception as e:
+            print(f"Error recording logout time: {e}")
+            db.session.rollback()
+    
+    # 4. Flaskセッションをクリア
     session.clear()
+    print("Flask session cleared")
     
-    # Cookieを削除してリダイレクト
-    return create_logout_response("https://localhost/")
+    # 5. GETリクエストの場合は専用ログアウトページを表示
+    if request.method == 'GET':
+        # ログアウト専用ページを表示
+        try:
+            response = make_response(render_template(
+                "logout.html", 
+                logout_time=now_jst().strftime('%Y年%m月%d日 %H:%M:%S'),
+                tokens_deleted_count=len(tokens_deleted),
+                username=username
+            ))
+            
+            # Cookieを削除
+            response.set_cookie(
+                'admin_session_token',
+                '',
+                expires=0,
+                httponly=True,
+                secure=True,
+                samesite='Strict'
+            )
+            
+            return response
+        except Exception as e:
+            print(f"Error rendering logout template: {e}")
+            # テンプレートエラーの場合は簡単なメッセージを返す
+            return f"""
+            <html>
+            <head><title>ログアウト完了</title></head>
+            <body>
+                <h1>{username}さん、お疲れさまでした</h1>
+                <p>正常にログアウトしました。</p>
+                <p>ログアウト時刻: {now_jst().strftime('%Y年%m月%d日 %H:%M:%S')}</p>
+                <a href="{url_for('index.login')}">再ログイン</a>
+            </body>
+            </html>
+            """, 200
+    
+    # 6. POSTリクエストの場合は従来通りリダイレクト
+    else:
+        try:
+            response = create_logout_response("https://localhost/")
+            return response
+        except Exception as e:
+            print(f"Error creating logout response: {e}")
+            return redirect(url_for('index.login'))

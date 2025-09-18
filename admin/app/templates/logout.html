@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログアウト - 管理システム</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logout-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .logout-icon {
+            font-size: 64px;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .logout-message {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .logout-details {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .logout-details h3 {
+            margin-top: 0;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .logout-details ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #6c757d;
+        }
+        
+        .logout-details li {
+            margin-bottom: 5px;
+        }
+        
+        .success-badge {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            color: #adb5bd;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 480px) {
+            .logout-container {
+                padding: 30px 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logout-container">
+        <div class="logout-icon">🌟</div>
+        
+        <h1>お疲れさまでした</h1>
+        
+        <div class="success-badge">
+            正常にログアウトしました
+        </div>
+        
+        <p class="logout-message">
+            {{ username }}さん、今日もお疲れさまでした。<br>
+            管理システムからログアウトしました。<br>
+            セキュリティのため、セッション情報はすべて削除されました。
+        </p>
+        
+        <div class="logout-details">
+            <h3>実行された処理:</h3>
+            <ul>
+                <li>Redisセッショントークンの削除</li>
+                <li>Cookieの無効化</li>
+                <li>サーバーセッションのクリア</li>
+                <li>ログアウト時刻の記録</li>
+            </ul>
+        </div>
+        
+        <div class="button-group">
+            <a href="{{ url_for('index.login') }}" class="btn btn-primary">
+                再ログイン
+            </a>
+            <a href="https://localhost/" class="btn btn-secondary">
+                トップページへ
+            </a>
+        </div>
+        
+        <div class="timestamp">
+            ログアウト時刻: {{ logout_time }}
+        </div>
+    </div>
+</body>
+</html>

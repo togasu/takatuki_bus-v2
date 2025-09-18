@@ -73,13 +73,68 @@ def auth_check():
 @bp.route("/auth/logout", methods=["POST"])
 @safe_route
 def auth_logout():
-    """ログアウト処理"""
+    """ログアウト処理（API版）"""
+    from app.models.user import User  # 遅延インポート
+    
     auth_header = request.headers.get('X-Service-Auth')
+    session_token = request.headers.get('X-Session-Token')  # 追加のトークンヘッダー
     
+    # リクエストボディからもトークンを受け取る
+    data = request.get_json() or {}
+    body_token = data.get('session_token')
+    
+    # 削除対象のトークンリスト
+    tokens_to_delete = []
+    user_id = None
+    
+    # ヘッダーからのトークン
     if auth_header:
-        session_manager.delete_session(auth_header)
+        tokens_to_delete.append(auth_header)
+        session_data = session_manager.validate_session(auth_header)
+        if session_data:
+            user_id = session_data.get('user_id')
     
-    return jsonify({"message": "ログアウトしました"}), 200
+    # 追加のトークンヘッダー
+    if session_token and session_token not in tokens_to_delete:
+        tokens_to_delete.append(session_token)
+        if not user_id:
+            session_data = session_manager.validate_session(session_token)
+            if session_data:
+                user_id = session_data.get('user_id')
+    
+    # ボディからのトークン
+    if body_token and body_token not in tokens_to_delete:
+        tokens_to_delete.append(body_token)
+        if not user_id:
+            session_data = session_manager.validate_session(body_token)
+            if session_data:
+                user_id = session_data.get('user_id')
+    
+    # ユーザーのログアウト時刻を記録
+    if user_id:
+        try:
+            user = User.query.get(user_id)
+            if user:
+                user.last_logout = now_jst()
+                db.session.commit()
+        except Exception as e:
+            print(f"Error updating last_logout: {e}")
+    
+    # すべてのトークンを削除
+    deleted_count = 0
+    for token in tokens_to_delete:
+        try:
+            session_manager.delete_session(token)
+            deleted_count += 1
+            print(f"Deleted session token: {token}")
+        except Exception as e:
+            print(f"Error deleting token {token}: {e}")
+    
+    return jsonify({
+        "message": "ログアウトしました",
+        "tokens_deleted": deleted_count,
+        "logout_time": now_jst().isoformat()
+    }), 200
 
 @bp.route("/users", methods=["GET"])
 @safe_route
