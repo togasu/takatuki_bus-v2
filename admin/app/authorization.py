@@ -3,7 +3,7 @@
 """
 
 from functools import wraps
-from flask import request, jsonify, g
+from flask import request, jsonify, redirect, url_for, g
 from app.auth import get_current_user
 
 def require_permission(resource, action):
@@ -17,15 +17,61 @@ def require_permission(resource, action):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            import logging
+            
+            logger = logging.getLogger(__name__)
+            logger.info(f"=== Authorization check for {request.path} ===")
+            logger.info(f"Required permission: {resource}:{action}")
+            logger.info(f"Request method: {request.method}")
+            logger.info(f"Request headers: {dict(request.headers)}")
+            
             # 現在のユーザーを取得
             user = get_current_user()
+            logger.info(f"Current user: {user.username if user else None}")
+            
             if not user:
-                return jsonify({"error": "Authentication required"}), 401
+                # APIリクエストまたはAJAXリクエストの判定を改善
+                is_api_request = (
+                    'application/json' in request.headers.get('Content-Type', '') or
+                    'application/json' in request.headers.get('Accept', '') or
+                    request.path.startswith('/api/') or
+                    request.path.startswith('/student_management/') or  # 学生管理APIも含める
+                    request.headers.get('X-Requested-With') == 'XMLHttpRequest'  # AJAX判定
+                )
+                
+                logger.info(f"Is API request: {is_api_request}")
+                logger.warning("No user found - authentication required")
+                
+                if is_api_request:
+                    logger.info("Returning JSON error for API request")
+                    return jsonify({"error": "Authentication required"}), 401
+                # HTMLページのリクエストの場合はログインページにリダイレクト
+                logger.info("Redirecting to login page for web request")
+                return redirect(url_for('index.login'))
             
             # 権限チェック
-            if not has_permission(user, resource, action):
-                return jsonify({"error": "Insufficient permissions"}), 403
+            has_perm = has_permission(user, resource, action)
+            logger.info(f"User role: {user.role}")
+            logger.info(f"Permission check result: {has_perm}")
             
+            if not has_perm:
+                # APIリクエストまたはAJAXリクエストの判定を改善
+                is_api_request = (
+                    'application/json' in request.headers.get('Content-Type', '') or
+                    'application/json' in request.headers.get('Accept', '') or
+                    request.path.startswith('/api/') or
+                    request.path.startswith('/student_management/') or  # 学生管理APIも含める
+                    request.headers.get('X-Requested-With') == 'XMLHttpRequest'  # AJAX判定
+                )
+                
+                logger.warning(f"Permission denied for user {user.username}")
+                
+                if is_api_request:
+                    return jsonify({"error": "Insufficient permissions"}), 403
+                # HTMLページのリクエストの場合はログインページにリダイレクト
+                return redirect(url_for('index.login'))
+            
+            logger.info("Authorization successful")
             return f(*args, **kwargs)
         return decorated_function
     return decorator

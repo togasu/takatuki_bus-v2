@@ -40,12 +40,25 @@ def auth_login():
         user.last_login = now_jst()
         db.session.commit()
         
-        return jsonify({
+        # レスポンスを作成
+        response_data = {
             "token": session_token,
             "user_id": user.id,
             "username": user.username,
             "role": user.role
-        }), 200
+        }
+        
+        # Cookieにもセッショントークンをセット
+        response = jsonify(response_data)
+        response.set_cookie(
+            'admin_session_token', 
+            session_token, 
+            httponly=True, 
+            secure=False,  # HTTPSでない場合はFalse
+            samesite='Lax'
+        )
+        
+        return response, 200
     
     return create_error_response("認証に失敗しました", 401, "Authentication Failed")
 

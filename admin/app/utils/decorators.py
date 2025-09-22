@@ -191,3 +191,38 @@ def safe_api_route(required_fields=None, require_auth=False, max_requests=None):
         
         return decorated_function
     return decorator
+
+def admin_required(f):
+    """管理者権限が必要なルートに使用するデコレータ"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            # 簡単な認証チェック（実際の認証システムに応じて調整）
+            # 現在はセッションベースの認証を想定
+            from flask import session
+            
+            # セッションチェック
+            if 'user_id' not in session:
+                from flask import redirect, url_for
+                return redirect(url_for('index.login'))
+            
+            # 管理者権限チェック（必要に応じて追加）
+            user_role = session.get('role', '')
+            if user_role not in ['admin', 'super_admin']:
+                return create_error_response(
+                    "管理者権限が必要です",
+                    403,
+                    "Admin Access Required"
+                )
+            
+            return f(*args, **kwargs)
+            
+        except Exception as e:
+            ErrorLogger.log_error(e)
+            return create_error_response(
+                "認証処理でエラーが発生しました",
+                500,
+                "Authentication Error"
+            )
+    
+    return decorated_function

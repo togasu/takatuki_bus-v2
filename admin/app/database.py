@@ -10,7 +10,7 @@ def init_db(app):
         f"postgresql://{app.config['POSTGRES_USER']}:"
         f"{app.config['POSTGRES_PASSWORD']}@"
         f"{app.config['POSTGRES_HOST']}/"
-        f"{app.config['POSTGRES_DB']}"
+        f"{app.config['POSTGRES_DB']}?client_encoding=utf8"
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     

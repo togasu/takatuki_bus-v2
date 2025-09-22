@@ -10,3 +10,5 @@ redis
 uwsgi
 requests
 bcrypt
+numpy
+pandas

@@ -78,25 +78,33 @@ def get_current_user():
     """
     from app.utils.auth_utils import SessionManager
     from flask import session, g
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"=== get_current_user called for path: {request.path} ===")
     
     # まずgオブジェクトから取得を試行
     if hasattr(g, 'current_user') and g.current_user:
+        logger.info("User found in g object")
         return g.current_user
     
     # セッションからユーザーIDを取得
     user_id = session.get('user_id')
+    logger.info(f"Session user_id: {user_id}")
     if user_id:
         try:
             from app.models.user import User
             user = User.query.get(user_id)
             if user and user.is_active:
+                logger.info(f"User found in session: {user.username}")
                 g.current_user = user
                 return user
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Error getting user from session: {e}")
     
     # リクエストヘッダーからセッショントークンを取得（API用）
     auth_header = request.headers.get('X-Service-Auth')
+    logger.info(f"X-Service-Auth header: {auth_header}")
     
     if auth_header:
         # セッションマネージャーでトークンを検証
@@ -111,29 +119,39 @@ def get_current_user():
                     from app.models.user import User
                     user = User.query.get(user_id)
                     if user and user.is_active:
+                        logger.info(f"User found via X-Service-Auth: {user.username}")
                         g.current_user = user
                         return user
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error(f"Error getting user from X-Service-Auth: {e}")
     
     # Cookieからセッショントークンを取得
     session_token = request.cookies.get('admin_session_token')
+    logger.info(f"admin_session_token cookie: {session_token[:20] if session_token else None}...")
     if session_token:
         session_manager = SessionManager()
         session_data = session_manager.validate_session(session_token)
+        logger.info(f"Session validation result: {session_data is not None}")
         
         if session_data:
             user_id = session_data.get('user_id')
+            logger.info(f"User ID from session token: {user_id}")
             if user_id:
                 try:
                     from app.models.user import User
                     user = User.query.get(user_id)
                     if user and user.is_active:
+                        logger.info(f"User found via session token: {user.username}")
                         g.current_user = user
                         # セッションにもユーザー情報を保存
                         session['user_id'] = user.id
                         return user
-                except Exception:
-                    pass
+                    else:
+                        logger.warning(f"User not found or inactive: user_id={user_id}")
+                except Exception as e:
+                    logger.error(f"Error getting user from session token: {e}")
+        else:
+            logger.warning("Session token validation failed")
     
+    logger.warning("No valid user found")
     return None

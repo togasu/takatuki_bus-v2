@@ -6,13 +6,13 @@ import re
 
 bp = Blueprint('admin_create', __name__)
 
-@bp.route('/admin/create', methods=['GET'])
+@bp.route('/create', methods=['GET'])
 @require_permission("admin_user", "create")
 def admin_create_form():
     """管理者アカウント作成フォームを表示"""
     return render_template('admin_create.html')
 
-@bp.route('/admin/create', methods=['POST'])
+@bp.route('/create', methods=['POST'])
 @require_permission("admin_user", "create")
 def admin_create_submit():
     """管理者アカウント作成処理（フォーム用）"""
@@ -92,7 +92,7 @@ def admin_create_submit():
                              role=role,
                              is_active=is_active)
 
-@bp.route('/api/admin/create', methods=['POST'])
+@bp.route('/api/create', methods=['POST'])
 @require_permission("admin_user", "create")
 def api_admin_create():
     """管理者アカウント作成API"""

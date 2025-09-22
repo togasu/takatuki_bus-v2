@@ -1,0 +1,1231 @@
+{% extends "base.html" %}
+
+{% block title %}学生管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">学生管理</h2>
+            
+            <!-- 検索セクション -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">学生検索</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">学籍番号</label>
+                                <input type="text" class="form-control" id="student_id" placeholder="例: 12345678">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">ユーザー名（学籍番号）</label>
+                                <input type="text" class="form-control" id="username" placeholder="例: 12345678">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="searchStudent()">検索</button>
+                    <button type="button" class="btn btn-secondary ms-2" onclick="clearSearch()">クリア</button>
+                </div>
+            </div>
+
+            <!-- 検索結果セクション -->
+            <div id="search_results" class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">学生一覧</h5>
+                    <!-- デバッグボタン追加 -->
+                    <div class="float-end">
+                        <button type="button" class="btn btn-sm btn-outline-info" onclick="debugAPI()">API直接テスト</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="debugAuth()">認証デバッグ</button>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="testEndpoint()">エンドポイントテスト</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="loadAllStudents(1)">手動再読み込み</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="students_table_container">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">読み込み中...</span>
+                            </div>
+                            <p class="mt-2">学生一覧を読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ページネーション -->
+                    <nav aria-label="学生一覧ページネーション" id="pagination_nav" style="display: none;">
+                        <ul class="pagination justify-content-center" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- 学生詳細情報セクション -->
+            <div id="student_detail" class="card mt-4" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">学生詳細情報</h5>
+                </div>
+                <div class="card-body">
+                    <div id="student_info"></div>
+                    
+                    <!-- アクションボタン -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-info" onclick="showReservations()">予約情報表示</button>
+                        <button type="button" class="btn btn-warning" onclick="clearPenalty()" id="penalty_clear_btn" style="display: none;">ペナルティ解除</button>
+                        <button type="button" class="btn btn-outline-warning" onclick="showApplyPenaltyModal()" id="penalty_apply_btn" style="display: none;">ペナルティ付与</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmDeleteStudent()">アカウント削除</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 予約情報セクション -->
+            <div id="reservations_section" class="card mt-4" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">予約情報</h5>
+                </div>
+                <div class="card-body">
+                    <div id="reservations_list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 削除確認モーダル -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">アカウント削除確認</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>本当にこの学生アカウントを削除しますか？</p>
+                <p><strong>学籍番号: </strong><span id="delete_student_id"></span></p>
+                <p class="text-danger"><strong>この操作は取り消せません。</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-danger" onclick="deleteStudent()">削除実行</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ペナルティ付与モーダル -->
+<div class="modal fade" id="applyPenaltyModal" tabindex="-1" aria-labelledby="applyPenaltyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="applyPenaltyModalLabel">ペナルティ付与</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>この学生にペナルティを付与しますか？</p>
+                <p><strong>学籍番号: </strong><span id="penalty_student_id"></span></p>
+                
+                <div class="mb-3">
+                    <label for="penalty_reason" class="form-label">ペナルティの理由</label>
+                    <select class="form-select" id="penalty_reason_select" onchange="handleReasonChange()">
+                        <option value="no_show">未乗車（無断欠席）</option>
+                        <option value="late_cancellation">直前キャンセル</option>
+                        <option value="multiple_violations">複数回の違反</option>
+                        <option value="misconduct">車内での不適切な行為</option>
+                        <option value="system_abuse">システムの不正利用</option>
+                        <option value="custom">その他（手動入力）</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3" id="custom_reason_div" style="display: none;">
+                    <label for="penalty_reason_custom" class="form-label">詳細な理由</label>
+                    <textarea class="form-control" id="penalty_reason_custom" rows="3" placeholder="ペナルティの詳細な理由を入力してください"></textarea>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <small>
+                        <strong>注意:</strong> ペナルティが付与されると、学生は一定期間バスの予約ができなくなります。
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-warning" onclick="applyPenalty()">ペナルティ付与</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStudent = null;
+let currentPage = 1;
+let totalPages = 1;
+
+// ページ読み込み時に全学生を表示
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded, starting to load students...');
+    loadAllStudents(1);
+});
+
+// また、ウィンドウロード時にも実行（念のため）
+window.addEventListener('load', function() {
+    console.log('Window fully loaded');
+    // DOMContentLoadedで実行されていない場合のフォールバック
+    setTimeout(function() {
+        const container = document.getElementById('students_table_container');
+        if (container && container.innerHTML.includes('読み込み中')) {
+            console.log('Still loading, retry...');
+            loadAllStudents(1);
+        }
+    }, 1000);
+});
+
+function loadAllStudents(page = 1) {
+    console.log(`Loading students for page ${page}...`);
+    
+    fetch(`/admin/student_management/all_students?page=${page}&per_page=20`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Fetch response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        console.log('Response URL:', response.url);
+        
+        // 認証失敗の場合
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        
+        // 権限不足の場合
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        
+        // リダイレクトされた場合（認証エラー）
+        if (response.redirected || response.url.includes('/login')) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        
+        // レスポンスのテキストを先に読み取って確認
+        return response.text().then(text => {
+            console.log('Raw response text:', text.substring(0, 200) + '...');
+            
+            // HTMLが返された場合（ログインページなど）
+            if (text.trim().startsWith('<!doctype html>') || text.trim().startsWith('<html')) {
+                console.error('HTML response detected, likely authentication error');
+                throw new Error('認証エラー: セッションが切れている可能性があります。');
+            }
+            
+            // JSONとしてパースを試行
+            try {
+                const data = JSON.parse(text);
+                return { success: response.ok, data: data, rawText: text, status: response.status };
+            } catch (e) {
+                console.error('JSON Parse Error:', e);
+                console.error('Response was not valid JSON:', text);
+                throw new Error(`JSONパースエラー: 無効なレスポンス形式です。`);
+            }
+        });
+    })
+    .then(result => {
+        console.log('Parsed API Response:', result.data);
+        if (result.success && result.data.success) {
+            displayStudentsTable(result.data.students, result.data.pagination);
+            currentPage = result.data.pagination.page;
+            totalPages = result.data.pagination.pages;
+            updatePagination(result.data.pagination);
+        } else {
+            console.error('API Error:', result.data.message);
+            showAlert(result.data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+        const container = document.getElementById('students_table_container');
+        
+        // 認証エラーまたは権限エラーの場合は特別な処理
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <h6>🔒 認証が必要です</h6>
+                    <p>${error.message}</p>
+                    <div class="mt-3">
+                        <button class="btn btn-primary me-2" onclick="debugAuth()">認証状態を確認</button>
+                        <button class="btn btn-outline-primary me-2" onclick="window.location.href='/login'">ログインページへ</button>
+                        <button class="btn btn-outline-secondary" onclick="window.location.reload()">ページをリロード</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>エラーが発生しました</h6>
+                    <p>学生一覧の取得中にエラーが発生しました: ${error.message}</p>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-info me-2" onclick="debugAuth()">認証デバッグ</button>
+                        <button class="btn btn-sm btn-outline-danger me-2" onclick="loadAllStudents(1)">再試行</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="window.location.reload()">ページをリロード</button>
+                    </div>
+                </div>
+            `;
+        }
+        showAlert('学生一覧の取得中にエラーが発生しました。', 'danger');
+    });
+}
+
+function displayStudentsTable(students, pagination) {
+    const container = document.getElementById('students_table_container');
+    
+    if (students.length === 0) {
+        container.innerHTML = '<p class="text-muted">学生が登録されていません。</p>';
+        return;
+    }
+    
+    let html = `
+        <div class="mb-3">
+            <small class="text-muted">
+                ${pagination.total}件中 ${(pagination.page - 1) * pagination.per_page + 1} - ${Math.min(pagination.page * pagination.per_page, pagination.total)}件を表示
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>学籍番号</th>
+                        <th>登録日時</th>
+                        <th>ペナルティ状況</th>
+                        <th>現在の予約数</th>
+                        <th>未乗車回数</th>
+                        <th>アクション</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    students.forEach(student => {
+        const penaltyBadge = student.penalty.has_penalty ? 
+            `<span class="badge bg-danger">ペナルティあり (${student.penalty.penalty_count}回)</span>` : 
+            '<span class="badge bg-success">なし</span>';
+        
+        html += `
+            <tr>
+                <td><strong>${student.student_id}</strong></td>
+                <td>${formatDateTime(student.regist_time)}</td>
+                <td>${penaltyBadge}</td>
+                <td>${student.current_reservations_count}件</td>
+                <td>${student.no_show_count}回</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showStudentDetail('${student.student_id}')" title="詳細表示">
+                            詳細
+                        </button>
+                        ${student.penalty.has_penalty ? 
+                            `<button class="btn btn-sm btn-outline-success" onclick="quickClearPenalty('${student.student_id}')" title="ペナルティ解除">
+                                解除
+                            </button>` :
+                            `<button class="btn btn-sm btn-outline-warning" onclick="quickApplyPenalty('${student.student_id}')" title="ペナルティ付与">
+                                付与
+                            </button>`
+                        }
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function updatePagination(pagination) {
+    const nav = document.getElementById('pagination_nav');
+    const paginationUl = document.getElementById('pagination');
+    
+    if (pagination.pages <= 1) {
+        nav.style.display = 'none';
+        return;
+    }
+    
+    nav.style.display = 'block';
+    let html = '';
+    
+    // 前のページ
+    if (pagination.has_prev) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAllStudents(${pagination.page - 1})">前</a></li>`;
+    } else {
+        html += '<li class="page-item disabled"><span class="page-link">前</span></li>';
+    }
+    
+    // ページ番号
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.pages, pagination.page + 2);
+    
+    if (startPage > 1) {
+        html += '<li class="page-item"><a class="page-link" href="#" onclick="loadAllStudents(1)">1</a></li>';
+        if (startPage > 2) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === pagination.page) {
+            html += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+        } else {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAllStudents(${i})">${i}</a></li>`;
+        }
+    }
+    
+    if (endPage < pagination.pages) {
+        if (endPage < pagination.pages - 1) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAllStudents(${pagination.pages})">${pagination.pages}</a></li>`;
+    }
+    
+    // 次のページ
+    if (pagination.has_next) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAllStudents(${pagination.page + 1})">次</a></li>`;
+    } else {
+        html += '<li class="page-item disabled"><span class="page-link">次</span></li>';
+    }
+    
+    paginationUl.innerHTML = html;
+}
+
+function showStudentDetail(studentId) {
+    // 特定の学生の詳細情報を検索
+    const data = { student_id: studentId };
+    
+    fetch('/admin/student_management/search', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            displayStudentInfo(data.student);
+            currentStudent = data.student;
+            document.getElementById('student_detail').style.display = 'block';
+            // 詳細情報までスクロール
+            document.getElementById('student_detail').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('学生詳細の取得中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function searchStudent() {
+    const studentId = document.getElementById('student_id').value.trim();
+    const username = document.getElementById('username').value.trim();
+    
+    if (!studentId && !username) {
+        showAlert('学籍番号またはユーザー名を入力してください。', 'warning');
+        return;
+    }
+    
+    const data = {};
+    if (studentId) data.student_id = studentId;
+    else if (username) data.username = username;
+    
+    fetch('/admin/student_management/search', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // 検索結果として1件だけ表示
+            displaySearchResult(data.student);
+            currentStudent = data.student;
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('検索中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function displaySearchResult(student) {
+    // 検索結果として単一の学生を表示
+    const container = document.getElementById('students_table_container');
+    
+    const penaltyBadge = student.penalty.has_penalty ? 
+        `<span class="badge bg-danger">ペナルティあり (${student.penalty.penalty_count}回)</span>` : 
+        '<span class="badge bg-success">なし</span>';
+    
+    let html = `
+        <div class="alert alert-info">
+            <strong>検索結果:</strong> 1件の学生が見つかりました
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>学籍番号</th>
+                        <th>登録日時</th>
+                        <th>ペナルティ状況</th>
+                        <th>現在の予約数</th>
+                        <th>未乗車回数</th>
+                        <th>アクション</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-warning">
+                        <td><strong>${student.student_id}</strong></td>
+                        <td>${formatDateTime(student.regist_time)}</td>
+                        <td>${penaltyBadge}</td>
+                        <td>${student.current_reservations.length}件</td>
+                        <td>${student.no_show_count}回</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="showStudentDetailFromSearch()">
+                                詳細表示
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // ページネーション隠す
+    document.getElementById('pagination_nav').style.display = 'none';
+}
+
+function showStudentDetailFromSearch() {
+    if (currentStudent) {
+        displayStudentInfo(currentStudent);
+        document.getElementById('student_detail').style.display = 'block';
+        document.getElementById('student_detail').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function displayStudentInfo(student) {
+    const infoDiv = document.getElementById('student_info');
+    const penaltyInfo = student.penalty;
+    
+    let penaltyDisplay = '';
+    if (penaltyInfo.has_penalty) {
+        penaltyDisplay = `
+            <span class="badge bg-danger">ペナルティあり (${penaltyInfo.penalty_count}回)</span>
+            <small class="text-muted ms-2">ペナルティ日時: ${formatDateTime(penaltyInfo.penalty_time)}</small>
+        `;
+        // ペナルティありの場合：解除ボタンを表示、付与ボタンを非表示
+        document.getElementById('penalty_clear_btn').style.display = 'inline-block';
+        document.getElementById('penalty_apply_btn').style.display = 'none';
+    } else {
+        penaltyDisplay = `
+            <span class="badge bg-success">ペナルティなし</span>
+            <small class="text-muted ms-2">未乗車回数: ${student.no_show_count}回</small>
+        `;
+        // ペナルティなしの場合：付与ボタンを表示、解除ボタンを非表示
+        document.getElementById('penalty_clear_btn').style.display = 'none';
+        document.getElementById('penalty_apply_btn').style.display = 'inline-block';
+    }
+    
+    const currentReservationsCount = student.current_reservations ? student.current_reservations.length : (student.current_reservations_count || 0);
+    
+    infoDiv.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>学籍番号:</strong> ${student.student_id}</p>
+                <p><strong>大学IDM:</strong> ${student.idm_univ}</p>
+                <p><strong>バスIDM:</strong> ${student.idm_bus}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>登録日時:</strong> ${formatDateTime(student.regist_time)}</p>
+                <p><strong>ペナルティ状況:</strong> ${penaltyDisplay}</p>
+                <p><strong>現在の予約数:</strong> ${currentReservationsCount}件</p>
+            </div>
+        </div>
+    `;
+}
+
+function showReservations() {
+    if (!currentStudent) return;
+    
+    fetch(`/admin/student_management/reservations/${currentStudent.student_id}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            displayReservations(data.reservations);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('予約情報の取得中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function displayReservations(reservations) {
+    const listDiv = document.getElementById('reservations_list');
+    
+    if (reservations.length === 0) {
+        listDiv.innerHTML = '<p class="text-muted">予約情報がありません。</p>';
+    } else {
+        let html = '<div class="table-responsive"><table class="table table-striped">';
+        html += `
+            <thead>
+                <tr>
+                    <th>出発日時</th>
+                    <th>バスID</th>
+                    <th>方向</th>
+                    <th>座席番号</th>
+                    <th>承認状況</th>
+                    <th>予約日時</th>
+                    <th>ステータス</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        reservations.forEach(reservation => {
+            const statusBadge = reservation.is_past ? 
+                '<span class="badge bg-secondary">過去</span>' : 
+                '<span class="badge bg-primary">未来</span>';
+            const approvedBadge = reservation.approved ? 
+                '<span class="badge bg-success">承認済み</span>' : 
+                '<span class="badge bg-warning">未承認</span>';
+            
+            html += `
+                <tr>
+                    <td>${formatDateTime(reservation.bus_departure_time)}</td>
+                    <td>${reservation.bus_id}</td>
+                    <td>${reservation.ud}</td>
+                    <td>${reservation.seat_number}</td>
+                    <td>${approvedBadge}</td>
+                    <td>${formatDateTime(reservation.reserved_time)}</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+        listDiv.innerHTML = html;
+    }
+    
+    document.getElementById('reservations_section').style.display = 'block';
+}
+
+function clearPenalty() {
+    if (!currentStudent) return;
+    
+    if (!confirm('本当にペナルティを解除しますか？')) return;
+    
+    fetch('/admin/student_management/clear_penalty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({student_id: currentStudent.student_id}),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('ペナルティを解除しました。', 'success');
+            // 学生詳細を再読み込み
+            showStudentDetail(currentStudent.student_id);
+            // 一覧も更新
+            if (document.getElementById('student_id').value.trim() || document.getElementById('username').value.trim()) {
+                searchStudent();
+            } else {
+                loadAllStudents(currentPage);
+            }
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('ペナルティ解除中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function confirmDeleteStudent() {
+    if (!currentStudent) return;
+    
+    document.getElementById('delete_student_id').textContent = currentStudent.student_id;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+function deleteStudent() {
+    if (!currentStudent) return;
+    
+    fetch('/admin/student_management/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({student_id: currentStudent.student_id}),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('学生アカウントを削除しました。', 'success');
+            clearSearch();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            modal.hide();
+            // 一覧を更新
+            loadAllStudents(currentPage);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('削除中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function showApplyPenaltyModal() {
+    if (!currentStudent) return;
+    
+    document.getElementById('penalty_student_id').textContent = currentStudent.student_id;
+    
+    // フォームをリセット
+    document.getElementById('penalty_reason_select').value = 'no_show';
+    document.getElementById('penalty_reason_custom').value = '';
+    document.getElementById('custom_reason_div').style.display = 'none';
+    
+    const modal = new bootstrap.Modal(document.getElementById('applyPenaltyModal'));
+    modal.show();
+}
+
+function handleReasonChange() {
+    const select = document.getElementById('penalty_reason_select');
+    const customDiv = document.getElementById('custom_reason_div');
+    
+    if (select.value === 'custom') {
+        customDiv.style.display = 'block';
+    } else {
+        customDiv.style.display = 'none';
+    }
+}
+
+function applyPenalty() {
+    if (!currentStudent) return;
+    
+    const reasonSelect = document.getElementById('penalty_reason_select');
+    const customReason = document.getElementById('penalty_reason_custom');
+    
+    let reason = '';
+    const reasonMap = {
+        'no_show': '未乗車（無断欠席）',
+        'late_cancellation': '直前キャンセル',
+        'multiple_violations': '複数回の違反',
+        'misconduct': '車内での不適切な行為',
+        'system_abuse': 'システムの不正利用'
+    };
+    
+    if (reasonSelect.value === 'custom') {
+        reason = customReason.value.trim();
+        if (!reason) {
+            showAlert('カスタム理由を入力してください。', 'warning');
+            return;
+        }
+    } else {
+        reason = reasonMap[reasonSelect.value] || reasonSelect.value;
+    }
+    
+    fetch('/admin/student_management/apply_penalty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            student_id: currentStudent.student_id,
+            reason: reason
+        }),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        // 認証・権限エラーチェック
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('ペナルティを付与しました。', 'success');
+            // モーダルを閉じる
+            const modal = bootstrap.Modal.getInstance(document.getElementById('applyPenaltyModal'));
+            modal.hide();
+            // 学生詳細を再読み込み
+            showStudentDetail(currentStudent.student_id);
+            // 一覧も更新
+            if (document.getElementById('student_id').value.trim() || document.getElementById('username').value.trim()) {
+                searchStudent();
+            } else {
+                loadAllStudents(currentPage);
+            }
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('ペナルティ付与中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function quickClearPenalty(studentId) {
+    if (!confirm(`学籍番号 ${studentId} のペナルティを解除しますか？`)) return;
+    
+    fetch('/admin/student_management/clear_penalty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({student_id: studentId}),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(`学籍番号 ${studentId} のペナルティを解除しました。`, 'success');
+            // 一覧を更新
+            loadAllStudents(currentPage);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('ペナルティ解除中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function quickApplyPenalty(studentId) {
+    const reason = prompt(`学籍番号 ${studentId} にペナルティを付与します。理由を入力してください:`, '未乗車（無断欠席）');
+    
+    if (!reason) return; // キャンセルされた場合
+    
+    fetch('/admin/student_management/apply_penalty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            student_id: studentId,
+            reason: reason.trim()
+        }),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.status === 401) {
+            throw new Error('認証エラー: ログインが必要です。');
+        }
+        if (response.status === 403) {
+            throw new Error('権限エラー: この操作を実行する権限がありません。');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(`学籍番号 ${studentId} にペナルティを付与しました。`, 'success');
+            // 一覧を更新
+            loadAllStudents(currentPage);
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('認証エラー') || error.message.includes('権限エラー')) {
+            showAlert(`${error.message} ページをリロードしてください。`, 'warning');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showAlert('ペナルティ付与中にエラーが発生しました。', 'danger');
+        }
+    });
+}
+
+function clearSearch() {
+    document.getElementById('student_id').value = '';
+    document.getElementById('username').value = '';
+    document.getElementById('student_detail').style.display = 'none';
+    currentStudent = null;
+    // 全学生一覧に戻る
+    loadAllStudents(1);
+}
+
+function hideSearchResults() {
+    // この関数は廃止されましたが、互換性のため残しておきます
+    clearSearch();
+}
+
+function formatDateTime(datetime) {
+    if (!datetime) return '-';
+    return new Date(datetime).toLocaleString('ja-JP');
+}
+
+function debugAPI() {
+    console.log('=== API Debug Test ===');
+    console.log('Current page location:', window.location.href);
+    console.log('Current cookies:', document.cookie);
+    
+    // セッション情報の確認
+    fetch('/admin/', {
+        method: 'GET',
+        headers: {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Admin dashboard check - Status:', response.status);
+        console.log('Admin dashboard check - URL:', response.url);
+        console.log('Admin dashboard check - OK:', response.ok);
+        console.log('Admin dashboard check - Redirected:', response.redirected);
+        
+        if (response.redirected || response.url.includes('/login')) {
+            console.log('❌ セッションが無効 - ログインが必要');
+            alert('⚠️ セッションが切れています。ログインページに移動してください。');
+            window.location.href = '/login';
+            return;
+        }
+        
+        // 手動でAPIを実行
+        return fetch(`/admin/student_management/all_students?page=1&per_page=5`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+    })
+    .then(response => {
+        if (!response) return;
+        
+        console.log('API Test - Fetch response status:', response.status);
+        console.log('API Test - Response headers:', [...response.headers.entries()]);
+        console.log('API Test - Response URL:', response.url);
+        console.log('API Test - Response OK:', response.ok);
+        
+        return response.text();
+    })
+    .then(text => {
+        if (!text) return;
+        
+        console.log('API Test - Raw response text:', text);
+        
+        try {
+            const data = JSON.parse(text);
+            console.log('API Test - Parsed JSON:', data);
+            alert('✅ API Debug結果がコンソールに出力されました。F12でコンソールを確認してください。');
+        } catch (e) {
+            console.error('API Test - JSON Parse failed:', e);
+            console.log('API Test - Response is not JSON, likely HTML page');
+            alert('❌ APIがHTMLページを返しました。認証に問題がある可能性があります。');
+        }
+    })
+    .catch(error => {
+        console.error('Debug - Fetch error:', error);
+        alert('❌ API Debug中にエラーが発生しました: ' + error.message);
+    });
+}
+
+function debugAuth() {
+    console.log('=== Authentication Debug ===');
+    
+    fetch('/admin/student_management/debug_auth', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Auth Debug - Response status:', response.status);
+        console.log('Auth Debug - Response OK:', response.ok);
+        console.log('Auth Debug - Response URL:', response.url);
+        console.log('Auth Debug - Response headers:', [...response.headers.entries()]);
+        
+        // レスポンスをテキストとして先に読み取り
+        return response.text().then(text => {
+            console.log('Auth Debug - Raw response text:', text.substring(0, 500));
+            
+            // HTMLが返された場合
+            if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+                console.error('Auth Debug - HTML response detected');
+                throw new Error('HTMLページが返されました。認証エンドポイントにアクセスできていません。');
+            }
+            
+            // JSONとしてパース
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Auth Debug - JSON parse error:', e);
+                throw new Error('レスポンスがJSONではありません: ' + text.substring(0, 100));
+            }
+        });
+    })
+    .then(data => {
+        console.log('Auth Debug - Response data:', data);
+        
+        if (data.success) {
+            const debug = data.debug_info;
+            console.log('=== 認証デバッグ情報 ===');
+            console.log('セッションデータ:', debug.session_data);
+            console.log('クッキー:', debug.cookies);
+            console.log('現在のユーザー:', debug.current_user);
+            console.log('セッション検証結果:', debug.session_validation);
+            
+            let message = '認証デバッグ情報:\n';
+            message += `現在のユーザー: ${debug.current_user ? debug.current_user.username + ' (' + debug.current_user.role + ')' : 'なし'}\n`;
+            message += `セッションID: ${debug.session_data.user_id || 'なし'}\n`;
+            message += `セッショントークン: ${debug.cookies.admin_session_token ? 'あり' : 'なし'}\n`;
+            message += `セッション検証: ${debug.session_validation ? '有効' : '無効'}\n`;
+            message += '\n詳細はコンソールを確認してください (F12)';
+            
+            alert(message);
+        } else {
+            console.error('Auth Debug - Error:', data.message);
+            alert('認証デバッグ中にエラーが発生しました: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Auth Debug - Fetch error:', error);
+        alert('認証デバッグのAPIリクエストでエラーが発生しました: ' + error.message);
+    });
+}
+
+function testEndpoint() {
+    console.log('=== Endpoint Test ===');
+    
+    fetch('/admin/student_management/test', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Test - Response status:', response.status);
+        console.log('Test - Response OK:', response.ok);
+        console.log('Test - Response URL:', response.url);
+        
+        return response.text().then(text => {
+            console.log('Test - Raw response text:', text);
+            
+            if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+                throw new Error('HTMLページが返されました - ルーティングに問題があります');
+            }
+            
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw new Error('JSONパースエラー: ' + text.substring(0, 100));
+            }
+        });
+    })
+    .then(data => {
+        console.log('Test - Response data:', data);
+        
+        if (data.success) {
+            alert(`✅ エンドポイントテスト成功!\nメッセージ: ${data.message}\nパス: ${data.path}\nBlueprint: ${data.blueprint}`);
+        } else {
+            alert('❌ エンドポイントテストに失敗しました');
+        }
+    })
+    .catch(error => {
+        console.error('Test - Fetch error:', error);
+        alert('❌ エンドポイントテストでエラーが発生しました: ' + error.message);
+    });
+}
+
+function showAlert(message, type) {
+    // アラート表示のヘルパー関数
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // 5秒後に自動で閉じる
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -107,6 +107,14 @@ def create_app():
         socketio.init_app(app)
         logger.info("SocketIO initialized")
         
+        # WebSocket統計情報ブロードキャスターを開始
+        try:
+            from app.routes.ws import start_statistics_broadcaster
+            start_statistics_broadcaster()
+            logger.info("Statistics broadcaster started")
+        except Exception as e:
+            logger.warning(f"Failed to start statistics broadcaster: {e}")
+        
         logger.info("=== Admin Service App Creation Completed Successfully ===")
         return app
         
@@ -124,7 +132,8 @@ def perform_migration(app):
             host=app.config["POSTGRES_HOST"],
             database=app.config["POSTGRES_DB"],
             user=app.config["POSTGRES_USER"],
-            password=app.config["POSTGRES_PASSWORD"]
+            password=app.config["POSTGRES_PASSWORD"],
+            options='-c client_encoding=utf8'
         )
         cursor = conn.cursor()
         

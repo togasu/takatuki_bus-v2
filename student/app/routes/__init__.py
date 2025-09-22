@@ -2,6 +2,7 @@ from .auth import auth_bp
 from .main import main_bp
 from .booking import booking_bp
 from .cancel import cancel_bp
+from .management_api import management_api_bp
 
 def register_blueprints(app):
     """全てのブループリントを登録"""
@@ -9,3 +10,4 @@ def register_blueprints(app):
     app.register_blueprint(main_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(cancel_bp)
+    app.register_blueprint(management_api_bp)

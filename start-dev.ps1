@@ -229,6 +229,20 @@ with app.app_context():
         Write-Warning "driver テストユーザーの作成でエラーが発生しました: $_"
     }
     Start-Sleep -Seconds 3
+    
+    # student デバッグユーザーの作成
+    Write-Info "student デバッグユーザーを作成中..."
+    try {
+        docker exec "takatuki_bus-v2-student-1" python create_test_student.py
+        Write-Success "student デバッグユーザーの作成が完了しました"
+        Write-Info "   - debug_student1 / student123 (学籍番号: 230092)"
+        Write-Info "   - debug_student2 / student123 (学籍番号: 230093)"
+        Write-Info "   - debug_student3 / student123 (学籍番号: 230094)"
+        Write-Info "   - debug_student4 / student123 (学籍番号: 230095)"
+    } catch {
+        Write-Warning "student デバッグユーザーの作成でエラーが発生しました: $_"
+    }
+    Start-Sleep -Seconds 3
 }
 
 # 7. 起動確認
@@ -273,6 +287,11 @@ if ($initDatabase) {
     Write-Info "👤 テストユーザー:"
     Write-Info "   Admin: admin_test / admin123"
     Write-Info "   Driver: driver_test / driver123"
+    Write-Info "   Students (デバッグ用):"
+    Write-Info "     - debug_student1 / student123 (学籍番号: 230092)"
+    Write-Info "     - debug_student2 / student123 (学籍番号: 230093)"
+    Write-Info "     - debug_student3 / student123 (学籍番号: 230094)"
+    Write-Info "     - debug_student4 / student123 (学籍番号: 230095)"
 }
 
 Write-Info "==========================================="

@@ -162,5 +162,169 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to delete driver {driver_id}: {e}")
             return None
 
+    # 学生管理API
+    def get_all_students(self, page=1, per_page=20):
+        """全学生一覧を取得"""
+        try:
+            params = {'page': page, 'per_page': per_page}
+            response = requests.get(
+                'http://student:5000/api/management/all_students',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for get all students: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error("Connection timeout for get all students")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error("Connection error for get all students")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to get all students: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def search_student(self, student_id=None, username=None):
+        """学生を検索"""
+        try:
+            params = {}
+            if student_id:
+                params['student_id'] = student_id
+            elif username:
+                params['username'] = username
+            
+            response = requests.get(
+                'http://student:5000/api/management/search_student',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to search student: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def delete_student_account(self, student_id):
+        """学生アカウントを削除"""
+        try:
+            response = requests.delete(
+                'http://student:5000/api/management/delete_student',
+                json={'student_id': student_id},
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def clear_student_penalty(self, student_id):
+        """学生のペナルティを解除"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/management/clear_penalty',
+                json={'student_id': student_id},
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # レスポンスの状態コードをチェック
+            if response.status_code == 404:
+                return {'success': False, 'message': 'ペナルティ解除APIが見つかりません'}
+            elif response.status_code == 400:
+                return {'success': False, 'message': 'リクエストデータが不正です'}
+            elif response.status_code == 500:
+                return {'success': False, 'message': '学生サービス側でエラーが発生しました'}
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for clear penalty {student_id}: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+                
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error(f"Connection timeout for clear penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error(f"Connection error for clear penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to clear penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def apply_student_penalty(self, student_id, reason=None):
+        """学生にペナルティを付与"""
+        try:
+            payload = {'student_id': student_id}
+            if reason:
+                payload['reason'] = reason
+            
+            response = requests.post(
+                'http://student:5000/api/management/apply_penalty',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # レスポンスの状態コードをチェック
+            if response.status_code == 404:
+                return {'success': False, 'message': 'ペナルティ付与APIが見つかりません（学生サービスの設定を確認してください）'}
+            elif response.status_code == 400:
+                return {'success': False, 'message': 'リクエストデータが不正です'}
+            elif response.status_code == 500:
+                return {'success': False, 'message': '学生サービス側でエラーが発生しました'}
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for student {student_id}: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+                
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error(f"Connection timeout for apply penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error(f"Connection error for apply penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to apply penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_student_reservations(self, student_id):
+        """学生の予約情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/student_reservations/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to get reservations for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
 # シングルトンインスタンス
 admin_api = AdminAPIClient()

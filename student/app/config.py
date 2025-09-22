@@ -23,25 +23,3 @@ REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')  # パスワードが必要な場�
 LDAP_SERVER = os.getenv('LDAP_SERVER', 'ldap://tcs11.edu.kutc.kansai-u.ac.jp')
 LDAP_BASE_DN = os.getenv('LDAP_BASE_DN', 'dc=kutc,dc=kansai-u,dc=ac,dc=jp')
 LDAP_USER_DN_TEMPLATE = os.getenv('LDAP_USER_DN_TEMPLATE', 'uid={username},ou=People,dc=kutc,dc=kansai-u,dc=ac,dc=jp')
-
-# テストモード設定
-TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'
-
-# テストユーザー（テストモード時のみ使用）
-TEST_USERS = {
-    'testuser1': {
-        'password': 'testpass1',
-        'student_id': '123456',
-        'full_name': 'Test User 1'
-    },
-    'testuser2': {
-        'password': 'testpass2', 
-        'student_id': '654321',
-        'full_name': 'Test User 2'
-    },
-    'admin': {
-        'password': 'admin123',
-        'student_id': '000001',
-        'full_name': 'Admin User'
-    }
-}
