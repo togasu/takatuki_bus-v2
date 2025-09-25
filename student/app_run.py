@@ -30,5 +30,9 @@ def init_db():
     print("Database initialized successfully!")
 
 if __name__ == "__main__":
-    app.debug = True
-    app.run()
+    # SocketIOを使用してアプリを起動
+    if hasattr(app, 'socketio'):
+        app.socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    else:
+        app.debug = True
+        app.run(host='0.0.0.0', port=5000)

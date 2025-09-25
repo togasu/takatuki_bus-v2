@@ -16,11 +16,17 @@
 .EXAMPLE
     ./start-dev.ps1 init
     データベースを初期化して起動
+
+.EXAMPLE
+    ./start-dev.ps1 init debug
+    データベースを初期化し、デバッグ用テストデータを作成して起動
 #>
 
 param(
     [Parameter(Position=0)]
-    [string]$Action
+    [string]$Action,
+    [Parameter(Position=1)]
+    [string]$DebugMode
 )
 
 # エラー時にスクリプトを停止
@@ -104,9 +110,16 @@ try {
 
 # 3. データベースの初期化判定
 $initDatabase = $false
+$debugMode = $false
+
 if ($Action -eq "init") {
     $initDatabase = $true
     Write-Warning "データベース初期化モードです"
+    
+    if ($DebugMode -eq "debug") {
+        $debugMode = $true
+        Write-Warning "デバッグモードが有効です（テストデータを作成します）"
+    }
     
     # データベースボリュームを削除
     Write-Info "Step 3: データベースボリュームの削除"
@@ -198,51 +211,74 @@ if ($initDatabase) {
     Write-Info "マイグレーション完了後の安定化を待機中..."
     Start-Sleep -Seconds 10  # 待機時間を延長
     
-    # テストユーザーの作成
-    Write-Info "テストユーザーの作成中..."
-    
-    # admin テストユーザーの作成（データベーステーブル確認付き）
-    Write-Info "admin テストユーザーを作成中..."
-    try {
-        # データベース接続確認
-        docker exec "takatuki_bus-v2-admin-1" python -c "
+    # デバッグモード時のみテストデータを作成
+    if ($debugMode) {
+        Write-Info "Step 6b: デバッグ用テストデータの作成"
+        
+        # テストユーザーの作成
+        Write-Info "テストユーザーの作成中..."
+        
+        # admin テストユーザーの作成（データベーステーブル確認付き）
+        Write-Info "admin テストユーザーを作成中..."
+        try {
+            # データベース接続確認
+            docker exec "takatuki_bus-v2-admin-1" python -c "
 from app import create_app
 from app.models import User
 app = create_app()
 with app.app_context():
     print(f'Users table exists: {User.query.count()} users found')
 "
+            
+            docker exec "takatuki_bus-v2-admin-1" python create_test_admin.py
+            Write-Success "admin テストユーザーの作成が完了しました (admin_test / admin123)"
+        } catch {
+            Write-Warning "admin テストユーザーの作成でエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
         
-        docker exec "takatuki_bus-v2-admin-1" python create_test_admin.py
-        Write-Success "admin テストユーザーの作成が完了しました (admin_test / admin123)"
-    } catch {
-        Write-Warning "admin テストユーザーの作成でエラーが発生しました: $_"
+        # driver テストユーザーの作成
+        Write-Info "driver テストユーザーを作成中..."
+        try {
+            docker exec "takatuki_bus-v2-driver-1" python create_test_driver.py
+            Write-Success "driver テストユーザーの作成が完了しました (driver_test / driver123)"
+        } catch {
+            Write-Warning "driver テストユーザーの作成でエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
+        
+        # student デバッグユーザーの作成
+        Write-Info "student デバッグユーザーを作成中..."
+        try {
+            docker exec "takatuki_bus-v2-student-1" python create_test_student.py
+            Write-Success "student デバッグユーザーの作成が完了しました"
+            Write-Info "   - debug_student1 / student123 (学籍番号: 230092)"
+            Write-Info "   - debug_student2 / student123 (学籍番号: 230093)"
+            Write-Info "   - debug_student3 / student123 (学籍番号: 230094)"
+            Write-Info "   - debug_student4 / student123 (学籍番号: 230095)"
+        } catch {
+            Write-Warning "student デバッグユーザーの作成でエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
+        
+        # student デバッグバス・座席の作成
+        Write-Info "student デバッグバス・座席を作成中..."
+        try {
+            docker exec "takatuki_bus-v2-student-1" python create_test_bus.py
+            Write-Success "student デバッグバス・座席の作成が完了しました"
+            Write-Info "   - デバッグバス6台 (上り3台、下り3台)"
+            Write-Info "   - 各バス20-30席の座席"
+            Write-Info "   - 予約可能時間: 60-120分"
+            # 全席空席化スクリプトの実行
+            docker exec "takatuki_bus-v2-student-1" python clear_debug_bus_reservations.py
+            Write-Success "student デバッグバスの全席空席化が完了しました"
+        } catch {
+            Write-Warning "student デバッグバス・座席の作成でエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
+    } else {
+        Write-Info "Step 6b: デバッグモードが無効のため、テストデータの作成をスキップします"
     }
-    Start-Sleep -Seconds 3
-    
-    # driver テストユーザーの作成
-    Write-Info "driver テストユーザーを作成中..."
-    try {
-        docker exec "takatuki_bus-v2-driver-1" python create_test_driver.py
-        Write-Success "driver テストユーザーの作成が完了しました (driver_test / driver123)"
-    } catch {
-        Write-Warning "driver テストユーザーの作成でエラーが発生しました: $_"
-    }
-    Start-Sleep -Seconds 3
-    
-    # student デバッグユーザーの作成
-    Write-Info "student デバッグユーザーを作成中..."
-    try {
-        docker exec "takatuki_bus-v2-student-1" python create_test_student.py
-        Write-Success "student デバッグユーザーの作成が完了しました"
-        Write-Info "   - debug_student1 / student123 (学籍番号: 230092)"
-        Write-Info "   - debug_student2 / student123 (学籍番号: 230093)"
-        Write-Info "   - debug_student3 / student123 (学籍番号: 230094)"
-        Write-Info "   - debug_student4 / student123 (学籍番号: 230095)"
-    } catch {
-        Write-Warning "student デバッグユーザーの作成でエラーが発生しました: $_"
-    }
-    Start-Sleep -Seconds 3
 }
 
 # 7. 起動確認
@@ -284,14 +320,24 @@ Write-Info "🛑 停止方法: docker-compose down"
 
 if ($initDatabase) {
     Write-Info "📝 データベースが初期化されました"
-    Write-Info "👤 テストユーザー:"
-    Write-Info "   Admin: admin_test / admin123"
-    Write-Info "   Driver: driver_test / driver123"
-    Write-Info "   Students (デバッグ用):"
-    Write-Info "     - debug_student1 / student123 (学籍番号: 230092)"
-    Write-Info "     - debug_student2 / student123 (学籍番号: 230093)"
-    Write-Info "     - debug_student3 / student123 (学籍番号: 230094)"
-    Write-Info "     - debug_student4 / student123 (学籍番号: 230095)"
+    
+    if ($debugMode) {
+        Write-Info "👤 テストユーザー:"
+        Write-Info "   Admin: admin_test / admin123"
+        Write-Info "   Driver: driver_test / driver123"
+        Write-Info "   Students (デバッグ用):"
+        Write-Info "     - debug_student1 / student123 (学籍番号: 230092)"
+        Write-Info "     - debug_student2 / student123 (学籍番号: 230093)"
+        Write-Info "     - debug_student3 / student123 (学籍番号: 230094)"
+        Write-Info "     - debug_student4 / student123 (学籍番号: 230095)"
+        Write-Info "🚌 デバッグバス:"
+        Write-Info "   - 6台のテストバス (上り3台、下り3台)"
+        Write-Info "   - 各バス20-30席の座席データ"
+        Write-Info "   - 予約テスト用のスケジュール設定済み"
+    } else {
+        Write-Info "ℹ️  デバッグ用テストデータは作成されていません"
+        Write-Info "   テストデータが必要な場合は 'init debug' オプションを使用してください"
+    }
 }
 
 Write-Info "==========================================="

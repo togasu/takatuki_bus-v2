@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_socketio import SocketIO
 import configparser
 import logging
 
@@ -61,6 +62,15 @@ def create_app():
         mail = Mail(app)
         
         limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
+        
+        # SocketIO初期化
+        socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+        app.socketio = socketio
+        
+        # WebSocketイベントハンドラー登録
+        from .routes.ws import register_socketio_events
+        register_socketio_events(socketio)
+        
     except Exception as e:
         print(f"拡張機能の初期化に失敗しました: {e}")
         return None

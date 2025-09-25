@@ -17,12 +17,14 @@
 
   <body>
     <header class="header">
-	    <a>Sojo Bus</a>
+      <div class="header-content">
+        <a href="{{ url_for('main.personal') }}" class="header-title">Sojo Bus</a>
+      </div>
     </header>
     <main>
       <div class="container">
         <h4 class="alert alert-success">予約が完了しました</h4>
-        <a href="{{url_for('personal')}}"><button type="submit" class="btn btn-secondary btn-mg">ホームに戻る</button>
+        <a href="{{url_for('main.personal')}}"><button type="submit" class="btn btn-secondary btn-mg">ホームに戻る</button>
       </div>
     </main>
     <footer class="footer">

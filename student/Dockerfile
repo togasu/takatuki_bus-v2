@@ -21,6 +21,8 @@ COPY uwsgi.ini /app/
 COPY init_migration.py /app/
 COPY check_ldap_connection.py /app/
 COPY create_test_student.py /app/
+COPY create_test_bus.py /app/
+COPY clear_debug_bus_reservations.py /app/
 
 # ディレクトリの作成と権限設定
 RUN mkdir -p /app/logs /app/migrations && \

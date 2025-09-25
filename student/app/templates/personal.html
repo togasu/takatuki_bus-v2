@@ -111,7 +111,7 @@
   <body>
     <header class="header">
       <div class="header-content">
-        <a>Sojo Bus</a>
+        <a href="{{ url_for('main.personal') }}">Sojo Bus</a>
         <div class="tips">
           <p onclick="redirectToNextPage('{{url_for('main.tips')}}')">利用案内</p>
         </div>
@@ -156,6 +156,10 @@
           {% endfor %}
           {% endif %}
         </table>
+        <div style="text-align: right; margin-top: 5px;">
+          <div id="update-time-display" style="font-size: 12px; color: #666;">
+          </div>
+        </div>
         <a class="atagu h3">あなたの予約状況</a>
         {% if (personal_data | length) == 0 %}
         <p>予約データがありません</p>
@@ -194,10 +198,98 @@
       <div id="line"></div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
+      // WebSocket接続
+      const socket = io();
+      
       function redirectToNextPage(nextPageURL) {
         window.location.href = nextPageURL;
       }
+
+      // WebSocket接続時の処理
+      socket.on('connect', function() {
+        console.log('WebSocket接続しました');
+        socket.emit('join_bus_updates');
+        updateConnectionStatus(true);
+      });
+
+      socket.on('disconnect', function() {
+        console.log('WebSocket切断しました');
+        updateConnectionStatus(false);
+      });
+
+      // 接続状態の表示を更新
+      function updateConnectionStatus(connected) {
+        if (connected) {
+          updateLastUpdateTime();
+        }
+      }
+
+      // 最終更新時刻を表示する関数
+      function updateLastUpdateTime() {
+        const now = new Date();
+        const updateTime = now.toLocaleTimeString('ja-JP');
+        const updateDisplay = document.getElementById('update-time-display');
+        if (updateDisplay) {
+          updateDisplay.textContent = `最終更新: ${updateTime}`;
+        }
+      }
+
+      // バスデータの更新を受信
+      socket.on('bus_data_update', function(data) {
+        console.log('バスデータ更新を受信:', data);
+        updateBusTable(data);
+      });
+
+      // バステーブルを更新する関数
+      function updateBusTable(busData) {
+        const tableRows = document.querySelectorAll('table:first-of-type tbody tr:not(:first-child)');
+        const tableBody = document.querySelector('table:first-of-type tbody') || document.querySelector('table:first-of-type');
+        
+        if (!tableBody) return;
+
+        // 既存のデータ行を削除（ヘッダー以外）
+        tableRows.forEach(row => row.remove());
+
+        // 新しいデータで更新
+        busData.slice(0, 10).forEach(bus => {
+          const row = document.createElement('tr');
+          
+          const timeCell = document.createElement('td');
+          timeCell.textContent = bus.departure_time + '発';
+          
+          const busIdCell = document.createElement('td');
+          busIdCell.textContent = bus.busid;
+          
+          const seatCell = document.createElement('td');
+          if (bus.available_seats === -1 || bus.status >= 1) {
+            seatCell.textContent = 'キャンセル待ち';
+          } else if (bus.available_seats > 10) {
+            seatCell.textContent = bus.available_seats;
+          } else if (bus.available_seats > 5) {
+            seatCell.textContent = bus.available_seats;
+            seatCell.className = 'nokori10';
+          } else {
+            seatCell.textContent = bus.available_seats;
+            seatCell.className = 'nokori5';
+          }
+          
+          row.appendChild(timeCell);
+          row.appendChild(busIdCell);
+          row.appendChild(seatCell);
+          
+          tableBody.appendChild(row);
+        });
+
+        // 最終更新時刻を表示
+        updateLastUpdateTime();
+      }
+
+      // 定期的にデータを要求（フォールバック）
+      setInterval(function() {
+        socket.emit('request_bus_data');
+      }, 30000); // 30秒ごと
 
       function setAnimation() {
         const loopElement = document.querySelector('.loop_wrap div:nth-child(odd)');

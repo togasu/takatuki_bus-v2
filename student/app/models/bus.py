@@ -7,4 +7,4 @@ class Bus(db.Model):
     seats = db.Column(db.Integer, nullable=False)
     ud = db.Column(db.Integer, nullable=False)  # 上りなら0、下りなら1
     bookable_time = db.Column(db.Integer, nullable=False)  # デフォルト0,予約可能時間に合わせて変更
-    status = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.Integer, nullable=False) # 0は通常、1はキャンセル待ち（現在機能中止）、2は出発後

@@ -55,7 +55,8 @@ def personal():
                 break
 
     # 個人の情報取得
-    bookedseat = db.session.query(Reservation).filter_by(user_id=username).order_by(Reservation.bus_id).all()
+    bookedseat = db.session.query(Reservation).filter_by(user_id=student_id).order_by(Reservation.bus_id).all()
+    print(f"予約検索: student_id={student_id}, 見つかった予約数={len(bookedseat)}")
     if bookedseat:
         print(bookedseat)
         for booked in bookedseat[:]:
