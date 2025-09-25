@@ -163,7 +163,7 @@ def clear_penalty():
 @bp.route('/apply_penalty', methods=['POST'])
 @require_permission('student', 'update')
 def apply_penalty():
-    """ペナルティ付与API"""
+    """ペナルティ付与API（拡張版）"""
     try:
         data = request.get_json()
         if not data or 'student_id' not in data:
@@ -174,12 +174,26 @@ def apply_penalty():
         
         student_id = data['student_id']
         reason = data.get('reason', '管理者による手動ペナルティ')
+        end_time_str = data.get('end_time')
+        
+        # 終了時間の解析
+        end_time = None
+        if end_time_str:
+            try:
+                from datetime import datetime
+                end_time = datetime.fromisoformat(end_time_str.replace('Z', '+00:00'))
+            except ValueError as e:
+                logger.error(f"Invalid end_time format: {end_time_str}, error: {e}")
+                return jsonify({
+                    'success': False,
+                    'message': '終了時間の形式が不正です'
+                }), 400
         
         # student サービスのAPIを呼び出し
-        result = admin_api.apply_student_penalty(student_id, reason)
+        result = admin_api.apply_student_penalty(student_id, reason, end_time)
         
         if result.get('success'):
-            logger.info(f"ペナルティ付与成功: {student_id}, 理由: {reason}")
+            logger.info(f"ペナルティ付与成功: {student_id}, 理由: {reason}, 終了時間: {end_time}")
         else:
             logger.warning(f"ペナルティ付与失敗: {student_id} - {result.get('message')}")
         
@@ -212,6 +226,73 @@ def get_reservations(student_id):
         return jsonify({
             'success': False,
             'message': f'予約情報取得中にエラーが発生しました: {str(e)}'
+        }), 500
+
+@bp.route('/clear_penalty_with_time', methods=['POST'])
+@require_permission('student', 'update')
+def clear_penalty_with_time():
+    """ペナルティ解除API（時間指定可能）"""
+    try:
+        data = request.get_json()
+        if not data or 'student_id' not in data:
+            return jsonify({
+                'success': False,
+                'message': '学籍番号が指定されていません'
+            }), 400
+        
+        student_id = data['student_id']
+        clear_time_str = data.get('clear_time')
+        
+        # 解除時間の解析
+        clear_time = None
+        if clear_time_str:
+            try:
+                from datetime import datetime
+                clear_time = datetime.fromisoformat(clear_time_str.replace('Z', '+00:00'))
+            except ValueError as e:
+                logger.error(f"Invalid clear_time format: {clear_time_str}, error: {e}")
+                return jsonify({
+                    'success': False,
+                    'message': '解除時間の形式が不正です'
+                }), 400
+        
+        # student サービスのAPIを呼び出し
+        result = admin_api.clear_student_penalty_with_time(student_id, clear_time)
+        
+        if result.get('success'):
+            logger.info(f"ペナルティ解除成功: {student_id}, 解除時間: {clear_time}")
+        else:
+            logger.warning(f"ペナルティ解除失敗: {student_id} - {result.get('message')}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"ペナルティ解除エラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'ペナルティ解除中にエラーが発生しました: {str(e)}'
+        }), 500
+
+@bp.route('/penalty_details/<student_id>', methods=['GET'])
+@require_permission('student', 'view')
+def get_penalty_details(student_id):
+    """学生のペナルティ詳細情報取得API"""
+    try:
+        # student サービスのAPIを呼び出し
+        result = admin_api.get_student_penalty_details(student_id)
+        
+        if result.get('success'):
+            logger.info(f"ペナルティ詳細取得成功: {student_id}")
+        else:
+            logger.warning(f"ペナルティ詳細取得失敗: {student_id} - {result.get('message')}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"ペナルティ詳細取得エラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'ペナルティ詳細取得中にエラーが発生しました: {str(e)}'
         }), 500
 
 @bp.route('/debug_auth', methods=['GET'])

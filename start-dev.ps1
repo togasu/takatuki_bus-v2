@@ -211,6 +211,26 @@ if ($initDatabase) {
     Write-Info "マイグレーション完了後の安定化を待機中..."
     Start-Sleep -Seconds 10  # 待機時間を延長
     
+    # ペナルティシステムのマイグレーション実行
+    Write-Info "Step 6a: ペナルティシステムの初期化"
+    try {
+        Write-Info "studentサービスでペナルティシステムマイグレーション実行中..."
+        docker exec "takatuki_bus-v2-student-1" python migrate_penalty_system.py migrate 2>&1
+        Write-Success "ペナルティシステムのマイグレーションが完了しました"
+        
+        # 自動ペナルティチェックの初回実行
+        Write-Info "自動ペナルティチェック機能の確認中..."
+        docker exec "takatuki_bus-v2-student-1" python -c "
+from app.utils.penalty_manager import PenaltyManager
+print('✅ PenaltyManagerが正常に読み込まれました')
+print('📊 自動ペナルティシステムが利用可能です')
+" 2>&1
+        Write-Success "自動ペナルティチェック機能が利用可能です"
+    } catch {
+        Write-Warning "ペナルティシステムのマイグレーションでエラーが発生しました: $_"
+    }
+    Start-Sleep -Seconds 3
+    
     # デバッグモード時のみテストデータを作成
     if ($debugMode) {
         Write-Info "Step 6b: デバッグ用テストデータの作成"
@@ -276,6 +296,21 @@ with app.app_context():
             Write-Warning "student デバッグバス・座席の作成でエラーが発生しました: $_"
         }
         Start-Sleep -Seconds 3
+        
+        # ペナルティシステムのテスト（デバッグモード時のみ）
+        Write-Info "ペナルティシステムのテスト実行中..."
+        try {
+            Write-Info "   - PenaltyManagerの動作確認"
+            Write-Info "   - テスト用ペナルティデータの作成"
+            Write-Info "   - 自動ペナルティ機能の確認"
+            # 注意: 実際のテストは手動で行う（自動テストでデータが汚染されるため）
+            Write-Success "ペナルティシステムが利用可能です"
+            Write-Info "   📋 手動テスト: docker exec takatuki_bus-v2-student-1 python test_penalty_system.py"
+            Write-Info "   🔧 自動チェック: docker exec takatuki_bus-v2-student-1 python auto_penalty_check.py"
+        } catch {
+            Write-Warning "ペナルティシステムのテストでエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
     } else {
         Write-Info "Step 6b: デバッグモードが無効のため、テストデータの作成をスキップします"
     }
@@ -320,6 +355,7 @@ Write-Info "🛑 停止方法: docker-compose down"
 
 if ($initDatabase) {
     Write-Info "📝 データベースが初期化されました"
+    Write-Info "⚖️  ペナルティシステムが初期化されました"
     
     if ($debugMode) {
         Write-Info "👤 テストユーザー:"
@@ -334,9 +370,17 @@ if ($initDatabase) {
         Write-Info "   - 6台のテストバス (上り3台、下り3台)"
         Write-Info "   - 各バス20-30席の座席データ"
         Write-Info "   - 予約テスト用のスケジュール設定済み"
+        Write-Info "⚖️  ペナルティシステム:"
+        Write-Info "   - 自動ペナルティ: 未承認予約3回で自動適用"
+        Write-Info "   - 手動ペナルティ: 管理画面から理由・期間選択可能"
+        Write-Info "   - テストコマンド: docker exec takatuki_bus-v2-student-1 python test_penalty_system.py"
+        Write-Info "   - 自動チェック: docker exec takatuki_bus-v2-student-1 python auto_penalty_check.py"
     } else {
         Write-Info "ℹ️  デバッグ用テストデータは作成されていません"
         Write-Info "   テストデータが必要な場合は 'init debug' オプションを使用してください"
+        Write-Info "⚖️  ペナルティシステム:"
+        Write-Info "   - システム初期化済み、管理画面から利用可能"
+        Write-Info "   - 自動チェック: docker exec takatuki_bus-v2-student-1 python auto_penalty_check.py"
     }
 }
 

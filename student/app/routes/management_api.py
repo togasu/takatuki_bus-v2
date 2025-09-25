@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from ..database import db
-from ..models.user import User, User_Penalty
+from ..models.user import User, User_Penalty, Penalty_Reservation
 from ..models.reservation import Reservation
 from ..models.cancel import Cancel
 from ..models.bus import Bus
 from ..models.seat import Seat
-from datetime import datetime
+from ..utils.penalty_manager import PenaltyManager
+from datetime import datetime, timedelta, time
 import logging
 
 # ログの設定
@@ -31,8 +32,8 @@ def get_all_students():
         
         students_data = []
         for user in users.items:
-            # ペナルティ情報を取得
-            penalty = User_Penalty.query.filter_by(student_id=int(user.student_id)).first()
+            # ペナルティ情報を取得（新スキーマ）
+            penalty_status = PenaltyManager.get_student_penalty_status(user.student_id)
             
             # 現在の予約数を取得
             current_reservations_count = db.session.query(Reservation).join(
@@ -42,11 +43,8 @@ def get_all_students():
                 Bus.departure_time >= datetime.now()
             ).count()
             
-            # キャンセル履歴から未乗車回数を計算
-            cancel_count = Cancel.query.filter_by(
-                student_id=user.student_id,
-                status='未乗車'
-            ).count()
+            # 未承認予約の数を取得（不乗車カウント）
+            unapproved_count = PenaltyManager.get_unapproved_reservations_count(user.student_id)
             
             students_data.append({
                 'id': user.id,
@@ -55,11 +53,12 @@ def get_all_students():
                 'idm_bus': user.idm_bus,
                 'regist_time': user.regist_now_time.isoformat() if user.regist_now_time else None,
                 'penalty': {
-                    'has_penalty': penalty is not None,
-                    'penalty_count': penalty.penalty_count if penalty else 0,
-                    'penalty_time': penalty.penalty_time.isoformat() if penalty and penalty.penalty_time else None
+                    'has_penalty': penalty_status['has_penalty'],
+                    'reason': penalty_status['penalty']['reason'] if penalty_status['has_penalty'] else None,
+                    'end_time': penalty_status['penalty']['end_time'].isoformat() if penalty_status['has_penalty'] and penalty_status['penalty']['end_time'] else None,
+                    'penalty_type': penalty_status['penalty']['penalty_type'] if penalty_status['has_penalty'] else None
                 },
-                'no_show_count': cancel_count,
+                'unapproved_reservations_count': unapproved_count,
                 'current_reservations_count': current_reservations_count
             })
         
@@ -113,8 +112,8 @@ def search_student():
                 'message': '学生が見つかりませんでした'
             }), 404
         
-        # ペナルティ情報を取得
-        penalty = User_Penalty.query.filter_by(student_id=int(user.student_id)).first()
+        # ペナルティ情報を取得（新スキーマ）
+        penalty_status = PenaltyManager.get_student_penalty_status(user.student_id)
         
         # 現在の予約情報を取得
         current_reservations = db.session.query(
@@ -128,11 +127,8 @@ def search_student():
             Bus.departure_time >= datetime.now()
         ).all()
         
-        # キャンセル履歴から未乗車回数を計算
-        cancel_count = Cancel.query.filter_by(
-            student_id=user.student_id,
-            status='未乗車'
-        ).count()
+        # 未承認予約の数を取得
+        unapproved_count = PenaltyManager.get_unapproved_reservations_count(user.student_id)
         
         # レスポンスデータを構築
         student_data = {
@@ -142,11 +138,13 @@ def search_student():
             'idm_bus': user.idm_bus,
             'regist_time': user.regist_now_time.isoformat() if user.regist_now_time else None,
             'penalty': {
-                'has_penalty': penalty is not None,
-                'penalty_count': penalty.penalty_count if penalty else 0,
-                'penalty_time': penalty.penalty_time.isoformat() if penalty and penalty.penalty_time else None
+                'has_penalty': penalty_status['has_penalty'],
+                'reason': penalty_status['penalty']['reason'] if penalty_status['has_penalty'] else None,
+                'end_time': penalty_status['penalty']['end_time'].isoformat() if penalty_status['has_penalty'] and penalty_status['penalty']['end_time'] else None,
+                'penalty_type': penalty_status['penalty']['penalty_type'] if penalty_status['has_penalty'] else None,
+                'related_reservations': penalty_status['related_reservations']
             },
-            'no_show_count': cancel_count,
+            'unapproved_reservations_count': unapproved_count,
             'current_reservations': []
         }
         
@@ -231,7 +229,7 @@ def delete_student():
 
 @management_api_bp.route('/clear_penalty', methods=['POST'])
 def clear_penalty():
-    """ペナルティを解除するAPI"""
+    """ペナルティを解除するAPI（新システム）"""
     try:
         data = request.get_json()
         if not data or 'student_id' not in data:
@@ -241,8 +239,9 @@ def clear_penalty():
             }), 400
         
         student_id = data['student_id']
+        clear_time_str = data.get('clear_time')
         
-        # 学生を検索
+        # 学生の存在確認
         user = User.query.filter_by(student_id=student_id).first()
         if not user:
             return jsonify({
@@ -250,31 +249,22 @@ def clear_penalty():
                 'message': '学生が見つかりませんでした'
             }), 404
         
-        # ペナルティを検索
-        penalty = User_Penalty.query.filter_by(student_id=int(user.student_id)).first()
+        # 解除時間のパース
+        clear_time = None
+        if clear_time_str:
+            try:
+                clear_time = datetime.fromisoformat(clear_time_str.replace('Z', '+00:00'))
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'message': '解除時間の形式が不正です'
+                }), 400
         
-        if not penalty:
-            return jsonify({
-                'success': False,
-                'message': 'ペナルティが設定されていません'
-            }), 404
+        # PenaltyManagerを使用してペナルティを解除
+        result = PenaltyManager.clear_penalty(student_id, clear_time)
         
-        try:
-            # ペナルティを削除
-            db.session.delete(penalty)
-            db.session.commit()
-            
-            logger.info(f"ペナルティ解除完了: {student_id}")
-            
-            return jsonify({
-                'success': True,
-                'message': 'ペナルティが正常に解除されました'
-            })
-            
-        except Exception as e:
-            db.session.rollback()
-            raise e
-            
+        return jsonify(result)
+        
     except Exception as e:
         logger.error(f"ペナルティ解除エラー: {str(e)}")
         return jsonify({
@@ -284,7 +274,7 @@ def clear_penalty():
 
 @management_api_bp.route('/apply_penalty', methods=['POST'])
 def apply_penalty():
-    """ペナルティを付与するAPI"""
+    """ペナルティを付与するAPI（新システム）"""
     try:
         data = request.get_json()
         if not data or 'student_id' not in data:
@@ -295,8 +285,9 @@ def apply_penalty():
         
         student_id = data['student_id']
         reason = data.get('reason', '管理者による手動ペナルティ')
+        end_time_str = data.get('end_time')
         
-        # 学生を検索
+        # 学生の存在確認
         user = User.query.filter_by(student_id=student_id).first()
         if not user:
             return jsonify({
@@ -304,39 +295,22 @@ def apply_penalty():
                 'message': '学生が見つかりませんでした'
             }), 404
         
-        # 既存のペナルティをチェック
-        existing_penalty = User_Penalty.query.filter_by(student_id=int(user.student_id)).first()
+        # 終了時間のパース
+        end_time = None
+        if end_time_str:
+            try:
+                end_time = datetime.fromisoformat(end_time_str.replace('Z', '+00:00'))
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'message': '終了時間の形式が不正です'
+                }), 400
         
-        try:
-            if existing_penalty:
-                # 既存のペナルティがある場合はカウントを増加
-                existing_penalty.penalty_count += 1
-                existing_penalty.penalty_time = datetime.utcnow()
-                penalty_count = existing_penalty.penalty_count
-            else:
-                # 新しいペナルティを作成
-                new_penalty = User_Penalty(
-                    student_id=int(user.student_id),
-                    penalty_count=1,
-                    penalty_time=datetime.utcnow()
-                )
-                db.session.add(new_penalty)
-                penalty_count = 1
-            
-            db.session.commit()
-            
-            logger.info(f"ペナルティ付与完了: {student_id}, 理由: {reason}, カウント: {penalty_count}")
-            
-            return jsonify({
-                'success': True,
-                'message': f'ペナルティが正常に付与されました (合計: {penalty_count}回)',
-                'penalty_count': penalty_count
-            })
-            
-        except Exception as e:
-            db.session.rollback()
-            raise e
-            
+        # PenaltyManagerを使用してペナルティを適用
+        result = PenaltyManager.apply_manual_penalty(student_id, reason, end_time)
+        
+        return jsonify(result)
+        
     except Exception as e:
         logger.error(f"ペナルティ付与エラー: {str(e)}")
         return jsonify({
@@ -390,4 +364,66 @@ def get_student_reservations(student_id):
         return jsonify({
             'success': False,
             'message': f'予約情報取得中にエラーが発生しました: {str(e)}'
+        }), 500
+
+@management_api_bp.route('/penalty_details/<student_id>', methods=['GET'])
+def get_penalty_details(student_id):
+    """学生のペナルティ詳細情報を取得するAPI"""
+    try:
+        # 学生の存在確認
+        user = User.query.filter_by(student_id=student_id).first()
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '学生が見つかりませんでした'
+            }), 404
+        
+        # PenaltyManagerを使用してペナルティ詳細を取得
+        penalty_status = PenaltyManager.get_student_penalty_status(student_id)
+        
+        return jsonify({
+            'success': True,
+            'penalty_status': penalty_status
+        })
+        
+    except Exception as e:
+        logger.error(f"ペナルティ詳細取得エラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'ペナルティ詳細取得中にエラーが発生しました: {str(e)}'
+        }), 500
+
+@management_api_bp.route('/check_auto_penalty/<student_id>', methods=['POST'])
+def check_auto_penalty(student_id):
+    """学生の自動ペナルティをチェックし、必要に応じて適用するAPI"""
+    try:
+        # 学生の存在確認
+        user = User.query.filter_by(student_id=student_id).first()
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '学生が見つかりませんでした'
+            }), 404
+        
+        # 自動ペナルティチェック
+        penalty_applied = PenaltyManager.check_and_apply_auto_penalty(student_id)
+        
+        if penalty_applied:
+            return jsonify({
+                'success': True,
+                'message': '自動ペナルティが適用されました',
+                'penalty_applied': True
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'ペナルティの適用は不要です',
+                'penalty_applied': False
+            })
+        
+    except Exception as e:
+        logger.error(f"自動ペナルティチェックエラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'自動ペナルティチェック中にエラーが発生しました: {str(e)}'
         }), 500

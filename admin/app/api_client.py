@@ -269,12 +269,14 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to clear penalty for student {student_id}: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
     
-    def apply_student_penalty(self, student_id, reason=None):
-        """学生にペナルティを付与"""
+    def apply_student_penalty(self, student_id, reason=None, end_time=None):
+        """学生にペナルティを付与（拡張版）"""
         try:
             payload = {'student_id': student_id}
             if reason:
                 payload['reason'] = reason
+            if end_time:
+                payload['end_time'] = end_time.isoformat() if hasattr(end_time, 'isoformat') else end_time
             
             response = requests.post(
                 'http://student:5000/api/management/apply_penalty',
@@ -324,6 +326,47 @@ class AdminAPIClient:
             return response.json() if response.status_code == 200 else response.json()
         except Exception as e:
             current_app.logger.error(f"Failed to get reservations for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def clear_student_penalty_with_time(self, student_id, clear_time=None):
+        """学生のペナルティを解除（時間指定可能）"""
+        try:
+            payload = {'student_id': student_id}
+            if clear_time:
+                payload['clear_time'] = clear_time.isoformat() if hasattr(clear_time, 'isoformat') else clear_time
+            
+            response = requests.post(
+                'http://student:5000/api/management/clear_penalty',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to clear penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_student_penalty_details(self, student_id):
+        """学生のペナルティ詳細情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/penalty_details/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get penalty details for student {student_id}: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
 # シングルトンインスタンス

@@ -143,9 +143,27 @@
                     <textarea class="form-control" id="penalty_reason_custom" rows="3" placeholder="ペナルティの詳細な理由を入力してください"></textarea>
                 </div>
                 
+                <div class="mb-3">
+                    <label for="penalty_duration" class="form-label">ペナルティ期間</label>
+                    <select class="form-select" id="penalty_duration_select" onchange="handleDurationChange()">
+                        <option value="default">デフォルト（2週間後の22:00まで）</option>
+                        <option value="immediate">即時解除</option>
+                        <option value="1_day">1日後</option>
+                        <option value="3_days">3日後</option>
+                        <option value="1_week">1週間後</option>
+                        <option value="custom">カスタム日時</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3" id="custom_datetime_div" style="display: none;">
+                    <label for="penalty_end_datetime" class="form-label">解除日時</label>
+                    <input type="datetime-local" class="form-control" id="penalty_end_datetime">
+                </div>
+                
                 <div class="alert alert-warning">
                     <small>
-                        <strong>注意:</strong> ペナルティが付与されると、学生は一定期間バスの予約ができなくなります。
+                        <strong>注意:</strong> ペナルティが付与されると、学生は指定された期間までバスの予約ができなくなります。<br>
+                        不乗車の場合、ペナルティ解除後に再度不乗車のカウントが開始されます。
                     </small>
                 </div>
             </div>
@@ -301,7 +319,7 @@ function displayStudentsTable(students, pagination) {
                         <th>登録日時</th>
                         <th>ペナルティ状況</th>
                         <th>現在の予約数</th>
-                        <th>未乗車回数</th>
+                        <th>未承認予約回数</th>
                         <th>アクション</th>
                     </tr>
                 </thead>
@@ -309,9 +327,13 @@ function displayStudentsTable(students, pagination) {
     `;
     
     students.forEach(student => {
-        const penaltyBadge = student.penalty.has_penalty ? 
-            `<span class="badge bg-danger">ペナルティあり (${student.penalty.penalty_count}回)</span>` : 
-            '<span class="badge bg-success">なし</span>';
+        let penaltyBadge = '';
+        if (student.penalty.has_penalty) {
+            const penaltyType = student.penalty.penalty_type === 'auto' ? '自動' : '手動';
+            penaltyBadge = `<span class="badge bg-danger" title="${student.penalty.reason}">ペナルティあり (${penaltyType})</span>`;
+        } else {
+            penaltyBadge = '<span class="badge bg-success">なし</span>';
+        }
         
         html += `
             <tr>
@@ -319,7 +341,7 @@ function displayStudentsTable(students, pagination) {
                 <td>${formatDateTime(student.regist_time)}</td>
                 <td>${penaltyBadge}</td>
                 <td>${student.current_reservations_count}件</td>
-                <td>${student.no_show_count}回</td>
+                <td>${student.unapproved_reservations_count || 0}回</td>
                 <td>
                     <div class="btn-group" role="group">
                         <button class="btn btn-sm btn-outline-primary" onclick="showStudentDetail('${student.student_id}')" title="詳細表示">
@@ -509,9 +531,13 @@ function displaySearchResult(student) {
     // 検索結果として単一の学生を表示
     const container = document.getElementById('students_table_container');
     
-    const penaltyBadge = student.penalty.has_penalty ? 
-        `<span class="badge bg-danger">ペナルティあり (${student.penalty.penalty_count}回)</span>` : 
-        '<span class="badge bg-success">なし</span>';
+    let penaltyBadge = '';
+    if (student.penalty.has_penalty) {
+        const penaltyType = student.penalty.penalty_type === 'auto' ? '自動' : '手動';
+        penaltyBadge = `<span class="badge bg-danger" title="${student.penalty.reason}">ペナルティあり (${penaltyType})</span>`;
+    } else {
+        penaltyBadge = '<span class="badge bg-success">なし</span>';
+    }
     
     let html = `
         <div class="alert alert-info">
@@ -525,7 +551,7 @@ function displaySearchResult(student) {
                         <th>登録日時</th>
                         <th>ペナルティ状況</th>
                         <th>現在の予約数</th>
-                        <th>未乗車回数</th>
+                        <th>未承認予約回数</th>
                         <th>アクション</th>
                     </tr>
                 </thead>
@@ -534,8 +560,8 @@ function displaySearchResult(student) {
                         <td><strong>${student.student_id}</strong></td>
                         <td>${formatDateTime(student.regist_time)}</td>
                         <td>${penaltyBadge}</td>
-                        <td>${student.current_reservations.length}件</td>
-                        <td>${student.no_show_count}回</td>
+                        <td>${student.current_reservations ? student.current_reservations.length : 0}件</td>
+                        <td>${student.unapproved_reservations_count || 0}回</td>
                         <td>
                             <button class="btn btn-sm btn-primary" onclick="showStudentDetailFromSearch()">
                                 詳細表示
@@ -566,18 +592,54 @@ function displayStudentInfo(student) {
     const penaltyInfo = student.penalty;
     
     let penaltyDisplay = '';
+    let penaltyDetailsDisplay = '';
+    
     if (penaltyInfo.has_penalty) {
         penaltyDisplay = `
-            <span class="badge bg-danger">ペナルティあり (${penaltyInfo.penalty_count}回)</span>
-            <small class="text-muted ms-2">ペナルティ日時: ${formatDateTime(penaltyInfo.penalty_time)}</small>
+            <span class="badge bg-danger">ペナルティあり</span>
+            <small class="text-muted ms-2">理由: ${penaltyInfo.reason || '不明'}</small><br>
+            <small class="text-muted">解除日時: ${formatDateTime(penaltyInfo.end_time)}</small><br>
+            <small class="text-muted">種別: ${penaltyInfo.penalty_type === 'auto' ? '自動適用' : '手動適用'}</small>
         `;
+        
+        // ペナルティに関連する予約一覧を表示（不乗車の場合）
+        if (penaltyInfo.related_reservations && penaltyInfo.related_reservations.length > 0) {
+            penaltyDetailsDisplay = `
+                <div class="mt-3 p-3 border rounded bg-light">
+                    <h6>ペナルティの対象となった予約一覧</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>バスID</th>
+                                    <th>出発時刻</th>
+                                    <th>座席番号</th>
+                                    <th>予約日時</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${penaltyInfo.related_reservations.map(reservation => `
+                                    <tr>
+                                        <td>${reservation.busid || reservation.bus_id}</td>
+                                        <td>${reservation.departure_time || '不明'}</td>
+                                        <td>${reservation.seat_number}</td>
+                                        <td>${reservation.reserved_time || '不明'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
         // ペナルティありの場合：解除ボタンを表示、付与ボタンを非表示
         document.getElementById('penalty_clear_btn').style.display = 'inline-block';
         document.getElementById('penalty_apply_btn').style.display = 'none';
     } else {
         penaltyDisplay = `
             <span class="badge bg-success">ペナルティなし</span>
-            <small class="text-muted ms-2">未乗車回数: ${student.no_show_count}回</small>
+            <small class="text-muted ms-2">未承認予約回数: ${student.unapproved_reservations_count || 0}回</small>
         `;
         // ペナルティなしの場合：付与ボタンを表示、解除ボタンを非表示
         document.getElementById('penalty_clear_btn').style.display = 'none';
@@ -599,6 +661,7 @@ function displayStudentInfo(student) {
                 <p><strong>現在の予約数:</strong> ${currentReservationsCount}件</p>
             </div>
         </div>
+        ${penaltyDetailsDisplay}
     `;
 }
 
@@ -818,6 +881,8 @@ function showApplyPenaltyModal() {
     document.getElementById('penalty_reason_select').value = 'no_show';
     document.getElementById('penalty_reason_custom').value = '';
     document.getElementById('custom_reason_div').style.display = 'none';
+    document.getElementById('penalty_duration_select').value = 'default';
+    document.getElementById('custom_datetime_div').style.display = 'none';
     
     const modal = new bootstrap.Modal(document.getElementById('applyPenaltyModal'));
     modal.show();
@@ -834,11 +899,38 @@ function handleReasonChange() {
     }
 }
 
+function handleDurationChange() {
+    const select = document.getElementById('penalty_duration_select');
+    const customDiv = document.getElementById('custom_datetime_div');
+    
+    if (select.value === 'custom') {
+        customDiv.style.display = 'block';
+        
+        // デフォルトとして現在日時から2週間後の22:00を設定
+        const now = new Date();
+        const twoWeeksLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        twoWeeksLater.setHours(22, 0, 0, 0);
+        
+        // datetime-localの形式に変換
+        const year = twoWeeksLater.getFullYear();
+        const month = String(twoWeeksLater.getMonth() + 1).padStart(2, '0');
+        const day = String(twoWeeksLater.getDate()).padStart(2, '0');
+        const hours = String(twoWeeksLater.getHours()).padStart(2, '0');
+        const minutes = String(twoWeeksLater.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('penalty_end_datetime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    } else {
+        customDiv.style.display = 'none';
+    }
+}
+
 function applyPenalty() {
     if (!currentStudent) return;
     
     const reasonSelect = document.getElementById('penalty_reason_select');
     const customReason = document.getElementById('penalty_reason_custom');
+    const durationSelect = document.getElementById('penalty_duration_select');
+    const customDateTime = document.getElementById('penalty_end_datetime');
     
     let reason = '';
     const reasonMap = {
@@ -859,16 +951,59 @@ function applyPenalty() {
         reason = reasonMap[reasonSelect.value] || reasonSelect.value;
     }
     
+    // 終了日時の計算
+    let endTime = null;
+    const duration = durationSelect.value;
+    
+    if (duration === 'custom') {
+        if (!customDateTime.value) {
+            showAlert('カスタム日時を入力してください。', 'warning');
+            return;
+        }
+        endTime = new Date(customDateTime.value).toISOString();
+    } else if (duration !== 'default') {
+        const now = new Date();
+        let endDate;
+        
+        switch (duration) {
+            case 'immediate':
+                endDate = now;
+                break;
+            case '1_day':
+                endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                endDate.setHours(22, 0, 0, 0);
+                break;
+            case '3_days':
+                endDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+                endDate.setHours(22, 0, 0, 0);
+                break;
+            case '1_week':
+                endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                endDate.setHours(22, 0, 0, 0);
+                break;
+        }
+        
+        if (endDate) {
+            endTime = endDate.toISOString();
+        }
+    }
+    
+    const payload = {
+        student_id: currentStudent.student_id,
+        reason: reason
+    };
+    
+    if (endTime) {
+        payload.end_time = endTime;
+    }
+    
     fetch('/admin/student_management/apply_penalty', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify({
-            student_id: currentStudent.student_id,
-            reason: reason
-        }),
+        body: JSON.stringify(payload),
         credentials: 'same-origin'
     })
     .then(response => {
