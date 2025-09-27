@@ -23,6 +23,7 @@ COPY check_ldap_connection.py /app/
 COPY create_test_student.py /app/
 COPY create_test_bus.py /app/
 COPY clear_debug_bus_reservations.py /app/
+COPY migrate_penalty_system.py /app/
 
 # ディレクトリの作成と権限設定
 RUN mkdir -p /app/logs /app/migrations && \

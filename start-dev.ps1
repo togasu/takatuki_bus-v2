@@ -193,13 +193,20 @@ if ($initDatabase) {
     foreach ($service in $services) {
         Write-Info "$service サービスのマイグレーション実行中..."
         try {
-            # 既存のマイグレーションディレクトリを削除（クリーンスタート）
-            docker exec "takatuki_bus-v2-$service-1" rm -rf migrations 2>$null
-            
-            # Flask-Migrateを使用してマイグレーション実行
-            docker exec "takatuki_bus-v2-$service-1" flask db init 2>$null
-            docker exec "takatuki_bus-v2-$service-1" flask db migrate -m "Initial migration for $service"
-            docker exec "takatuki_bus-v2-$service-1" flask db upgrade
+            if ($service -eq "admin" -or $service -eq "driver") {
+                # adminとdriverサービスは改善された初期化スクリプトを使用
+                Write-Info "$service サービス: init_migration.pyを実行中..."
+                docker exec "takatuki_bus-v2-$service-1" python init_migration.py
+            } else {
+                # studentサービスは従来通り
+                # 既存のマイグレーションディレクトリを削除（クリーンスタート）
+                docker exec "takatuki_bus-v2-$service-1" rm -rf migrations 2>$null
+                
+                # Flask-Migrateを使用してマイグレーション実行
+                docker exec "takatuki_bus-v2-$service-1" flask db init 2>$null
+                docker exec "takatuki_bus-v2-$service-1" flask db migrate -m "Initial migration for $service"
+                docker exec "takatuki_bus-v2-$service-1" flask db upgrade
+            }
             Write-Success "$service サービスのマイグレーションが完了しました"
         } catch {
             Write-Warning "$service サービスのマイグレーションでエラーが発生しました: $_"

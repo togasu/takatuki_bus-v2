@@ -8432,3 +8432,118 @@ ImportError: cannot import name 'admin_required' from 'app.utils.decorators' (/a
 2025-09-25 02:17:04,481 - SocketIO initialized
 2025-09-25 02:17:04,482 - Statistics broadcaster started
 2025-09-25 02:17:04,483 - === Admin Service App Creation Completed Successfully ===
+2025-09-25 07:26:11,490 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:26:52,669 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:26:53,992 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:26:55,199 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:27:16,475 - Logging configured
+2025-09-25 07:27:16,476 - Database configuration loaded
+2025-09-25 07:27:16,476 - Initializing database...
+2025-09-25 07:27:16,483 - Database initialized
+2025-09-25 07:27:16,484 - Performing migration...
+2025-09-25 07:27:16,507 - Admin service: Database schema is up to date. No migration needed.
+2025-09-25 07:27:16,507 - Migration completed
+2025-09-25 07:27:16,508 - Importing models...
+2025-09-25 07:27:16,508 - Models imported
+2025-09-25 07:27:16,508 - Registering model blueprints...
+2025-09-25 07:27:16,512 - Model blueprints registered
+2025-09-25 07:27:16,513 - Registering route blueprints...
+2025-09-25 07:27:17,105 - Route blueprints registered
+2025-09-25 07:27:17,125 - Registering error handlers...
+2025-09-25 07:27:17,133 - Error handlers registered
+2025-09-25 07:27:17,141 - Initializing SocketIO...
+2025-09-25 07:27:17,339 - SocketIO initialized
+2025-09-25 07:27:17,343 - Statistics broadcaster started
+2025-09-25 07:27:17,433 - === Admin Service App Creation Completed Successfully ===
+2025-09-25 07:37:37,912 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:38:20,163 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:38:21,140 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:38:22,179 - Driver service: Database schema is up to date. No migration needed.
+2025-09-25 07:38:43,237 - Logging configured
+2025-09-25 07:38:43,237 - Database configuration loaded
+2025-09-25 07:38:43,238 - Initializing database...
+2025-09-25 07:38:43,243 - Database initialized
+2025-09-25 07:38:43,243 - Performing migration...
+2025-09-25 07:38:43,262 - Admin service: Database schema is up to date. No migration needed.
+2025-09-25 07:38:43,263 - Migration completed
+2025-09-25 07:38:43,266 - Importing models...
+2025-09-25 07:38:43,266 - Models imported
+2025-09-25 07:38:43,267 - Registering model blueprints...
+2025-09-25 07:38:43,270 - Model blueprints registered
+2025-09-25 07:38:43,271 - Registering route blueprints...
+2025-09-25 07:38:43,778 - Route blueprints registered
+2025-09-25 07:38:43,778 - Registering error handlers...
+2025-09-25 07:38:43,779 - Error handlers registered
+2025-09-25 07:38:43,779 - Initializing SocketIO...
+2025-09-25 07:38:43,809 - SocketIO initialized
+2025-09-25 07:38:43,810 - Statistics broadcaster started
+2025-09-25 07:38:43,810 - === Admin Service App Creation Completed Successfully ===
+2025-09-26 01:52:33,399 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:53:17,204 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:53:19,037 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:53:21,274 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:53:43,105 - Logging configured
+2025-09-26 01:53:43,106 - Database configuration loaded
+2025-09-26 01:53:43,106 - Initializing database...
+2025-09-26 01:53:43,114 - Database initialized
+2025-09-26 01:53:43,115 - Performing migration...
+2025-09-26 01:53:43,145 - Admin service: Database schema is up to date. No migration needed.
+2025-09-26 01:53:43,146 - Migration completed
+2025-09-26 01:53:43,147 - Importing models...
+2025-09-26 01:53:43,147 - Models imported
+2025-09-26 01:53:43,148 - Registering model blueprints...
+2025-09-26 01:53:43,153 - Model blueprints registered
+2025-09-26 01:53:43,154 - Registering route blueprints...
+2025-09-26 01:53:43,750 - Route blueprints registered
+2025-09-26 01:53:43,751 - Registering error handlers...
+2025-09-26 01:53:43,752 - Error handlers registered
+2025-09-26 01:53:43,753 - Initializing SocketIO...
+2025-09-26 01:53:43,795 - SocketIO initialized
+2025-09-26 01:53:43,797 - Statistics broadcaster started
+2025-09-26 01:53:43,798 - === Admin Service App Creation Completed Successfully ===
+2025-09-26 01:55:12,649 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:55:57,800 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:55:59,959 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:56:01,350 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 01:56:25,836 - Logging configured
+2025-09-26 01:56:25,836 - Database configuration loaded
+2025-09-26 01:56:25,836 - Initializing database...
+2025-09-26 01:56:25,842 - Database initialized
+2025-09-26 01:56:25,842 - Performing migration...
+2025-09-26 01:56:25,862 - Admin service: Database schema is up to date. No migration needed.
+2025-09-26 01:56:25,863 - Migration completed
+2025-09-26 01:56:25,863 - Importing models...
+2025-09-26 01:56:25,864 - Models imported
+2025-09-26 01:56:25,864 - Registering model blueprints...
+2025-09-26 01:56:25,868 - Model blueprints registered
+2025-09-26 01:56:25,869 - Registering route blueprints...
+2025-09-26 01:56:26,549 - Route blueprints registered
+2025-09-26 01:56:26,550 - Registering error handlers...
+2025-09-26 01:56:26,550 - Error handlers registered
+2025-09-26 01:56:26,551 - Initializing SocketIO...
+2025-09-26 01:56:26,605 - SocketIO initialized
+2025-09-26 01:56:26,606 - Statistics broadcaster started
+2025-09-26 01:56:26,607 - === Admin Service App Creation Completed Successfully ===
+2025-09-26 02:00:59,841 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 02:01:47,706 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 02:01:49,284 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 02:01:51,128 - Driver service: Database schema is up to date. No migration needed.
+2025-09-26 02:02:13,950 - Logging configured
+2025-09-26 02:02:13,951 - Database configuration loaded
+2025-09-26 02:02:13,955 - Initializing database...
+2025-09-26 02:02:13,981 - Database initialized
+2025-09-26 02:02:13,982 - Performing migration...
+2025-09-26 02:02:14,011 - Admin service: Database schema is up to date. No migration needed.
+2025-09-26 02:02:14,012 - Migration completed
+2025-09-26 02:02:14,013 - Importing models...
+2025-09-26 02:02:14,013 - Models imported
+2025-09-26 02:02:14,013 - Registering model blueprints...
+2025-09-26 02:02:14,018 - Model blueprints registered
+2025-09-26 02:02:14,019 - Registering route blueprints...
+2025-09-26 02:02:14,583 - Route blueprints registered
+2025-09-26 02:02:14,584 - Registering error handlers...
+2025-09-26 02:02:14,585 - Error handlers registered
+2025-09-26 02:02:14,586 - Initializing SocketIO...
+2025-09-26 02:02:14,621 - SocketIO initialized
+2025-09-26 02:02:14,622 - Statistics broadcaster started
+2025-09-26 02:02:14,623 - === Admin Service App Creation Completed Successfully ===

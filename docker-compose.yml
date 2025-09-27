@@ -46,6 +46,8 @@ services:
       REDIS_HOST: redis
       ADMIN_SERVICE_TOKEN: admin-secret-token-2024
       API_SECRET_KEY: bus-system-api-key-2024
+      SKIP_MIGRATION: ${SKIP_MIGRATION:-false}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
       - postgres
       - redis
@@ -62,6 +64,8 @@ services:
       REDIS_HOST: redis
       ADMIN_SERVICE_TOKEN: admin-secret-token-2024
       API_SECRET_KEY: bus-system-api-key-2024
+      SKIP_MIGRATION: ${SKIP_MIGRATION:-false}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
       - postgres
       - redis

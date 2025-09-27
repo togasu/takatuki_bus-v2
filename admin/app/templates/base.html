@@ -27,7 +27,13 @@
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% block navbar_brand_url %}/{% endblock %}">{% block navbar_brand %}Sojo Bus Admin{% endblock %}</a>
+            {% set brand_text = self.navbar_brand() or "Sojo Bus Admin" %}
+            {% if user %}
+                <a class="navbar-brand" href="/admin/">{{ brand_text }}</a>
+            {% else %}
+                <span class="navbar-brand">{{ brand_text }}</span>
+            {% endif %}
+            {% block navbar_brand %}{% endblock %}
             <div class="navbar-nav ms-auto">
                 {% block navbar_content %}
                 {% if user %}
