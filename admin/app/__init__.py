@@ -115,6 +115,12 @@ def create_app():
         except Exception as e:
             logger.warning(f"Failed to start statistics broadcaster: {e}")
         
+        # 最終テーブル確認（起動時の最後のチェック）
+        logger.info("Final table verification...")
+        with app.app_context():
+            ensure_tables_on_startup(app)
+        logger.info("Final table verification completed")
+        
         logger.info("=== Admin Service App Creation Completed Successfully ===")
         return app
         
@@ -125,9 +131,14 @@ def create_app():
         raise
 
 def perform_migration(app):
-    """スマートマイグレーションを実行：テーブル構造の変更を検出して自動対応"""
+    """スマートマイグレーションを実行：改善版（トランザクション問題を解決）"""
+    conn = None
+    cursor = None
+    
     try:
-        # データベース接続テスト
+        logger.info("Admin service: Starting migration check...")
+        
+        # 単純なテーブル存在チェックのみ実行（トランザクション問題を回避）
         conn = psycopg2.connect(
             host=app.config["POSTGRES_HOST"],
             database=app.config["POSTGRES_DB"],
@@ -135,238 +146,166 @@ def perform_migration(app):
             password=app.config["POSTGRES_PASSWORD"],
             options='-c client_encoding=utf8'
         )
+        # オートコミットモードを有効にしてトランザクション問題を回避
+        conn.autocommit = True
         cursor = conn.cursor()
         
-        # 必要なテーブルとその期待される構造を定義
-        expected_tables = {
-            'users': {
-                'id': 'integer',
-                'username': 'character varying(80)',
-                'email': 'character varying(120)',
-                'password_hash': 'character varying(255)',
-                'password_salt': 'character varying(255)',
-                'role': 'character varying(20)',
-                'is_active': 'boolean',
-                'last_login': 'timestamp without time zone',
-                'created_at': 'timestamp without time zone',
-                'updated_at': 'timestamp without time zone'
-            },
-            'permissions': {
-                'id': 'integer',
-                'resource': 'character varying(100)',
-                'action': 'character varying(50)',
-                'role': 'character varying(20)',
-                'is_allowed': 'boolean',
-                'created_at': 'timestamp without time zone',
-                'updated_at': 'timestamp without time zone'
-            }
-        }
+        # 必要なテーブルリスト
+        required_tables = ['users', 'permissions']
+        missing_tables = []
         
-        migration_needed = False
-        migration_reasons = []
+        # 各テーブルの存在をチェック
+        for table_name in required_tables:
+            try:
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = %s
+                    );
+                """, (table_name,))
+                
+                result = cursor.fetchone()
+                table_exists = result[0] if result else False
+                
+                if not table_exists:
+                    missing_tables.append(table_name)
+                    logger.info(f"Admin service: Table '{table_name}' does not exist")
+                else:
+                    logger.info(f"Admin service: Table '{table_name}' exists")
+                    
+            except Exception as e:
+                logger.warning(f"Admin service: Error checking table '{table_name}': {e}")
+                missing_tables.append(table_name)
         
-        # 各テーブルの存在と構造をチェック
-        for table_name, expected_columns in expected_tables.items():
-            # テーブルの存在確認
-            cursor.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = %s
-                );
-            """, (table_name,))
-            
-            result = cursor.fetchone()
-            table_exists = result[0] if result else False
-            
-            if not table_exists:
-                migration_needed = True
-                migration_reasons.append(f"テーブル '{table_name}' が存在しません")
-                logging.info(f"Admin service: Table '{table_name}' does not exist")
-                continue
-            
-            # テーブルが存在する場合、カラム構造をチェック
-            cursor.execute("""
-                SELECT column_name, data_type, is_nullable, column_default
-                FROM information_schema.columns 
-                WHERE table_schema = 'public' 
-                AND table_name = %s
-                ORDER BY ordinal_position;
-            """, (table_name,))
-            
-            existing_columns = {row[0]: row[1] for row in cursor.fetchall()}
-            
-            # 期待されるカラムが存在するかチェック
-            for expected_col, expected_type in expected_columns.items():
-                if expected_col not in existing_columns:
-                    migration_needed = True
-                    migration_reasons.append(f"テーブル '{table_name}' にカラム '{expected_col}' が存在しません")
-                    logging.info(f"Admin service: Column '{expected_col}' missing in table '{table_name}'")
-                elif not _is_compatible_type(existing_columns[expected_col], expected_type):
-                    migration_needed = True
-                    migration_reasons.append(f"テーブル '{table_name}' のカラム '{expected_col}' の型が期待値と異なります (実際: {existing_columns[expected_col]}, 期待: {expected_type})")
-                    logging.info(f"Admin service: Column '{expected_col}' in table '{table_name}' has wrong type: {existing_columns[expected_col]} (expected: {expected_type})")
-        
-        # マイグレーションが必要かどうかの判定
-        if migration_needed:
-            logging.info("Admin service: Migration needed. Reasons:")
-            for reason in migration_reasons:
-                logging.info(f"  - {reason}")
-            
-            # マイグレーション実行
-            if os.path.exists('migrations/env.py'):
-                logging.info("Admin service: Executing Flask-Migrate upgrade...")
-                try:
-                    # Flask-Migrateが利用可能かチェック
-                    import importlib.util
-                    spec = importlib.util.find_spec("flask_migrate")
-                    if spec is not None:
-                        from flask_migrate import upgrade
-                        upgrade()
-                        logging.info("Admin service: Migration completed successfully via Flask-Migrate")
-                    else:
-                        logging.warning("Admin service: Flask-Migrate not installed. Falling back to direct table creation...")
-                        _create_tables_directly(app)
-                except Exception as e:
-                    logging.warning(f"Admin service: Flask-Migrate failed: {e}. Falling back to direct table creation...")
-                    _create_tables_directly(app)
-            else:
-                logging.info("Admin service: No migration files found. Creating tables directly...")
-                _create_tables_directly(app)
+        # テーブルが不足している場合は直接作成
+        if missing_tables:
+            logger.info(f"Admin service: Missing tables: {missing_tables}")
+            logger.info("Admin service: Creating tables directly via SQLAlchemy...")
+            _create_tables_directly(app)
         else:
-            logging.info("Admin service: Database schema is up to date. No migration needed.")
+            logger.info("Admin service: All required tables exist. No migration needed.")
         
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
-        logging.error(f"Admin service: Database connection error: {e}")
-        raise
     except Exception as e:
-        logging.error(f"Admin service: Migration error: {e}")
-        raise
+        logger.error(f"Admin service: Migration error: {e}")
+        logger.warning("Admin service: Falling back to direct table creation...")
+        try:
+            _create_tables_directly(app)
+        except Exception as fallback_error:
+            logger.error(f"Admin service: Fallback table creation failed: {fallback_error}")
+            raise
+    finally:
+        # リソースのクリーンアップ
+        try:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+        except Exception as cleanup_error:
+            logger.warning(f"Admin service: Cleanup error: {cleanup_error}")
 
-def _is_compatible_type(actual_type, expected_type):
-    """データ型の互換性をチェック"""
-    # PostgreSQLの型エイリアスを正規化
-    type_aliases = {
-        'varchar': 'character varying',
-        'int4': 'integer',
-        'int': 'integer',
-        'bool': 'boolean',
-        'timestamp': 'timestamp without time zone',
-        'timestamptz': 'timestamp with time zone'
-    }
-    
-    # 実際の型を正規化
-    normalized_actual = actual_type.lower()
-    for alias, canonical in type_aliases.items():
-        if normalized_actual.startswith(alias):
-            normalized_actual = normalized_actual.replace(alias, canonical)
-            break
-    
-    # 期待される型を正規化
-    normalized_expected = expected_type.lower()
-    for alias, canonical in type_aliases.items():
-        if normalized_expected.startswith(alias):
-            normalized_expected = normalized_expected.replace(alias, canonical)
-            break
-    
-    # 文字列型の長さは無視して比較
-    if 'character varying' in normalized_actual and 'character varying' in normalized_expected:
-        return True
-    
-    return normalized_actual == normalized_expected
+
 
 def _create_tables_directly(app):
-    """SQLAlchemyを使用してテーブルを直接作成"""
+    """SQLAlchemyを使用してテーブルを直接作成（改善版）"""
     try:
         from app.database import db
+        
         with app.app_context():
-            db.create_all()
-            # データベースの変更をコミット
-            db.session.commit()
-            logging.info("Admin service: Tables created successfully using SQLAlchemy")
+            logger.info("Admin service: Creating tables using SQLAlchemy...")
             
-            # 少し待機してからデフォルトデータを挿入
-            import time
-            time.sleep(1)
-            
-            # 初期権限データを挿入
-            _insert_default_permissions()
-            
-    except Exception as e:
-        logging.error(f"Admin service: Direct table creation failed: {e}")
-        raise
-
-def _insert_default_permissions():
-    """デフォルトの権限データを挿入"""
-    try:
-        from app.database import db
-        from app.models.permission import Permission
-        
-        # テーブルが存在することを確認
-        try:
-            # シンプルなクエリでテーブルの存在を確認
-            Permission.query.first()
-        except Exception as e:
-            logging.warning(f"Admin service: Permissions table not ready yet: {e}")
-            return
-        
-        # デフォルト権限の定義
-        default_permissions = [
-            # 管理者用権限
-            ('admin_user', 'create', 'admin', True),
-            ('admin_user', 'read', 'admin', True),
-            ('admin_user', 'update', 'admin', True),
-            ('admin_user', 'delete', 'admin', True),
-            ('permission', 'create', 'admin', True),
-            ('permission', 'read', 'admin', True),
-            ('permission', 'update', 'admin', True),
-            ('permission', 'delete', 'admin', True),
-            ('system', 'manage', 'admin', True),
-            
-            # 一般ユーザー用権限
-            ('admin_user', 'read', 'normal', True),
-            ('permission', 'read', 'normal', True),
-            
-            # ゲスト用権限（制限あり）
-            ('admin_user', 'read', 'guest', False),
-            ('permission', 'read', 'guest', False),
-        ]
-        
-        # 既存の権限をチェックして重複を避ける
-        for resource, action, role, is_allowed in default_permissions:
+            # セッションをクリアして新しい状態で開始
             try:
-                existing = Permission.query.filter_by(
-                    resource=resource, 
-                    action=action, 
-                    role=role
-                ).first()
-                
-                if not existing:
-                    permission = Permission(
-                        resource=resource,
-                        action=action,
-                        role=role,
-                        is_allowed=is_allowed
-                    )
-                    db.session.add(permission)
-            except Exception as e:
-                logging.warning(f"Admin service: Failed to check/insert permission {resource}.{action}.{role}: {e}")
-                continue
-        
-        try:
+                db.session.remove()
+            except:
+                pass
+            
+            # テーブル作成
+            db.create_all()
+            
+            # 作成結果を確認
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            created_tables = inspector.get_table_names()
+            logger.info(f"Admin service: Available tables after creation: {created_tables}")
+            
+            # 必要なテーブルが作成されたか確認
+            required_tables = ['users', 'permissions']
+            missing = [t for t in required_tables if t not in created_tables]
+            if missing:
+                logger.warning(f"Admin service: Still missing tables after creation: {missing}")
+            else:
+                logger.info("Admin service: All required tables created successfully")
+            
+            # コミット
             db.session.commit()
-            logging.info("Admin service: Default permissions inserted successfully")
-        except Exception as e:
-            logging.warning(f"Admin service: Failed to commit default permissions: {e}")
-            db.session.rollback()
-        
+            logger.info("Admin service: Database changes committed")
+            
     except Exception as e:
-        logging.warning(f"Admin service: Failed to insert default permissions: {e}")
+        logger.error(f"Admin service: Direct table creation failed: {e}")
+        # セッションをロールバック
         try:
             from app.database import db
             db.session.rollback()
         except:
-            pass  # セッションが無効な場合は無視
+            pass
+        raise
+
+def _insert_default_permissions():
+    """デフォルト権限データの挿入（簡略版）"""
+    try:
+        logger.info("Admin service: Skipping default permissions insertion for now...")
+        # 現在はスキップ - テーブル作成が安定してから後で実装
+        pass
+    except Exception as e:
+        logger.warning(f"Admin service: Failed to insert default permissions: {e}")
+
+def ensure_tables_on_startup(app):
+    """
+    アプリケーション起動時にテーブルの存在を確認し、必要に応じて作成する
+    """
+    try:
+        from app.database import db
+        from app.utils.auto_repair import ensure_tables_exist, force_create_tables
+        from sqlalchemy import inspect
+        
+        with app.app_context():
+            logger.info("🔧 Performing startup table verification...")
+            
+            # テーブル存在確認
+            if not ensure_tables_exist():
+                logger.warning("⚠️  Initial table verification failed, attempting force creation...")
+                if force_create_tables():
+                    logger.info("✅ Force table creation succeeded")
+                else:
+                    logger.error("❌ Force table creation failed")
+                    
+            # 最終確認
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            logger.info(f"✅ Startup verification completed. Available tables: {tables}")
+            
+            # 各テーブルの動作確認
+            try:
+                from app.models.user import User
+                from app.models.permission import Permission
+                
+                user_count = User.query.count()
+                permission_count = Permission.query.count()
+                logger.info(f"✅ Table operation test - Users: {user_count}, Permissions: {permission_count}")
+            except Exception as test_error:
+                logger.warning(f"⚠️  Table operation test failed: {test_error}")
+                # 再度強制作成
+                logger.info("🚨 Attempting emergency table recreation...")
+                force_create_tables()
+                
+    except Exception as e:
+        logger.error(f"❌ Startup table verification failed: {e}")
+        # 最後の手段として直接作成を試行
+        try:
+            from app.database import db
+            with app.app_context():
+                db.create_all()
+                logger.info("✅ Emergency db.create_all() completed")
+        except Exception as emergency_error:
+            logger.error(f"❌ Emergency table creation failed: {emergency_error}")

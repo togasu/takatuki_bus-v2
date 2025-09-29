@@ -75,11 +75,23 @@ def init_migration():
             print(f"Migrations directory exists: {migrations_exist}")
             print(f"env.py exists: {env_py_exists}")
             
-            if not migrations_exist or not env_py_exists:
-                # 新規初期化が必要
+            if not migrations_exist or not env_py_exists or has_alembic_table:
+                # 新規初期化が必要（alembic_tableが存在する場合も含む）
                 print("Performing fresh migration initialization...")
+                
+                # Alembicテーブルをクリア
+                if has_alembic_table:
+                    print("Clearing alembic version table...")
+                    try:
+                        with db.engine.connect() as conn:
+                            conn.execute(text("DELETE FROM alembic_version"))
+                            conn.commit()
+                        print("Alembic version table cleared")
+                    except Exception as e:
+                        print(f"Could not clear alembic table: {e}")
+                
                 if migrations_exist:
-                    print("Removing corrupted migrations directory...")
+                    print("Removing existing migrations directory...")
                     shutil.rmtree('migrations')
                 
                 print("Initializing migration repository...")
@@ -139,15 +151,47 @@ def init_migration():
                     
         except Exception as e:
             print(f"Migration initialization failed: {e}")
-            print("Falling back to basic table creation...")
+            print("Falling back to direct table creation...")
             
-            # 最後の手段：直接テーブル作成
+            # 直接テーブル作成
             try:
+                print("Creating tables using SQLAlchemy...")
                 db.create_all()
-                print("Tables created directly using SQLAlchemy")
+                print("✅ Tables created successfully using SQLAlchemy")
+                
+                # テーブルが正しく作成されたか確認
+                from sqlalchemy import inspect
+                inspector = inspect(db.engine)
+                table_names = inspector.get_table_names()
+                print(f"✅ Created tables: {table_names}")
+                
+                # 各モデルのテーブル存在確認
+                from app.models import Driver
+                try:
+                    driver_count = Driver.query.count()
+                    print(f"✅ Drivers table: {driver_count} records")
+                except Exception as query_error:
+                    print(f"⚠️  Table query test failed: {query_error}")
+                    
             except Exception as create_error:
-                print(f"Direct table creation also failed: {create_error}")
-                sys.exit(1)
+                print(f"❌ Direct table creation failed: {create_error}")
+                print("Attempting emergency table creation...")
+                
+                # 緊急措置：個別にテーブル作成を試行
+                try:
+                    # まずデータベース接続を確認
+                    with db.engine.connect() as conn:
+                        conn.execute(text("SELECT 1"))
+                        print("✅ Database connection is working")
+                    
+                    # 個別にモデルのテーブルを作成
+                    from app.models import Driver
+                    Driver.__table__.create(db.engine, checkfirst=True)
+                    print("✅ Individual table creation succeeded")
+                    
+                except Exception as emergency_error:
+                    print(f"❌ Emergency table creation failed: {emergency_error}")
+                    sys.exit(1)
         
         print("Driver service migration initialization completed!")
 

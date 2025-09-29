@@ -19,6 +19,7 @@ COPY app /app/app
 COPY app_run.py /app/
 COPY uwsgi.ini /app/
 COPY init_migration.py /app/
+COPY auto_fix_tables.py /app/
 COPY create_test_driver.py /app/
 COPY start_driver.sh /app/
 

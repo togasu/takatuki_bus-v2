@@ -75,11 +75,23 @@ def init_migration():
             print(f"Migrations directory exists: {migrations_exist}")
             print(f"env.py exists: {env_py_exists}")
             
-            if not migrations_exist or not env_py_exists:
-                # 新規初期化が必要
+            if not migrations_exist or not env_py_exists or has_alembic_table:
+                # 新規初期化が必要（alembic_tableが存在する場合も含む）
                 print("Performing fresh migration initialization...")
+                
+                # Alembicテーブルをクリア
+                if has_alembic_table:
+                    print("Clearing alembic version table...")
+                    try:
+                        with db.engine.connect() as conn:
+                            conn.execute(text("DELETE FROM alembic_version"))
+                            conn.commit()
+                        print("Alembic version table cleared")
+                    except Exception as e:
+                        print(f"Could not clear alembic table: {e}")
+                
                 if migrations_exist:
-                    print("Removing corrupted migrations directory...")
+                    print("Removing existing migrations directory...")
                     shutil.rmtree('migrations')
                 
                 print("Initializing migration repository...")
@@ -139,17 +151,81 @@ def init_migration():
                     
         except Exception as e:
             print(f"Migration initialization failed: {e}")
-            print("Falling back to basic table creation...")
+            print("Falling back to direct table creation...")
             
-            # 最後の手段：直接テーブル作成
+            # 直接テーブル作成
             try:
+                print("Creating tables using SQLAlchemy...")
                 db.create_all()
-                print("Tables created directly using SQLAlchemy")
+                print("✅ Tables created successfully using SQLAlchemy")
+                
+                # テーブルが正しく作成されたか確認
+                from sqlalchemy import inspect
+                inspector = inspect(db.engine)
+                table_names = inspector.get_table_names()
+                print(f"✅ Created tables: {table_names}")
+                
+                # 各モデルのテーブル存在確認
+                from app.models import User, Permission
+                try:
+                    user_count = User.query.count()
+                    permission_count = Permission.query.count()
+                    print(f"✅ Users table: {user_count} records")
+                    print(f"✅ Permissions table: {permission_count} records")
+                except Exception as query_error:
+                    print(f"⚠️  Table query test failed: {query_error}")
+                    
             except Exception as create_error:
-                print(f"Direct table creation also failed: {create_error}")
-                sys.exit(1)
+                print(f"❌ Direct table creation failed: {create_error}")
+                print("Attempting emergency table creation...")
+                
+                # 緊急措置：個別にテーブル作成を試行
+                try:
+                    # まずデータベース接続を確認
+                    with db.engine.connect() as conn:
+                        conn.execute(text("SELECT 1"))
+                        print("✅ Database connection is working")
+                    
+                    # 個別にモデルのテーブルを作成
+                    from app.models import User, Permission
+                    User.__table__.create(db.engine, checkfirst=True)
+                    Permission.__table__.create(db.engine, checkfirst=True)
+                    print("✅ Individual table creation succeeded")
+                    
+                except Exception as emergency_error:
+                    print(f"❌ Emergency table creation failed: {emergency_error}")
+                    sys.exit(1)
         
         print("Admin service migration initialization completed!")
+        
+        # 最終確認とテーブル強制作成
+        print("Performing final table verification and creation...")
+        try:
+            db.create_all()
+            print("✅ Final table creation completed")
+            
+            # テーブル存在の最終確認
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            final_tables = inspector.get_table_names()
+            print(f"✅ Final available tables: {final_tables}")
+            
+            # 各テーブルの動作確認
+            from app.models import User, Permission
+            try:
+                user_count = User.query.count()
+                permission_count = Permission.query.count()
+                print(f"✅ Final verification - Users: {user_count}, Permissions: {permission_count}")
+            except Exception as verify_error:
+                print(f"⚠️  Final verification failed: {verify_error}")
+                # 再度強制作成
+                db.create_all()
+                print("✅ Emergency table recreation completed")
+                
+        except Exception as final_error:
+            print(f"❌ Final verification failed: {final_error}")
+            
+        print("Admin service migration and verification completed!")
 
 if __name__ == "__main__":
     init_migration()

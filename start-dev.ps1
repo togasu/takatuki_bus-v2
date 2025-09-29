@@ -195,8 +195,34 @@ if ($initDatabase) {
         try {
             if ($service -eq "admin" -or $service -eq "driver") {
                 # adminとdriverサービスは改善された初期化スクリプトを使用
+                # まず既存のマイグレーションディレクトリを削除してクリーンスタート
+                Write-Info "$service サービス: 既存マイグレーションを削除中..."
+                docker exec "takatuki_bus-v2-$service-1" rm -rf migrations 2>$null
+                
                 Write-Info "$service サービス: init_migration.pyを実行中..."
                 docker exec "takatuki_bus-v2-$service-1" python init_migration.py
+                
+                # マイグレーション後の確実な自動修復確認
+                Write-Info "$service サービス: テーブル状態の自動確認・修復を実行中..."
+                try {
+                    # 直接テーブル作成を実行して確実にテーブルが存在することを保証
+                    docker exec "takatuki_bus-v2-$service-1" python -c "
+from app import create_app
+from app.database import db
+from sqlalchemy import text, inspect
+app = create_app()
+with app.app_context():
+    print('🔧 Ensuring tables exist...')
+    db.create_all()
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+    print(f'✅ Available tables: {tables}')
+    print('✅ Table creation completed')
+"
+                    Write-Success "$service サービスのテーブル状態確認が完了しました"
+                } catch {
+                    Write-Warning "$service サービスの自動修復でエラーが発生しました: $_"
+                }
             } else {
                 # studentサービスは従来通り
                 # 既存のマイグレーションディレクトリを削除（クリーンスタート）

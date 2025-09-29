@@ -56,8 +56,20 @@ if [ "${SKIP_MIGRATION}" != "true" ]; then
     if [ $? -eq 0 ]; then
         echo "Migration initialization successful"
     else
-        echo "Migration initialization failed, but continuing with service startup..."
+        echo "Migration initialization failed, attempting auto-fix..."
+        python auto_fix_tables.py
+        
+        if [ $? -eq 0 ]; then
+            echo "Auto-fix successful"
+        else
+            echo "Auto-fix failed, but continuing with service startup..."
+        fi
     fi
+    
+    # 最終的なテーブル状態確認
+    echo "Verifying table status..."
+    python auto_fix_tables.py
+    
 else
     echo "Skipping migration (SKIP_MIGRATION=true)"
 fi

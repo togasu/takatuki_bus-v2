@@ -5,6 +5,7 @@ from app.utils.now_jst import now_jst
 from app.utils.auth_utils import SessionManager
 from app.utils.decorators import safe_api_route, safe_route
 from app.utils.error_handlers import create_error_response
+from app.utils.auto_repair import auto_repair_on_table_error, ensure_tables_exist
 import secrets
 import os
 
@@ -15,8 +16,9 @@ session_manager = SessionManager()
 
 @bp.route("/auth/login", methods=["POST"])
 @safe_api_route(required_fields=["username", "password"])
+@auto_repair_on_table_error
 def auth_login():
-    """管理者認証処理"""
+    """管理者認証処理（自動修復機能付き）"""
     from app.models.user import User  # 遅延インポート
     
     data = request.get_json()
@@ -24,6 +26,7 @@ def auth_login():
     password = data["password"]
     
     # ユーザー認証（実際のパスワード検証）
+    # @auto_repair_on_table_errorデコレータが自動的にテーブル不存在エラーを処理
     user = User.query.filter_by(username=username, is_active=True).first()
     
     if user and user.check_password(password):
