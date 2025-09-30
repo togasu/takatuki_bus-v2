@@ -369,5 +369,118 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to get penalty details for student {student_id}: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
+    # 統計情報取得API
+    def get_user_registration_statistics(self, start_date=None, end_date=None):
+        """ユーザー登録統計を取得"""
+        try:
+            params = {}
+            if start_date:
+                params['start_date'] = start_date
+            if end_date:
+                params['end_date'] = end_date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/user_registrations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get user registration statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_reservation_statistics(self, date=None, granularity='1min'):
+        """バス予約統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/bus_reservations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus reservation statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_cancellation_statistics(self, date=None, granularity='1min'):
+        """キャンセル統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/cancellations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get cancellation statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_boarding_statistics(self, date=None, granularity='1min'):
+        """バス乗車統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/bus_boardings',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus boarding statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_real_time_statistics(self):
+        """リアルタイム統計を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/statistics/realtime',
+                headers=self.headers,
+                timeout=10
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get real-time statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
 # シングルトンインスタンス
 admin_api = AdminAPIClient()
