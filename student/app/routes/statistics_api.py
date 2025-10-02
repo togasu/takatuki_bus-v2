@@ -251,13 +251,17 @@ def get_realtime_statistics():
         today = current_time.date()
         
         # 今日のアクティブな予約数
-        active_reservations = Reservation.query.join(Bus).filter(
+        active_reservations = db.session.query(Reservation).join(
+            Bus, Reservation.bus_id == Bus.id
+        ).filter(
             func.date(Bus.departure_time) == today,
             Bus.departure_time > current_time
         ).count()
         
         # 今日の承認待ち予約数
-        pending_reservations = Reservation.query.join(Bus).filter(
+        pending_reservations = db.session.query(Reservation).join(
+            Bus, Reservation.bus_id == Bus.id
+        ).filter(
             func.date(Bus.departure_time) == today,
             Reservation.approved == 0
         ).count()
@@ -269,7 +273,9 @@ def get_realtime_statistics():
         
         # 現在の乗車予定者数（今後1時間以内の出発便）
         one_hour_later = current_time + timedelta(hours=1)
-        current_passengers = Reservation.query.join(Bus).filter(
+        current_passengers = db.session.query(Reservation).join(
+            Bus, Reservation.bus_id == Bus.id
+        ).filter(
             Bus.departure_time >= current_time,
             Bus.departure_time <= one_hour_later,
             Reservation.approved == 1
@@ -504,16 +510,19 @@ def get_boarding_data_by_minute(target_date):
             minute_data[time_key] = 0
     
     # 承認済み予約（乗車済み）を取得
-    boardings = Reservation.query.join(Bus).filter(
+    # ReservationとBusを明示的にJOIN
+    boardings = db.session.query(Reservation, Bus).join(
+        Bus, Reservation.bus_id == Bus.id
+    ).filter(
         and_(
             func.date(Bus.departure_time) == target_date,
             Reservation.approved == 1
         )
     ).all()
     
-    for boarding in boardings:
-        if boarding.bus and boarding.bus.departure_time:
-            time_key = boarding.bus.departure_time.strftime('%H:%M')
+    for reservation, bus in boardings:
+        if bus and bus.departure_time:
+            time_key = bus.departure_time.strftime('%H:%M')
             if time_key in minute_data:
                 minute_data[time_key] += 1
     
@@ -544,16 +553,18 @@ def get_boarding_data_by_hour(target_date):
         time_key = f"{hour:02d}:00"
         hour_data[time_key] = 0
     
-    boardings = Reservation.query.join(Bus).filter(
+    boardings = db.session.query(Reservation, Bus).join(
+        Bus, Reservation.bus_id == Bus.id
+    ).filter(
         and_(
             func.date(Bus.departure_time) == target_date,
             Reservation.approved == 1
         )
     ).all()
     
-    for boarding in boardings:
-        if boarding.bus and boarding.bus.departure_time:
-            time_key = f"{boarding.bus.departure_time.hour:02d}:00"
+    for reservation, bus in boardings:
+        if bus and bus.departure_time:
+            time_key = f"{bus.departure_time.hour:02d}:00"
             hour_data[time_key] += 1
     
     labels = list(hour_data.keys())
@@ -587,7 +598,9 @@ def get_boarding_data_by_day(target_date):
         daily_data[current_date.strftime('%Y-%m-%d')] = 0
         current_date += timedelta(days=1)
     
-    boardings = Reservation.query.join(Bus).filter(
+    boardings = db.session.query(Reservation, Bus).join(
+        Bus, Reservation.bus_id == Bus.id
+    ).filter(
         and_(
             func.date(Bus.departure_time) >= month_start,
             func.date(Bus.departure_time) <= month_end,
@@ -595,9 +608,9 @@ def get_boarding_data_by_day(target_date):
         )
     ).all()
     
-    for boarding in boardings:
-        if boarding.bus and boarding.bus.departure_time:
-            date_key = boarding.bus.departure_time.strftime('%Y-%m-%d')
+    for reservation, bus in boardings:
+        if bus and bus.departure_time:
+            date_key = bus.departure_time.strftime('%Y-%m-%d')
             if date_key in daily_data:
                 daily_data[date_key] += 1
     
@@ -640,7 +653,9 @@ def get_boarding_data_by_week(target_date):
         
         current_date += timedelta(days=7)
     
-    boardings = Reservation.query.join(Bus).filter(
+    boardings = db.session.query(Reservation, Bus).join(
+        Bus, Reservation.bus_id == Bus.id
+    ).filter(
         and_(
             func.date(Bus.departure_time) >= semester_start,
             func.date(Bus.departure_time) <= semester_end,
@@ -648,9 +663,9 @@ def get_boarding_data_by_week(target_date):
         )
     ).all()
     
-    for boarding in boardings:
-        if boarding.bus and boarding.bus.departure_time:
-            boarding_date = boarding.bus.departure_time.date()
+    for reservation, bus in boardings:
+        if bus and bus.departure_time:
+            boarding_date = bus.departure_time.date()
             week_start = boarding_date - timedelta(days=boarding_date.weekday())
             week_key = week_start.strftime('%Y-%m-%d')
             if week_key in weekly_data:

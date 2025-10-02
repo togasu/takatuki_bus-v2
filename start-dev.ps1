@@ -99,6 +99,16 @@ try {
     $containers = docker ps -q --filter "name=takatuki_bus-v2-"
     if ($containers) {
         Write-Info "既存のコンテナを停止中..."
+        
+        # 予約シミュレーターを事前に停止
+        try {
+            Write-Info "予約シミュレーターを停止中..."
+            docker exec "takatuki_bus-v2-student-1" python simulator_manager.py stop 2>$null
+            Write-Info "予約シミュレーターを停止しました"
+        } catch {
+            Write-Info "予約シミュレーターは既に停止中です"
+        }
+        
         docker-compose down
         Write-Success "Dockerコンテナを停止しました"
     } else {
@@ -344,6 +354,25 @@ with app.app_context():
             Write-Warning "ペナルティシステムのテストでエラーが発生しました: $_"
         }
         Start-Sleep -Seconds 3
+        
+        # 予約シミュレーターの起動（デバッグモード時のみ）
+        Write-Info "Step 6c: 予約シミュレーターの起動"
+        try {
+            Write-Info "予約シミュレーターを開始中..."
+            Write-Info "   - 2分ごとに1-3件の予約を自動作成"
+            Write-Info "   - 予約の80%が5分後に乗車済みに変更"
+            Write-Info "   - 20%の確率でランダムキャンセル"
+            Write-Info "   - 統計データのリアルタイム更新テスト"
+            
+            docker exec "takatuki_bus-v2-student-1" python simulator_manager.py start
+            Write-Success "予約シミュレーターを開始しました"
+            Write-Info "   📊 統計ページでリアルタイム更新を確認できます"
+            Write-Info "   🛑 停止: docker exec takatuki_bus-v2-student-1 python simulator_manager.py stop"
+            Write-Info "   📋 状態: docker exec takatuki_bus-v2-student-1 python simulator_manager.py status"
+        } catch {
+            Write-Warning "予約シミュレーターの起動でエラーが発生しました: $_"
+        }
+        Start-Sleep -Seconds 3
     } else {
         Write-Info "Step 6b: デバッグモードが無効のため、テストデータの作成をスキップします"
     }
@@ -408,6 +437,12 @@ if ($initDatabase) {
         Write-Info "   - 手動ペナルティ: 管理画面から理由・期間選択可能"
         Write-Info "   - テストコマンド: docker exec takatuki_bus-v2-student-1 python test_penalty_system.py"
         Write-Info "   - 自動チェック: docker exec takatuki_bus-v2-student-1 python auto_penalty_check.py"
+        Write-Info "🎯 予約シミュレーター:"
+        Write-Info "   - 自動予約テスト: 2分ごとに1-3件の予約作成"
+        Write-Info "   - 自動乗車テスト: 予約の80%が5分後に乗車済み"
+        Write-Info "   - 停止: docker exec takatuki_bus-v2-student-1 python simulator_manager.py stop"
+        Write-Info "   - 状態確認: docker exec takatuki_bus-v2-student-1 python simulator_manager.py status"
+        Write-Info "   - ログ: docker exec takatuki_bus-v2-student-1 cat /app/logs/reservation_simulator.log"
     } else {
         Write-Info "ℹ️  デバッグ用テストデータは作成されていません"
         Write-Info "   テストデータが必要な場合は 'init debug' オプションを使用してください"

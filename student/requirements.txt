@@ -10,3 +10,4 @@ uwsgi
 requests
 configparser
 redis
+psutil
