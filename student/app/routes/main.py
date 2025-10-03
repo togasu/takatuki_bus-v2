@@ -86,7 +86,10 @@ def personal():
             if(len(current) >= 5):
                 break
 
-    return render_template('personal.html', name=name, user_full_name=user_full_name, username=username, current=current, personal_data=personal_data)
+    # adminユーザーかどうかの情報をテンプレートに渡す
+    is_admin_user = data.get('type') == 'admin_user'
+    
+    return render_template('personal.html', name=name, user_full_name=user_full_name, username=username, current=current, personal_data=personal_data, is_admin_user=is_admin_user)
 
 @main_bp.route('/personal/tips')
 def tips():

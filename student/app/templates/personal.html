@@ -46,6 +46,30 @@
         margin: 0;
       }
 
+      .admin-back-btn {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .admin-back-btn button {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffffff;
+        background-color: #28a745;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0;
+      }
+
+      .admin-back-btn button:hover {
+        background-color: #218838;
+      }
+
       .tips {
         position: absolute;
         right: 10px;
@@ -112,6 +136,11 @@
   <body>
     <header class="header">
       <div class="header-content">
+        {% if is_admin_user %}
+        <div class="admin-back-btn">
+          <button onclick="redirectToNextPage('/admin/')">Admin Dashboard</button>
+        </div>
+        {% endif %}
         <a href="{{ url_for('main.personal') }}">Sojo Bus</a>
         <div class="tips">
           <p onclick="redirectToNextPage('{{url_for('main.tips')}}')">利用案内</p>
