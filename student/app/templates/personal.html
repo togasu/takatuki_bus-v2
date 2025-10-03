@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
 	  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/personal.css')}}">
@@ -119,7 +120,7 @@
       <article>
         <div class="loop_wrap">
           <div>
-            {{ text }}
+            {{ text | e }}
           </div>
         </div>
       </article>
@@ -127,8 +128,8 @@
 
     <main>
       <div class="container"> 
-        <div class="name top">情{{name}}</div>
-        <div class="name end">{{user_full_name}}さん</div>
+        <div class="name top">情{{ name | e }}</div>
+        <div class="name end">{{ user_full_name | e }}さん</div>
         <a class="atagu h3">次のバス状況</a>
         {% if (current | length) == 0 %}
         <p>運行データがありません</p>
@@ -141,16 +142,16 @@
           </tr>
           {% for i in current %}
           <tr>
-            <td>{{ i["departure_time"] }}発</td>
-            <td>{{ i["busid"] }}</td>
+            <td>{{ i["departure_time"] | e }}発</td>
+            <td>{{ i["busid"] | e }}</td>
             {% if i["available_seats"] > 10 %}
-            <td>{{ i["available_seats"] }}</td>
+            <td>{{ i["available_seats"] | e }}</td>
             {% elif i["available_seats"] == -1 %}
             <td>キャンセル待ち</td>
             {% elif i["available_seats"] > 5 %}
-            <td class="nokori10">{{ i["available_seats"] }}</td>
+            <td class="nokori10">{{ i["available_seats"] | e }}</td>
             {% else %}
-            <td class="nokori5">{{ i["available_seats"] }}</td>
+            <td class="nokori5">{{ i["available_seats"] | e }}</td>
             {% endif %}
           </tr>
           {% endfor %}
@@ -173,15 +174,15 @@
           {% for j in personal_data %}
           {% if j["seat_number"] != "キャンセル待ち" %}
           <tr>
-            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["departure_time"] }}発</td>
-            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["busid"] }}</td>
-            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["seat_number"] }}番</td>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["departure_time"] | e }}発</td>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["busid"] | e }}</td>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["seat_number"] | e }}番</td>
           </tr>
           {% else %}
           <tr>
-            <td>{{ j["departure_time"] }}発</td>
-            <td>{{ j["busid"] }}</td>
-            <td>{{ j["seat_number"] }}</td>
+            <td>{{ j["departure_time"] | e }}発</td>
+            <td>{{ j["busid"] | e }}</td>
+            <td>{{ j["seat_number"] | e }}</td>
           </tr>
           {% endif %}
           {% endfor %}

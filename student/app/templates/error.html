@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self';">
   <title>error</title>
   <style>
     body {
@@ -50,7 +51,7 @@
 
   <div class="terminal-container">
     <p class="error-message">Error: Command not found</p>
-    <p> {{error_message }} </p>
+    <p> {{ error_message | e }} </p>
 	  <a href="{{ url_for('main.personal') }}"><button type="submit" class="back-home-link">戻る</button>
   </div>
 

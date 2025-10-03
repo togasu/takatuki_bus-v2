@@ -58,7 +58,8 @@ def auth_login():
             session_token, 
             httponly=True, 
             secure=False,  # HTTPSでない場合はFalse
-            samesite='Lax'
+            samesite='Lax',
+            domain='localhost'  # localhostドメイン全体で共有
         )
         
         return response, 200
@@ -260,3 +261,35 @@ def set_session():
             return response, 200
     
     return create_error_response("無効なトークンです", 401, "Invalid Token")
+
+@bp.route("/auth/verify-admin", methods=["POST"])
+@safe_api_route(required_fields=["username", "password"])
+@auto_repair_on_table_error
+def verify_admin():
+    """adminユーザーかどうかを確認する（studentサービス用）"""
+    from app.models.user import User  # 遅延インポート
+    
+    data = request.get_json()
+    username = data["username"]
+    password = data["password"]
+    
+    # ユーザー認証
+    user = User.query.filter_by(username=username, is_active=True).first()
+    
+    if user and user.check_password(password):
+        # adminユーザーであることを確認
+        if user.role == 'admin':
+            return jsonify({
+                "is_admin": True,
+                "user_id": user.id,
+                "username": user.username,
+                "role": user.role,
+                "email": user.email
+            }), 200
+        else:
+            return jsonify({
+                "is_admin": False,
+                "message": "管理者権限がありません"
+            }), 403
+    
+    return create_error_response("認証に失敗しました", 401, "Authentication Failed")

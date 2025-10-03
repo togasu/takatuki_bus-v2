@@ -15,28 +15,60 @@ def personal():
     if not data or not isinstance(data, dict) or data.get('flag') == False:
         return redirect(url_for('auth.top'))
     
-    student_id = data.get('student_id')
-    if not student_id or not isinstance(student_id, str):
-        return redirect(url_for('auth.top'))
-    
-    # 学部生の場合
-    if len(student_id) == 6:
-        name = student_id[:2] + "-" + student_id[-4:]
-    # 大学院生の場合
-    elif len(student_id) > 2 and student_id[2] == "1":
-        name = str(student_id[:2]) + "M" + str(student_id[4:])
-    # 博士生の場合
+    # adminユーザーの場合とstudentユーザーの場合で処理を分ける
+    if data.get('type') == 'admin_user':
+        # adminユーザーの場合
+        username = data.get('username', 'Admin')
+        user_full_name = request.cookies.get('user_full_name', f'Admin {username}')
+        name = f"Admin ({username})"
+        
+        # adminユーザーは予約履歴なしでダッシュボードを表示
+        personal_data = []
+        print(f"Debug: Admin user accessing personal page - name={name}, username={username}")
     else:
-        name = student_id[:2] + "D" + student_id[4:]
+        # 学生ユーザーの場合（既存のロジック）
+        student_id = data.get('student_id')
+        if not student_id or not isinstance(student_id, str):
+            return redirect(url_for('auth.top'))
+        
+        # 学部生の場合
+        if len(student_id) == 6:
+            name = student_id[:2] + "-" + student_id[-4:]
+        # 大学院生の場合
+        elif len(student_id) > 2 and student_id[2] == "1":
+            name = str(student_id[:2]) + "M" + str(student_id[4:])
+        # 博士生の場合
+        else:
+            name = student_id[:2] + "D" + student_id[4:]
+        
+        user_full_name = request.cookies.get('user_full_name', '名前不明')
+        username = user_full_name
+        
+        # 個人の情報取得
+        bookedseat = db.session.query(Reservation).filter_by(user_id=student_id).order_by(Reservation.bus_id).all()
+        print(f"予約検索: student_id={student_id}, 見つかった予約数={len(bookedseat)}")
+        personal_data = []
+        if bookedseat:
+            print(bookedseat)
+            for booked in bookedseat[:]:
+                bus = db.session.query(Bus).filter_by(id=booked.bus_id).first()
+                if bus:  # busが存在することを確認
+                    dt = bus.departure_time.date()
+                    if datetime.now().date() > dt:
+                        bookedseat.remove(booked)
+                    else:
+                        personal_data.append({
+                            "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
+                            "seat_number": booked.seat_number,
+                            "busid": bus.busid
+                        })
+                        print(f"dearture_time:{str(bus.departure_time.strftime('%m/%d %H:%M'))}, bus_id:{booked.bus_id}, seat_number:{booked.seat_number}")
     
-    user_full_name = request.cookies.get('user_full_name', '名前不明')
-    print(f"Debug: name={name}, user_full_name={user_full_name}, student_id={student_id}")
+    print(f"Debug: name={name}, user_full_name={user_full_name}")
     current_time = datetime.now()
     firstbus = db.session.query(Bus).filter(Bus.departure_time > current_time).order_by(Bus.departure_time).first()
 
-    username = user_full_name
     current = []  # 空席数
-    personal_data = []
     
     if firstbus is not None:
         currentbuses = db.session.query(Bus).filter(Bus.departure_time >= firstbus.departure_time, Bus.status != 2).order_by(Bus.departure_time).limit(10).all()
@@ -53,25 +85,6 @@ def personal():
             })
             if(len(current) >= 5):
                 break
-
-    # 個人の情報取得
-    bookedseat = db.session.query(Reservation).filter_by(user_id=student_id).order_by(Reservation.bus_id).all()
-    print(f"予約検索: student_id={student_id}, 見つかった予約数={len(bookedseat)}")
-    if bookedseat:
-        print(bookedseat)
-        for booked in bookedseat[:]:
-            bus = db.session.query(Bus).filter_by(id=booked.bus_id).first()
-            if bus:  # busが存在することを確認
-                dt = bus.departure_time.date()
-                if datetime.now().date() > dt:
-                    bookedseat.remove(booked)
-                else:
-                    personal_data.append({
-                        "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
-                        "seat_number": booked.seat_number,
-                        "busid": bus.busid
-                    })
-                    print(f"dearture_time:{str(bus.departure_time.strftime('%m/%d %H:%M'))}, bus_id:{booked.bus_id}, seat_number:{booked.seat_number}")
 
     return render_template('personal.html', name=name, user_full_name=user_full_name, username=username, current=current, personal_data=personal_data)
 

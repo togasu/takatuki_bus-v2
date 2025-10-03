@@ -78,6 +78,28 @@ def add_token_str(k_number, student_id):
         print("Redis token manager not available")
         return None
 
+def add_admin_token_str(username, admin_info):
+    """adminユーザー用のトークンを生成して保存（Redisベース）"""
+    token_manager = getattr(current_app, 'token_manager', None)
+    if token_manager:
+        # adminユーザー用の特別なセッションデータ
+        session_data = {
+            'username': username,
+            'user_id': admin_info.get('user_id'),
+            'role': 'admin',
+            'email': admin_info.get('email'),
+            'type': 'admin_user'  # 管理者ユーザーとして識別
+        }
+        token = token_manager.create_admin_session(username, session_data)
+        if token:
+            return token
+        else:
+            print("Failed to create admin session in Redis")
+            return None
+    else:
+        print("Redis token manager not available")
+        return None
+
 def check_session(personal_token):
     """セッションチェック（Redisベース）"""
     token_manager = getattr(current_app, 'token_manager', None)

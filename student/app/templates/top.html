@@ -3,6 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self';">
 		<title>Sojo Bus Login</title>
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/top.css') }}">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/header_footer.css')}}">
@@ -25,6 +26,11 @@
 			</div>
 		</header>			<form class="box" action="{{ url_for('auth.login') }}" method="post">
 				<h1>Login</h1>
+				{% if message %}
+				<div class="alert alert-warning" role="alert" style="margin-bottom: 15px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; color: #856404;">
+					{{ message | e }}
+				</div>
+				{% endif %}
 				<input type="text" name="username" placeholder="Username" required>
 				<input type="password" name="password" placeholder="Password" required>
 				<input type="submit" name="" value="Login">
