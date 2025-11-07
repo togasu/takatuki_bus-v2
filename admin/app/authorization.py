@@ -129,6 +129,7 @@ def check_normal_permissions(resource, action):
     allowed_resources = [
         "admin_user",      # 読み取り・更新のみ
         "admin_permission",
+        "admin",           # 学期管理等の管理者専用機能
         "driver",
         "student",
         "student_bus",
@@ -180,7 +181,8 @@ def get_user_permissions(user):
             "admin_seat_all",
             "admin_course_all",
             "admin_season_all",
-            "admin_system_all"
+            "admin_system_all",
+            "admin_semester_all"   # 学期管理権限を追加
         ]
     
     return []

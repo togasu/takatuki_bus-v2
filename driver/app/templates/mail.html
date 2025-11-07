@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="{{ url_for('mailsend') }}" method="post">
+        <label for="email_body">メールの本文:</label>
+        <textarea id="email_body" name="email_body" rows="10" cols="50"></textarea>
+        <br>
+        <button type="submit">送信</button>
+    </form>
+{% endblock %}
+
+{% block styles %}
+<style>
+  main{
+    margin-top:50px;
+    text-align: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+  }
+  form{
+    margin-top: 50px;
+    text-align: center;
+    justify-content: center;
+  }
+</style>
+{% endblock %}

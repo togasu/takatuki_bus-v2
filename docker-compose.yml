@@ -11,6 +11,7 @@ services:
       - ./nginx/maintenance.html:/etc/nginx/html/maintenance.html:ro
       - ./logs:/app/logs
       - ./certs:/etc/nginx/certs:ro
+      - ./driver/app/static:/driver_static:ro
     depends_on:
       - student
       - admin
@@ -56,6 +57,7 @@ services:
     build: ./driver
     volumes:
       - ./logs:/app/logs
+      - ./driver/app:/app/app  # 開発用: アプリケーションファイルをマウント
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_DB: mydb

@@ -1,18 +1,24 @@
 from app import create_app, socketio
+import os
+import logging
 
-# Flaskアプリ作成
-app = create_app()
+# ログ設定
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# スタンドアローン版を作成する場合は以下を使用
-# from app import create_standalone_app
-# app = create_standalone_app()
+try:
+    # uWSGI用のapplicationオブジェクト
+    application = create_app()
+    logger.info("Driver service application created successfully")
+except Exception as e:
+    logger.error(f"Driver service application creation failed: {e}")
+    raise
 
 # 開発環境での実行
 if __name__ == '__main__':
-    # 開発時はスタンドアローン版を使用
-    from app import create_standalone_app
-    app = create_standalone_app()
-    app.run(debug=True, port=8080)
+    # 通常のcreate_appを使用
+    app = create_app()
+    app.run(debug=True, host='0.0.0.0', port=8080)
 
 # uWSGI + gevent で動くため socketio.run は不要
 # ただし WebSocket イベントは socketio に登録される

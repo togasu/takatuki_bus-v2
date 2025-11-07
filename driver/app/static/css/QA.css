@@ -1,0 +1,56 @@
+/* Reset some default styles */
+body, h1, h2, h3, p, section {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Set a modern font and background color */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Style the header */
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Style the main content */
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the sections */
+section {
+    margin-bottom: 20px;
+}
+
+/* Style the Q&A items */
+.qa-item {
+    background: #e9e9e9;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.qa-item h3 {
+    margin-bottom: 5px;
+}
+
+.qa-item p {
+ 
+    margin: 0;
+}

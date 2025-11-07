@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="content-container">
+        <h2 class="vertical-align">利用方法</h2>
+        <p>このページでは、Sojo Busの利用方法について説明します。</p>
+        <p>Sojo Busは、大学のバスを利用するためのシステムです。</p>
+        <p>バスの運行便登録、予約確認、問題発生、利用方法の4つの機能があります。</p>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block styles %}
+<style>
+  main {
+    margin-top: 50px;
+    text-align: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+  }
+
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .vertical-align {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .button-below-header {
+    margin: 10px 0;
+  }
+
+  .button-below-header a {
+    text-decoration: none;
+    color: inherit;
+  }
+</style>
+{% endblock %}

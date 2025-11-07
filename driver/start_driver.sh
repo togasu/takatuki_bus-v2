@@ -1,8 +1,8 @@
 #!/bin/bash
-"""
-Driver Service Startup Script
-マイグレーションとサービス起動を管理
-"""
+#
+# Driver Service Startup Script
+# マイグレーションとサービス起動を管理
+#
 
 set -e
 

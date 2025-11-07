@@ -1,0 +1,54 @@
+<!DOC    <!-- CSS Debug: base_url='{{ base_url }}' url_for='{{ url_for('static', filename='css/top.css') }}' -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/top.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/top.js') }}"></script>
+    <link rel="icon" href="{{ url_for('static', filename='images/bus.ico') }}">html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS Debug: base_url='{{ base_url }}' url_for='{{ url_for('static', filename='css/top.css') }}' -->
+    <link rel="stylesheet" href="{{ base_url }}{{ url_for('static', filename='css/top.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ base_url }}{{ url_for('static', filename='js/top.js') }}"></script>
+    <link rel="icon" href="{{ base_url }}{{ url_for('static', filename='images/bus.ico') }}">
+    <title>Sojo Bus</title>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header__inner">
+        <h1 class="header__title header-title">
+          <img class="buspng" src="{{ url_for('static', filename='images/bus.png') }}" alt="Sojo Bus" class="header-title__logo">
+          <a class="header-title-sojobus" href="{{ base_url }}{{ url_for('main.top') }}">sojo bus</a>
+        </h1>
+
+        <nav class="header__nav nav" id="js-nav">
+          <ul class="nav__items nav-items">
+            <li class="nav-items__item"><a href="{{ base_url }}{{ url_for('main.bus') }}">バス運行便登録</a></li>
+            <li class="nav-items__item"><a href="{{ base_url }}{{ url_for('yoyaku.yoyaku') }}">予約確認</a></li>
+            <li class="nav-items__item"><a href="{{ base_url }}{{ url_for('question.question') }}">問題発生</a></li>
+            <li class="nav-items__item"><a href="{{ base_url }}{{ url_for('tips.tips')}}">利用方法</a></li>
+          </ul>
+        </nav>
+
+        <button class="header__hamburger hamburger" id="js-hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+      <div>
+        <p>© 2024 Versear　© 2024 Sojobus</p>
+      </div>
+    </footer>
+  </div>
+  {% block scripts %}{% endblock %}
+  {% block styles %}{% endblock %}
+</body>
+</html>

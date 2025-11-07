@@ -50,9 +50,10 @@ try:
     from .reservation import Reservation
     from .user import User, User_Penalty, LastSemester_user
     from .cancel import Cancel
+    from .semester import Semester, SemesterTransition
     
     # 明示的なインポートを__all__に追加（重複を避ける）
-    explicit_imports = ['Bus', 'Seat', 'Reservation', 'User', 'User_Penalty', 'LastSemester_user', 'Cancel']
+    explicit_imports = ['Bus', 'Seat', 'Reservation', 'User', 'User_Penalty', 'LastSemester_user', 'Cancel', 'Semester', 'SemesterTransition']
     for item in explicit_imports:
         if item not in __all__:
             __all__.append(item)

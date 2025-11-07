@@ -50,4 +50,34 @@ class QA(db.Model):
     createuser = db.Column(db.String(80), unique=False, nullable=False)  # 作成者
     createdate = db.Column(db.DateTime, nullable=False, default=now_jst)  # 作成日時
 
+# Hashテーブルは削除（Redis使用）
+
+# バスの情報を格納するテーブル
+class Bus(db.Model):
+    __bind_key__ = "db3"
+    id = db.Column(db.Integer, primary_key=True)
+    busid = db.Column(db.Integer, nullable=False)
+    departure_time = db.Column(db.DateTime, nullable=False)
+    seats = db.Column(db.Integer, nullable=False)
+    ud = db.Column(db.Integer, nullable=False)  # 上りなら0、下りなら1
+    bookable_time = db.Column(db.Integer, nullable=False)  # デフォルト0,予約可能時間に合わせて変更
+    status = db.Column(db.Integer, nullable=False)
+
+class Seat(db.Model):
+    __bind_key__ = "db3"
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, nullable=False)
+    bus_id = db.Column(db.Integer, nullable=False) # Bus.idを入れている
+    reservations = db.relationship('Reservation', backref='seat', lazy=True)
+
+class Reservation(db.Model):
+    __bind_key__ = "db3"
+    __tablename__ = 'Reservation' #テーブル名を指定
+    id = db.Column(db.Integer, primary_key=True)
+    seat_number = db.Column(db.Integer, db.ForeignKey('seat.number'), nullable=False)
+    bus_id = db.Column(db.Integer, db.ForeignKey('bus.id'), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
+    approved = db.Column(db.Integer, nullable=False) # 0なら未認証(デフォルト)、1なら認証済み
+    reserved_time = db.Column(db.DateTime)
+
 

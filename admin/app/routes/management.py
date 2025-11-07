@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from app.api_client import admin_api
 from app.authorization import require_permission
+from datetime import datetime, timedelta
 
 bp = Blueprint("management", __name__, url_prefix="/management")
 
@@ -123,6 +124,123 @@ def manage_buses():
         return jsonify(buses)
     else:
         return jsonify({"error": "Failed to fetch buses"}), 500
+
+@bp.route("/buses/ui", methods=["GET"])
+@require_permission("bus", "read")
+def bus_management_ui():
+    """バス管理UI"""
+    return render_template('bus_management.html')
+
+@bp.route("/buses/recurring", methods=["POST"])
+@require_permission("bus", "create")
+def create_recurring_bus():
+    """指定曜日の定期バス作成"""
+    try:
+        data = request.get_json()
+        day_of_week = data.get('dayOfWeek')  # 0=日曜日, 1=月曜日, ..., 6=土曜日
+        time = data.get('time')  # HH:MM形式
+        direction = data.get('direction')  # 0=上り, 1=下り
+        seats = data.get('seats', 45)
+        count = data.get('count', 48)  # デフォルトは48回（約12ヶ月分）
+        
+        # 曜日のバリデーション
+        if day_of_week is None or not isinstance(day_of_week, int) or day_of_week < 0 or day_of_week > 6:
+            return jsonify({"error": "曜日は0〜6の整数で指定してください（0=日曜日, 6=土曜日）"}), 400
+        
+        if not time:
+            return jsonify({"error": "時刻は必須です"}), 400
+        
+        # 時刻の形式チェック
+        try:
+            time_parts = time.split(':')
+            if len(time_parts) != 2:
+                raise ValueError("時刻はHH:MM形式で指定してください")
+            hour = int(time_parts[0])
+            minute = int(time_parts[1])
+            if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+                raise ValueError("有効な時刻を指定してください")
+        except ValueError as e:
+            return jsonify({"error": f"時刻の形式が不正です: {str(e)}"}), 400
+        
+        # 指定曜日の日付を取得
+        target_dates = get_future_weekdays(day_of_week, count)
+        
+        created_buses = []
+        failed_buses = []
+        
+        for date in target_dates:
+            # 時刻を組み合わせてdatetimeオブジェクトを作成
+            departure_datetime = date.replace(
+                hour=hour, 
+                minute=minute, 
+                second=0, 
+                microsecond=0
+            )
+            
+            # APIを通じてバスを作成
+            bus_data = {
+                'departure_time': departure_datetime.isoformat(),
+                'seats': seats,
+                'direction': direction
+            }
+            
+            result = admin_api.create_bus(bus_data)
+            if result:
+                created_buses.append(result)
+            else:
+                failed_buses.append(departure_datetime.isoformat())
+        
+        weekday_names = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日']
+        
+        response = {
+            "message": f"毎週{weekday_names[day_of_week]} {time}のバスを{len(created_buses)}個作成しました",
+            "created_count": len(created_buses),
+            "failed_count": len(failed_buses),
+            "buses": created_buses
+        }
+        
+        if failed_buses:
+            response["failed_buses"] = failed_buses
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({"error": f"バス作成中にエラーが発生しました: {str(e)}"}), 500
+
+def get_future_weekdays(day_of_week, count=52):
+    """
+    今後の指定曜日の日付を取得
+    
+    Args:
+        day_of_week: 0=日曜日, 1=月曜日, ..., 6=土曜日
+        count: 取得する日数
+    
+    Returns:
+        指定曜日のdatetimeオブジェクトのリスト
+    """
+    dates = []
+    today = datetime.now().date()
+    
+    # 次の指定曜日を見つける
+    # Pythonのweekday()は0=月曜日、6=日曜日
+    # 引数のday_of_weekは0=日曜日、6=土曜日なので変換が必要
+    # day_of_week: 0(日) -> weekday: 6, 1(月) -> 0, 2(火) -> 1, ..., 6(土) -> 5
+    target_weekday = (day_of_week + 6) % 7  # 0(日)->6, 1(月)->0, 2(火)->1, ..., 6(土)->5
+    
+    current_weekday = today.weekday()
+    days_until_target = (target_weekday - current_weekday) % 7
+    
+    if days_until_target == 0:  # 今日が指定曜日の場合
+        days_until_target = 7  # 来週の同じ曜日から開始
+    
+    next_target_day = today + timedelta(days=days_until_target)
+    
+    # 指定された数の日付を生成
+    for i in range(count):
+        target_date = next_target_day + timedelta(weeks=i)
+        dates.append(datetime.combine(target_date, datetime.min.time()))
+    
+    return dates
 
 @bp.route("/drivers", methods=["GET"])
 @require_permission("driver", "read")

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="maincontainer">
+    <h2 class="my-4">日付と行き先</h2>
+    <p>{{message}}</p>
+    <div class="btn-group">
+        <button class="btn btn-date" data-category="date">{{today}}</button>
+        <button class="btn btn-date" data-category="date">{{nextday}}</button>
+        <!-- Add more date buttons here -->
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-destination" data-category="destination">高槻キャンパス</button>
+        <button class="btn btn-destination" data-category="destination">高槻駅</button>
+        <!-- Add more destination buttons here -->
+    </div>
+
+    <div class="selected-values">
+        <p><strong>日付:</strong> <span id="selected-date"></span></p>
+        <p><strong>行き先:</strong> <span id="selected-destination"></span></p>
+    </div>
+    <div class="container">
+        <div class="row justify-content-center"> 
+            <form method='post' action="/yoyaku/bus">
+                <input type="hidden" name="selected-date" id="selected-date-hidden">
+                <input type="hidden" name="selected-destination" id="selected-destination-hidden">
+                <button class="btn btn-confirm mr-2" onclick="confirmSelection()">検索</button>
+            </form>
+            <form action="/">
+                <button class="btn btn-secondary btn-block" onclick="goBack()">戻る</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedDate = null;
+    let selectedDestination = null;
+
+    function updateSelection(category, value) {
+        if (category === 'date') {
+            selectedDate = value;
+            document.getElementById('selected-date').innerText = selectedDate;
+            document.getElementById('selected-date-hidden').value = selectedDate;
+        } else if (category === 'destination') {
+            selectedDestination = value;
+            document.getElementById('selected-destination').innerText = selectedDestination;
+            document.getElementById('selected-destination-hidden').value = selectedDestination;
+        }
+    }
+
+    function goBack() {
+        selectedDate = null;
+        selectedDestination = null;
+        document.getElementById('selected-date').innerText = '';
+        document.getElementById('selected-destination').innerText = '';
+    }
+
+    function confirmSelection() {
+        if (selectedDate && selectedDestination) {
+            // Add logic to handle the confirmation, e.g., form submission
+            // alert(`Confirmed\nSelected Date: ${selectedDate}\nSelected Destination: ${selectedDestination}`);
+        } else {
+            alert('日付と行き先を両方選択してください。');
+        }
+    }
+
+    const buttons = document.querySelectorAll('.btn-date, .btn-destination');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const category = button.getAttribute('data-category');
+            const value = button.textContent;
+
+            updateSelection(category, value);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        color: #333333; /* 落ち着いた文字色 */
+    }
+    main{
+        margin-top:50px;
+        text-align: center;
+        justify-content: center;
+        font-size: 140%;
+    }
+    .maincontainer{
+        text-align: center;
+        justify-content: center;
+    }
+    h2 {
+        color: #2c3e50; /* 落ち着いた見出し色 */
+    }
+    .btn-group {
+        margin-top: 15px;
+    }
+    .btn-date,
+    .btn-confirm,
+    .btn-destination {
+        background-color: #6c757d; /* 落ち着いた色 */
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+    }
+    .btn-date:hover,
+    .btn-confirm:hover,
+    .btn-destination:hover {
+        background-color: #5a6268; /* 落ち着いた色 */
+    }
+    .selected-values {
+        margin-top: 30px;
+    }
+    .btn-back,
+    .btn-confirm {
+        padding: 10px 20px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}

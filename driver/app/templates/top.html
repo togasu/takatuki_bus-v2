@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main">
+  <p class="error">{{message}}</p>
+  <p id="date"></p>
+  <p id="time"></p>
+  <p>先発：{{firstbus}}</p>
+  <p>次発：{{secoundbus}}</p>   
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function updateDateTime() {
+    const now = new Date();
+    const date = now.toLocaleDateString('ja-JP');
+    const time = now.toLocaleTimeString('ja-JP');
+
+    document.getElementById('date').textContent = date;
+    document.getElementById('time').textContent = time;
+  }
+
+  // ページが読み込まれたときに日時を更新
+  document.addEventListener('DOMContentLoaded', (event) => {
+    updateDateTime();
+    // 1秒ごとに日時を更新
+    setInterval(updateDateTime, 1000);
+  });
+</script>
+{% endblock %}
+{% block styles %}
+<style>
+  .main {
+    text-align: center;
+    font-size:large;
+  }
+
+  .error{
+    color: red;
+  }
+</style>
+{% endblock %}

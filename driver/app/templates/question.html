@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>問題発生</h2>
+    <button class="button-below-header">
+        <a href="{{url_for('QA')}}">QA</a>
+    </button>
+    <button class="button-below-header">
+        <a href="{{url_for('mail')}}">メール送信</a>
+    </button>
+</div>
+<div class="datetime" id="datetime">
+    <p id="current-date"></p>
+    <p id="current-time"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const date = now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('current-date').textContent = `日付: ${date}`;
+        document.getElementById('current-time').textContent = `時間: ${time}`;
+    }
+
+    setInterval(updateDateTime, 1000); // 1秒ごとに更新
+    updateDateTime(); // 初回実行
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        color: #333333; /* 落ち着いた文字色 */
+    }
+    main {
+        margin-top: 50px;
+        text-align: center;
+        justify-content: center;
+        font-size: large;
+    }
+
+    h2 {
+        color: #2c3e50; /* 落ち着いた見出し色 */
+    }
+    .button-below-header {
+        background-color: #6c757d; /* 落ち着いた色 */
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .button-below-header:hover {
+        background-color: #5a6268; /* 落ち着いた色 */
+    }
+    .button-below-header a {
+        color: #ffffff; /* リンクの色を白に */
+        text-decoration: none; /* リンクの下線を消す */
+        font-family: inherit; /* フォントを継承 */
+    }
+    .button-below-header a:hover {
+        color: #ffffff; /* ホバー時も色を白に */
+    }
+    .datetime {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

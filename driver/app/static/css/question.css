@@ -1,0 +1,27 @@
+/* Add a class to the button */
+.button-below-header {
+    margin-top: 20px; /* Adjust the margin as needed */
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    width: 200px;
+    height: 50px;
+}
+
+.button-below-header:hover {
+    background-color: #45a049;
+}
+
+.main {
+    margin-top: 50px;
+    text-align: center; /* Center the buttons */
+}

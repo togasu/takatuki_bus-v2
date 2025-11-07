@@ -86,13 +86,27 @@ class AdminAPIClient:
         """バス一覧を取得"""
         try:
             response = requests.get(
-                'http://student:5000/api/buses',
+                'http://student:5000/api/management/buses',
                 headers=self.headers,
                 timeout=30
             )
             return response.json() if response.status_code == 200 else None
         except Exception as e:
             current_app.logger.error(f"Failed to get buses: {e}")
+            return None
+    
+    def create_bus(self, bus_data):
+        """バスを作成"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/management/buses',
+                json=bus_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 201 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to create bus: {e}")
             return None
     
     def get_drivers(self):
@@ -480,6 +494,136 @@ class AdminAPIClient:
                 
         except Exception as e:
             current_app.logger.error(f"Failed to get real-time statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    # 学期管理関連のメソッド
+    def get_semesters(self):
+        """学期一覧を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/semester/list',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get semesters: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_active_semester(self):
+        """アクティブな学期を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/semester/active',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get active semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def create_semester(self, semester_data):
+        """学期を作成"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/create',
+                json=semester_data,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to create semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def switch_semester(self, switch_data):
+        """学期を切り替え"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/switch',
+                json=switch_data,
+                headers=self.headers,
+                timeout=60  # 学期切り替えは時間がかかる可能性があるため長めに設定
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to switch semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def auto_semester_check(self):
+        """自動学期チェック"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/auto-check',
+                headers=self.headers,
+                timeout=60
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to auto check semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def migrate_users(self, migrate_data):
+        """ユーザーを移行"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/migrate-users',
+                json=migrate_data,
+                headers=self.headers,
+                timeout=60
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to migrate users: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def delete_semester(self, semester_id):
+        """学期を削除"""
+        try:
+            response = requests.delete(
+                f'http://student:5000/api/semester/delete/{semester_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete semester: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
 # シングルトンインスタンス

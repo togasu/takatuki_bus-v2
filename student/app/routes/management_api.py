@@ -427,3 +427,82 @@ def check_auto_penalty(student_id):
             'success': False,
             'message': f'自動ペナルティチェック中にエラーが発生しました: {str(e)}'
         }), 500
+
+# バス管理API
+@management_api_bp.route('/buses', methods=['GET'])
+def get_all_buses():
+    """全バス一覧を取得"""
+    try:
+        buses = Bus.query.order_by(Bus.departure_time.desc()).all()
+        buses_data = []
+        
+        for bus in buses:
+            buses_data.append({
+                'id': bus.id,
+                'busid': bus.busid,
+                'departure_time': bus.departure_time.isoformat() if bus.departure_time else None,
+                'seats': bus.seats,
+                'ud': bus.ud,  # 0=上り, 1=下り
+                'bookable_time': bus.bookable_time,
+                'status': bus.status  # 0=通常, 1=キャンセル待ち, 2=出発後
+            })
+        
+        return jsonify(buses_data)
+        
+    except Exception as e:
+        logger.error(f"バス一覧取得エラー: {str(e)}")
+        return jsonify({'error': f'バス一覧取得中にエラーが発生しました: {str(e)}'}), 500
+
+@management_api_bp.route('/buses', methods=['POST'])
+def create_bus():
+    """新しいバスを作成"""
+    try:
+        data = request.get_json()
+        
+        # 必須フィールドの確認
+        required_fields = ['departure_time', 'seats', 'direction']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'{field} は必須項目です'}), 400
+        
+        # departure_timeを適切なdatetimeオブジェクトに変換
+        departure_time_str = data['departure_time']
+        if isinstance(departure_time_str, str):
+            # ISO形式の文字列をdatetimeに変換
+            departure_time = datetime.fromisoformat(departure_time_str.replace('Z', '+00:00'))
+        else:
+            departure_time = departure_time_str
+        
+        # 新しいバスIDを生成（既存の最大busidの次の番号）
+        max_busid = db.session.query(Bus.busid).order_by(Bus.busid.desc()).first()
+        new_busid = (max_busid[0] if max_busid else 0) + 1
+        
+        # 新しいバスを作成
+        new_bus = Bus()
+        new_bus.busid = new_busid
+        new_bus.departure_time = departure_time
+        new_bus.seats = int(data['seats'])
+        new_bus.ud = int(data['direction'])  # 0=上り, 1=下り
+        new_bus.bookable_time = data.get('bookable_time', 0)
+        new_bus.status = data.get('status', 0)  # デフォルトは通常
+        
+        db.session.add(new_bus)
+        db.session.commit()
+        
+        logger.info(f"新しいバスが作成されました: busid={new_busid}, departure_time={departure_time}")
+        
+        return jsonify({
+            'id': new_bus.id,
+            'busid': new_bus.busid,
+            'departure_time': new_bus.departure_time.isoformat() if new_bus.departure_time else None,
+            'seats': new_bus.seats,
+            'ud': new_bus.ud,
+            'bookable_time': new_bus.bookable_time,
+            'status': new_bus.status,
+            'message': 'バスが正常に作成されました'
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"バス作成エラー: {str(e)}")
+        return jsonify({'error': f'バス作成中にエラーが発生しました: {str(e)}'}), 500
