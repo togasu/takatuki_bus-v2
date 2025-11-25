@@ -1,24 +1,31 @@
-from app import create_app, socketio
-import os
+import sys
+import traceback
 import logging
 
 # ログ設定
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 try:
-    # uWSGI用のapplicationオブジェクト
-    application = create_app()
-    logger.info("Driver service application created successfully")
-except Exception as e:
-    logger.error(f"Driver service application creation failed: {e}")
-    raise
-
-# 開発環境での実行
-if __name__ == '__main__':
-    # 通常のcreate_appを使用
+    logger.info("Starting driver service application...")
+    
+    # モジュールのインポート
+    logger.info("Importing app modules...")
+    from app import create_app, socketio
+    logger.info("App modules imported successfully")
+    
+    # Flaskアプリ作成
+    logger.info("Creating Flask application...")
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=8080)
-
-# uWSGI + gevent で動くため socketio.run は不要
-# ただし WebSocket イベントは socketio に登録される
+    logger.info("Flask application created successfully")
+    
+    # uWSGI + gevent で動くため socketio.run は不要
+    # ただし WebSocket イベントは socketio に登録される
+    
+    # アプリケーションが正常に作成されたことをログに記録
+    logger.info(f"Driver service app is ready. App type: {type(app)}")
+    
+except Exception as e:
+    logger.error(f"Failed to create driver service application: {e}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
+    sys.exit(1)

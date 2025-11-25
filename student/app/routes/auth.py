@@ -3,10 +3,15 @@ from markupsafe import escape
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import requests
-import os
+import re
+import logging
 from datetime import datetime
 from ..utils.auth_utils import user_password_exist, add_token_str, check_session
 from ..utils.user_utils import check_user_registration
+from .. import config
+
+# ロギング設定
+logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -15,7 +20,12 @@ limiter = None
 
 def init_limiter(app):
     global limiter
-    limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minutes"])
+    limiter = Limiter(
+        get_remote_address, 
+        app=app, 
+        default_limits=["100 per minute"],
+        storage_uri=config.RATELIMIT_STORAGE_URL
+    )
 
 def add_security_headers(response):
     """セキュリティヘッダーを追加"""
@@ -24,6 +34,9 @@ def add_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'"
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
+    response.headers['Pragma'] = 'no-cache'
     return response
 
 def verify_admin_user(username, password):
@@ -38,9 +51,7 @@ def verify_admin_user(username, password):
     """
     try:
         # adminサービスの認証APIエンドポイント
-        admin_host = os.getenv('ADMIN_SERVICE_HOST', 'admin')
-        admin_port = os.getenv('ADMIN_SERVICE_PORT', '5000')
-        admin_verify_url = f"http://{admin_host}:{admin_port}/api/auth/verify-admin"
+        admin_verify_url = f"http://{config.ADMIN_SERVICE_HOST}:{config.ADMIN_SERVICE_PORT}/api/auth/verify-admin"
         
         # JSONデータとして送信
         auth_data = {
@@ -48,28 +59,28 @@ def verify_admin_user(username, password):
             'password': password
         }
         
-        print(f"Attempting admin verification to: {admin_verify_url}")
+        logger.info(f"Attempting admin verification for user: {username}")
         
         # adminサービスに認証リクエストを送信
         response = requests.post(
             admin_verify_url,
             json=auth_data,
-            timeout=5,
+            timeout=config.REQUEST_TIMEOUT,
             headers={
                 'Content-Type': 'application/json',
                 'User-Agent': 'Student-Service-Auth'
             }
         )
         
-        print(f"Admin verification response status: {response.status_code}")
+        logger.info(f"Admin verification response status: {response.status_code}")
         
         if response.status_code == 200:
             try:
                 json_response = response.json()
-                print(f"Admin verification response: {json_response}")
                 
                 # adminユーザーかどうかをチェック
                 if json_response.get('is_admin'):
+                    logger.info(f"Admin user verified: {username}")
                     return {
                         'user_id': json_response.get('user_id'),
                         'username': json_response.get('username'),
@@ -77,15 +88,15 @@ def verify_admin_user(username, password):
                         'email': json_response.get('email')
                     }
             except Exception as e:
-                print(f"Failed to parse admin verification response: {e}")
+                logger.error(f"Failed to parse admin verification response: {type(e).__name__}")
         
         return None
             
     except requests.exceptions.RequestException as e:
-        print(f"Admin verification service error: {e}")
+        logger.error(f"Admin verification service error: {type(e).__name__}")
         return None
     except Exception as e:
-        print(f"Unexpected error in admin verification: {e}")
+        logger.error(f"Unexpected error in admin verification: {type(e).__name__}")
         return None
 
 def create_admin_session(username, password):
@@ -100,9 +111,7 @@ def create_admin_session(username, password):
     """
     try:
         # adminサービスの認証APIエンドポイント（直接セッション作成）
-        admin_host = os.getenv('ADMIN_SERVICE_HOST', 'admin')
-        admin_port = os.getenv('ADMIN_SERVICE_PORT', '5000')
-        admin_auth_url = f"http://{admin_host}:{admin_port}/api/auth/login"
+        admin_auth_url = f"http://{config.ADMIN_SERVICE_HOST}:{config.ADMIN_SERVICE_PORT}/api/auth/login"
         
         # JSONデータとして送信
         auth_data = {
@@ -110,28 +119,28 @@ def create_admin_session(username, password):
             'password': password
         }
         
-        print(f"Attempting admin authentication to: {admin_auth_url}")
+        logger.info(f"Attempting admin authentication for user: {username}")
         
         # adminサービスに認証リクエストを送信
         response = requests.post(
             admin_auth_url,
             json=auth_data,
-            timeout=5,
+            timeout=config.REQUEST_TIMEOUT,
             headers={
                 'Content-Type': 'application/json',
                 'User-Agent': 'Student-Service-Auth'
             }
         )
         
-        print(f"Admin auth response status: {response.status_code}")
+        logger.info(f"Admin auth response status: {response.status_code}")
         
         if response.status_code == 200:
             try:
                 json_response = response.json()
-                print(f"Admin auth response: {json_response}")
                 
                 # APIレスポンスからトークンを取得
                 if 'token' in json_response:
+                    logger.info(f"Admin session created for user: {username}")
                     return {
                         'session_token': json_response['token'],
                         'user_id': json_response.get('user_id'),
@@ -139,15 +148,16 @@ def create_admin_session(username, password):
                         'role': json_response.get('role')
                     }
             except Exception as e:
-                print(f"Failed to parse admin auth response: {e}")
+                logger.error(f"Failed to parse admin auth response: {type(e).__name__}")
         
+        logger.warning(f"Admin authentication failed for user: {username}")
         return None
             
     except requests.exceptions.RequestException as e:
-        print(f"Admin session creation service error: {e}")
+        logger.error(f"Admin session creation service error: {type(e).__name__}")
         return None
     except Exception as e:
-        print(f"Unexpected error in admin session creation: {e}")
+        logger.error(f"Unexpected error in admin session creation: {type(e).__name__}")
         return None
 
 def create_driver_session(username, password):
@@ -162,8 +172,7 @@ def create_driver_session(username, password):
     """
     try:
         # driverサービスの認証APIエンドポイント
-        driver_host = os.getenv('DRIVER_SERVICE_HOST', 'driver')
-        driver_port = os.getenv('DRIVER_SERVICE_PORT', '5001')
+        driver_auth_url = f"http://{config.DRIVER_SERVICE_HOST}:{config.DRIVER_SERVICE_PORT}/api/auth/login"
         
         # driverサービスはフォーム形式でのログインを想定
         auth_data = {
@@ -171,7 +180,7 @@ def create_driver_session(username, password):
             'password': password
         }
         
-        print(f"Attempting driver authentication to driver service")
+        logger.info(f"Attempting driver authentication for user: {username}")
         
         # driverサービスのログイン処理を呼び出し
         # 実際にはdriverサービスのセッションマネージャーを使用する必要がある
@@ -179,6 +188,7 @@ def create_driver_session(username, password):
         
         # ドライバーかどうかをユーザー名で判定（簡易的な実装）
         if username.startswith('driver'):
+            logger.info(f"Driver session created for user: {username}")
             return {
                 'session_token': f"driver_{username}_{datetime.now().timestamp()}",
                 'username': username,
@@ -188,7 +198,7 @@ def create_driver_session(username, password):
         return None
             
     except Exception as e:
-        print(f"Unexpected error in driver session creation: {e}")
+        logger.error(f"Unexpected error in driver session creation: {type(e).__name__}")
         return None
 
 @auth_bp.route('/')
@@ -209,8 +219,10 @@ def login():
         limiter.limit("5 per 10 minute")(lambda: None)()
     
     username = request.form.get('username', '').strip()
-    print(f'username={escape(username)}')
     password = request.form.get('password', '')
+    
+    # ユーザー名のみログに出力（パスワードは絶対に出力しない）
+    logger.info(f'Login attempt for username: {escape(username)}')
     
     # ユーザー名とパスワードの基本チェック
     if not username or not password:
@@ -219,40 +231,39 @@ def login():
     
     # 入力値のサニタイズ（基本的な文字数制限とパターンチェック）
     if len(username) > 50 or len(password) > 100:
-        response = make_response(render_template('top.html', message="入力値が長すぎます。"))
+        response = make_response(render_template('top.html', message="入力値が無効です。"))
         return add_security_headers(response)
     
-    # 危険な文字のチェック
-    if any(char in username for char in ['<', '>', '"', "'", '&', '\n', '\r', '\t']):
+    # より厳格な文字チェック（英数字、アンダースコア、ハイフン、ドット、@のみ許可）
+    if not re.match(r'^[a-zA-Z0-9_\-\.@]+$', username):
+        logger.warning(f'Invalid characters in username attempt: {username}')
         response = make_response(render_template('top.html', message="無効な文字が含まれています。"))
         return add_security_headers(response)
-    
-    API_URL = "http://192.168.100.5:49155"  # TODO: 設定ファイルから読み込み
-    REGIST_API = "http://192.168.100.5:49160"
     
     # adminアカウントのチェック（adminサービスにリダイレクト）
     admin_session = create_admin_session(username, password)
     if admin_session:
-        print(f"Admin credentials verified and session created for user: {username}")
+        logger.info(f"Admin credentials verified and session created for user: {username}")
         # adminセッション作成成功時、Cookieを設定してadminダッシュボードにリダイレクト
         try:
-            print("Admin session created successfully")
+            logger.info("Admin session created successfully")
             response = make_response(redirect("https://localhost/admin/"))
             
-            # セッショントークンをCookieに設定
+            # セッショントークンをCookieに設定（SameSite属性を追加）
             response.set_cookie(
                 'admin_session_token', 
                 admin_session['session_token'],
                 max_age=3600,  # 1時間
                 httponly=True,
                 secure=True,
-                domain='localhost',  # ドメイン間でCookieを共有
+                samesite='Strict',  # CSRF対策
+                domain=config.COOKIE_DOMAIN,
                 path='/admin'  # adminパス専用
             )
-            print(f"Admin session cookie set: {admin_session['session_token']}")
+            logger.info("Admin session cookie set successfully")
             return add_security_headers(response)
         except Exception as e:
-            print(f"Admin session cookie setting error: {e}")
+            logger.error(f"Admin session cookie setting error: {type(e).__name__}")
             # フォールバック: 直接リダイレクト（セッションなし）
             response = make_response(redirect("https://localhost/admin/login"))
             return add_security_headers(response)
@@ -260,43 +271,39 @@ def login():
     # driverアカウントのチェック
     driver_session = create_driver_session(username, password)
     if driver_session:
-        print(f"Driver credentials verified and session created for user: {username}")
+        logger.info(f"Driver credentials verified and session created for user: {username}")
         # driverセッション作成成功時、Cookieを設定してdriverトップページにリダイレクト
         try:
-            print("Driver session created successfully")
+            logger.info("Driver session created successfully")
             response = make_response(redirect("https://localhost/driver/"))
             
-            # セッショントークンをCookieに設定
+            # セッショントークンをCookieに設定（SameSite属性を追加）
             response.set_cookie(
                 'driver_session_token', 
                 driver_session['session_token'],
                 max_age=3600,  # 1時間
                 httponly=True,
                 secure=True,
-                domain='localhost',  # ドメイン間でCookieを共有
+                samesite='Strict',  # CSRF対策
+                domain=config.COOKIE_DOMAIN,
                 path='/driver'  # driverパス専用
             )
-            print(f"Driver session cookie set: {driver_session['session_token']}")
+            logger.info("Driver session cookie set successfully")
             return add_security_headers(response)
         except Exception as e:
-            print(f"Driver session cookie setting error: {e}")
+            logger.error(f"Driver session cookie setting error: {type(e).__name__}")
             # フォールバック: 直接リダイレクト（セッションなし）
             response = make_response(redirect("https://localhost/driver/login"))
             return add_security_headers(response)
     
-    # 学生（k番号）のみ対応
-    if username[0] != 'k':
-        response = make_response(render_template('top.html', message="学生用システムです。k番号でログインしてください。"))
-        return add_security_headers(response)
-    
     # LDAP認証
     exist, student_id, user_full_name = user_password_exist(username, password)
-    print(f'user_full_name={user_full_name}')
+    logger.info(f'LDAP authentication result for {username}: {exist}')
 
     if exist:
         # 内部でユーザー登録状況をチェック
         status_code, message = check_user_registration(student_id)
-        print(f"User registration status: {status_code} - {message}")
+        logger.info(f"User registration status for {student_id}: {status_code}")
         
         if status_code == 410:
             response = make_response(render_template('error.html', error_message=message))
@@ -306,56 +313,51 @@ def login():
             return add_security_headers(response)
         
         session_str = add_token_str(username, student_id)
-        print(f"Session token: {session_str}")
         
         if session_str is None:
             # Redis接続エラー等でセッション作成に失敗した場合
+            logger.error(f"Failed to create session for user: {username}")
             response = make_response(render_template('error.html', error_message="システムエラーが発生しました。しばらく時間をおいてから再度お試しください。"))
             return add_security_headers(response)
         
         # 学生ログイン成功時、studentのpersonalページにリダイレクト
         response = make_response(redirect(url_for('main.personal')))
-        response.set_cookie('token', session_str, max_age=900)
-        response.set_cookie('user_full_name', user_full_name, max_age=900)
-        print(f"Student login successful, redirecting to personal page for user: {escape(username)}")
+        response.set_cookie('token', session_str, max_age=900, httponly=True, secure=True, samesite='Strict')
+        response.set_cookie('user_full_name', user_full_name, max_age=900, httponly=True, secure=True, samesite='Strict')
+        logger.info(f"Student login successful for user: {escape(username)}")
         return add_security_headers(response)
     else:
+        logger.warning(f"Login failed for user: {username}")
         response = make_response(render_template('top.html', message="ログインに失敗しました"))
         return add_security_headers(response)
 
 @auth_bp.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     """admin_dashboardからのアクセス専用エンドポイント"""
-    print(f"=== ADMIN LOGIN ENDPOINT CALLED ===")
-    print(f"Method: {request.method}")
-    print(f"Referer: {request.headers.get('Referer', 'None')}")
-    print(f"User-Agent: {request.headers.get('User-Agent', 'None')}")
-    print(f"All cookies: {dict(request.cookies)}")
-    print(f"Form data: {dict(request.form)}")
+    logger.info("Admin login endpoint called")
+    logger.info(f"Method: {request.method}")
     
     # POSTリクエストの場合はフォームデータからトークンを取得
     if request.method == 'POST':
         admin_session_token = request.form.get('admin_token')
-        print(f"Admin token from form: {admin_session_token}")
+        logger.info("Admin token received from form")
     else:
         # GETリクエストの場合はCookieからトークンを取得
         admin_session_token = request.cookies.get('admin_session_token')
-        print(f"Admin session token from cookie: {admin_session_token}")
+        logger.info("Admin token received from cookie")
     
     if not admin_session_token:
-        print("ERROR: No admin session token found")
+        logger.warning("No admin session token found")
         # adminセッションがない場合はログインページにリダイレクト
         return redirect("https://localhost/admin/login")
     
-    print(f"Found admin token: {admin_session_token[:20]}...")
+    logger.info("Admin token found, verifying session")
     
     # adminサービスでセッションを確認
     try:
-        admin_host = os.getenv('ADMIN_SERVICE_HOST', 'admin')
-        admin_port = os.getenv('ADMIN_SERVICE_PORT', '5000')
-        admin_check_url = f"http://{admin_host}:{admin_port}/api/auth/check"
+        admin_check_url = f"http://{config.ADMIN_SERVICE_HOST}:{config.ADMIN_SERVICE_PORT}/api/auth/check"
         
-        print(f"Checking admin session at: {admin_check_url}")
+        logger.info(f"Checking admin session at: {admin_check_url}")
         
         response = requests.get(
             admin_check_url,
@@ -363,14 +365,13 @@ def admin_login():
                 'X-Service-Auth': admin_session_token,
                 'User-Agent': 'Student-Service-Auth'
             },
-            timeout=15  # タイムアウトを15秒に増加
+            timeout=config.REQUEST_TIMEOUT
         )
         
-        print(f"Admin check response status: {response.status_code}")
+        logger.info(f"Admin check response status: {response.status_code}")
         
         if response.status_code == 200:
             json_response = response.json()
-            print(f"Admin check response: {json_response}")
             
             if json_response.get('status') == 'authenticated':
                 user_data = json_response.get('user_data', {})
@@ -383,43 +384,41 @@ def admin_login():
                     'email': user_data.get('email')
                 }
                 
-                print(f"Creating student session for admin: {admin_info}")
+                logger.info(f"Creating student session for admin user")
                 
                 from ..utils.auth_utils import add_admin_token_str
                 session_str = add_admin_token_str(user_data.get('username'), admin_info)
                 
                 if session_str:
                     # studentサービスにログイン成功
-                    print(f"Student session created successfully: {session_str[:20]}...")
+                    logger.info(f"Student session created successfully")
                     response = make_response(redirect(url_for('main.personal')))
-                    response.set_cookie('token', session_str, max_age=900)
-                    response.set_cookie('user_full_name', f"Admin {user_data.get('username')}", max_age=900)
-                    print(f"Admin login to student service successful for user: {user_data.get('username')}")
+                    response.set_cookie('token', session_str, max_age=900, httponly=True, secure=True, samesite='Strict')
+                    response.set_cookie('user_full_name', f"Admin {user_data.get('username')}", max_age=900, httponly=True, secure=True, samesite='Strict')
+                    logger.info(f"Admin login to student service successful for user: {user_data.get('username')}")
                     return add_security_headers(response)
                 else:
-                    print("ERROR: Failed to create student session")
-                    response = make_response(render_template('error.html', error_message="セッション作成に失敗しました。"))
+                    logger.error("Failed to create student session")
+                    response = make_response(render_template('error.html', error_message="システムエラーが発生しました。"))
                     return add_security_headers(response)
             else:
-                print(f"ERROR: Admin session not authenticated: {json_response}")
+                logger.warning("Admin session not authenticated")
         else:
-            print(f"ERROR: Admin check failed with status {response.status_code}")
+            logger.warning(f"Admin check failed with status {response.status_code}")
     
-    except requests.exceptions.Timeout as e:
-        print(f"ERROR: Admin service timeout: {e}")
-        response = make_response(render_template('error.html', error_message="管理者サービスとの通信がタイムアウトしました。しばらく待ってから再度お試しください。"))
+    except requests.exceptions.Timeout:
+        logger.error("Admin service timeout")
+        response = make_response(render_template('error.html', error_message="システムエラーが発生しました。しばらく待ってから再度お試しください。"))
         return add_security_headers(response)
-    except requests.exceptions.ConnectionError as e:
-        print(f"ERROR: Admin service connection error: {e}")
-        response = make_response(render_template('error.html', error_message="管理者サービスに接続できません。"))
+    except requests.exceptions.ConnectionError:
+        logger.error("Admin service connection error")
+        response = make_response(render_template('error.html', error_message="システムエラーが発生しました。"))
         return add_security_headers(response)
     except Exception as e:
-        print(f"ERROR: Admin session verification error: {e}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Admin session verification error: {type(e).__name__}")
         response = make_response(render_template('error.html', error_message="システムエラーが発生しました。"))
         return add_security_headers(response)
         
     # 認証に失敗した場合はadminログインページにリダイレクト
-    print("Admin authentication failed, redirecting to admin login")
+    logger.warning("Admin authentication failed, redirecting to admin login")
     return redirect("https://localhost/admin/login")

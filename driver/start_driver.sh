@@ -16,8 +16,9 @@ max_retries=30
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    if python -c "
+    if python - <<'PY'
 import os
+import sys
 import psycopg2
 try:
     conn = psycopg2.connect(
@@ -28,12 +29,12 @@ try:
     )
     conn.close()
     print('Database connection successful')
-    exit(0)
+    sys.exit(0)
 except Exception as e:
     print(f'Database connection failed: {e}')
-    exit(1)
-fi
-"; then
+    sys.exit(1)
+PY
+    then
         echo "Database is ready!"
         break
     else

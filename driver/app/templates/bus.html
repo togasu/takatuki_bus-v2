@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main">
+    <div class="bus-schedule">
+        <h3>運行便設定 - {{ number }}号車</h3>
+        <p class="info-text">次の5便の中から運行する便を選択してください</p>
+        
+        {% if bus_date %}
+        <ul class="bus-list">
+            {% for bus in bus_date %}
+            <li class="bus-item">
+                <a href="{{ url_for('main.bus_register', id=bus.id) }}">
+                    <button class="bus-button">
+                        <div class="bus-info">
+                            <span class="departure-time">{{ bus.departure_time }}</span>
+                            <span class="bus-number">{{ bus.busid }}号車</span>
+                        </div>
+                        <div class="bus-details">
+                            <span class="direction">{{ '高槻駅' if bus.ud == 1 else '高槻キャンパス' }}</span>
+                            <span class="seats">座席数: {{ bus.seats }}</span>
+                        </div>
+                    </button>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="no-buses">
+            <p>🚌 現在、選択可能な運行便はありません</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="datetime" id="datetime">
+    <p id="current-date"></p>
+    <p id="current-time"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const date = now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('current-date').textContent = ` ${date}`;
+        document.getElementById('current-time').textContent = ` ${time}`;
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .main {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .bus-schedule h3 {
+        color: #1976D2;
+        margin-bottom: 10px;
+    }
+
+    .info-text {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .bus-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .bus-item {
+        margin-bottom: 15px;
+    }
+
+    .bus-item a {
+        text-decoration: none;
+        display: block;
+    }
+
+    .bus-button {
+        width: 100%;
+        padding: 20px;
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: left;
+    }
+
+    .bus-button:hover {
+        border-color: #2196F3;
+        background: #f5f5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .bus-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .departure-time {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1976D2;
+    }
+
+    .bus-number {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .bus-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .direction {
+        font-weight: 500;
+    }
+
+    .seats {
+        color: #999;
+    }
+
+    .no-buses {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        color: #666;
+    }
+
+    .no-buses p {
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .datetime {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+    }
+
+    .datetime p {
+        margin: 2px 0;
+    }
+
+    @media (max-width: 600px) {
+        .main {
+            padding: 10px;
+        }
+
+        .bus-button {
+            padding: 15px;
+        }
+
+        .departure-time {
+            font-size: 18px;
+        }
+
+        .bus-number {
+            font-size: 16px;
+        }
+    }
+</style>
+{% endblock %}

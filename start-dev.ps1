@@ -304,7 +304,7 @@ with app.app_context():
         Write-Info "driver テストユーザーを作成中..."
         try {
             docker exec "takatuki_bus-v2-driver-1" python create_test_driver.py
-            Write-Success "driver テストユーザーの作成が完了しました (driver_test / driver123)"
+            Write-Success "driver テストユーザーの作成が完了しました (driver_1 / driver123)"
         } catch {
             Write-Warning "driver テストユーザーの作成でエラーが発生しました: $_"
         }
@@ -422,7 +422,10 @@ if ($initDatabase) {
     if ($debugMode) {
         Write-Info "👤 テストユーザー:"
         Write-Info "   Admin: admin_test / admin123"
-        Write-Info "   Driver: driver_test / driver123"
+        Write-Info "   Driver:"
+        Write-Info "     - driver_1 / driver123"
+        Write-Info "     - driver_2 / driver123"
+        Write-Info "     - driver_3 / driver123"
         Write-Info "   Students (デバッグ用):"
         Write-Info "     - debug_student1 / student123 (学籍番号: 230092)"
         Write-Info "     - debug_student2 / student123 (学籍番号: 230093)"

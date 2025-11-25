@@ -9,7 +9,14 @@ import logging
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = '0000'
+    
+    # 設定のインポート
+    from . import config
+    
+    # Flask設定
+    app.secret_key = config.SECRET_KEY
+    app.config['ENV'] = config.FLASK_ENV
+    app.config['DEBUG'] = config.FLASK_DEBUG
     
     # 設定ファイルの読み込み（オプション）
     config_ini = configparser.ConfigParser()
@@ -20,15 +27,14 @@ def create_app():
     
     # Redis設定の初期化
     from .utils.redis_token import RedisTokenManager
-    from .config import REDIS_HOST, REDIS_PORT, REDIS_DB, SESSION_TIMEOUT_MINUTES
     
     # Redisトークンマネージャーの初期化
     try:
         token_manager = RedisTokenManager(
-            redis_host=REDIS_HOST,
-            redis_port=REDIS_PORT,
-            redis_db=REDIS_DB,
-            token_expire_minutes=SESSION_TIMEOUT_MINUTES
+            redis_host=config.REDIS_HOST,
+            redis_port=config.REDIS_PORT,
+            redis_db=config.REDIS_DB,
+            token_expire_minutes=config.SESSION_TIMEOUT_MINUTES
         )
         # グローバルに設定
         app.token_manager = token_manager

@@ -11,9 +11,34 @@ logger = logging.getLogger('sojo-bus-log')
 class StudentServiceClient:
     """Student service とのAPI通信を行うクライアント"""
     
-    def __init__(self, base_url: str = 'http://localhost:5000'):
+    def __init__(self, base_url: str = 'http://student:5000'):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
+    
+    def get_upcoming_buses_by_number(self, bus_number: int, limit: int = 5) -> List[Dict]:
+        """指定した号車番号の今後のバス便を取得（departure_timeが現在時刻より後）"""
+        try:
+            # まず全バスを取得
+            response = self.session.get(f"{self.base_url}/api/management/buses")
+            response.raise_for_status()
+            all_buses = response.json()
+            
+            # フィルタリング: 該当の号車で、出発時刻が未来のもの
+            now = datetime.now()
+            upcoming_buses = [
+                bus for bus in all_buses
+                if bus.get('busid') == bus_number 
+                and bus.get('departure_time')
+                and datetime.fromisoformat(bus['departure_time']) > now
+            ]
+            
+            # 出発時刻でソート
+            upcoming_buses.sort(key=lambda x: x['departure_time'])
+            
+            return upcoming_buses[:limit]
+        except requests.RequestException as e:
+            logger.error(f"Failed to get upcoming buses from student service: {e}")
+            return []
     
     def get_buses_by_number_and_time(self, bus_number: int, limit: int = 5) -> List[Dict]:
         """指定した号車番号の今後のバス便を取得"""
@@ -33,9 +58,16 @@ class StudentServiceClient:
     def get_bus_by_id(self, bus_id: int) -> Optional[Dict]:
         """バスIDで特定のバス便を取得"""
         try:
-            response = self.session.get(f"{self.base_url}/api/buses/{bus_id}")
+            # 全バスを取得してIDでフィルタ
+            response = self.session.get(f"{self.base_url}/api/management/buses")
             response.raise_for_status()
-            return response.json().get('bus')
+            all_buses = response.json()
+            
+            for bus in all_buses:
+                if bus.get('id') == bus_id:
+                    return bus
+            
+            return None
         except requests.RequestException as e:
             logger.error(f"Failed to get bus {bus_id} from student service: {e}")
             return None
@@ -90,7 +122,7 @@ def get_student_client() -> StudentServiceClient:
         student_client = StudentServiceClient()
     return student_client
 
-def init_student_client(base_url: str = 'http://localhost:5000'):
+def init_student_client(base_url: str = 'http://student:5000'):
     """Student Service クライアントを初期化"""
     global student_client
     student_client = StudentServiceClient(base_url)

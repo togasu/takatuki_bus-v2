@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger('sojo-bus-log')
 
 # Redis管理（開発環境用）
+redis_manager = None
 try:
     from app.utils.redis_manager_dev import redis_manager
     REDIS_AVAILABLE = True
@@ -128,7 +129,59 @@ def gakusei(username):
 
 def get_authenticated_user():
     """認証されたユーザーを取得する"""
-    hashed_num = request.cookies.get('hashed_num')
-    if hashed_num:
-        return hash_check(hashed_num)
+    # 優先順: Redis -> Cookieベースのフォールバック
+    try:
+        # Try Redis-based check first when available
+        if REDIS_AVAILABLE:
+            try:
+                # If client provided a direct hashed_num cookie, check it in Redis
+                hashed_num = request.cookies.get('hashed_num')
+                if hashed_num:
+                    username = redis_manager.check_hash(hashed_num)
+                    if username:
+                        logger.debug(f"Authenticated via Redis (hash): {username}")
+                        return username
+
+                # If username cookie exists (older fallback), try to resolve to a hash via Redis
+                username_cookie = request.cookies.get('username')
+                if username_cookie:
+                    # redis_manager may provide a way to map user->hash; attempt if available
+                    try:
+                        hashed = None
+                        rc = getattr(redis_manager, 'redis_client', None)
+                        if rc:
+                            hashed = rc.get(f"user:{username_cookie}")
+                        if hashed:
+                            username = redis_manager.check_hash(hashed)
+                            if username:
+                                logger.debug(f"Authenticated via Redis (username->hash): {username}")
+                                return username
+                    except Exception:
+                        # ignore and fallback
+                        pass
+
+            except Exception as e:
+                logger.error(f"Redis auth check failed: {e}")
+
+        # Fallback: existing cookie-based check (may use Redis internally)
+        hashed_num = request.cookies.get('hashed_num')
+        if hashed_num:
+            return hash_check(hashed_num)
+        # 学生サービスが作成した driver_session_token を受け取る場合の互換処理
+        driver_token = request.cookies.get('driver_session_token')
+        if driver_token and isinstance(driver_token, str):
+            # student.create_driver_session で生成されるフォーマット: "driver_<username>_<timestamp>"
+            try:
+                if driver_token.startswith('driver_'):
+                    parts = driver_token.split('_')
+                    if len(parts) >= 2:
+                        username = parts[1]
+                        if username.startswith('driver'):
+                            logger.debug(f"Authenticated via driver_session_token: {username}")
+                            return username
+            except Exception:
+                pass
+    except Exception as e:
+        logger.error(f"get_authenticated_user unexpected error: {e}")
+
     return None

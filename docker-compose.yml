@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   nginx:
     image: nginx:latest
@@ -23,14 +21,17 @@ services:
       - "5000:5000"
     volumes:
       - ./logs:/app/logs
+    env_file:
+      - .env
+      - ./student/.env
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      REDIS_HOST: redis
-      ADMIN_SERVICE_TOKEN: admin-secret-token-2024
-      API_SECRET_KEY: bus-system-api-key-2024
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      ADMIN_SERVICE_TOKEN: ${ADMIN_SERVICE_TOKEN:-admin-secret-token-2024}
+      API_SECRET_KEY: ${API_SECRET_KEY:-bus-system-api-key-2024}
     depends_on:
       - postgres
       - redis
@@ -39,14 +40,17 @@ services:
     build: ./admin
     volumes:
       - ./logs:/app/logs
+    env_file:
+      - .env
+      - ./admin/.env
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      REDIS_HOST: redis
-      ADMIN_SERVICE_TOKEN: admin-secret-token-2024
-      API_SECRET_KEY: bus-system-api-key-2024
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      ADMIN_SERVICE_TOKEN: ${ADMIN_SERVICE_TOKEN:-admin-secret-token-2024}
+      API_SECRET_KEY: ${API_SECRET_KEY:-bus-system-api-key-2024}
       SKIP_MIGRATION: ${SKIP_MIGRATION:-false}
       ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
@@ -58,14 +62,17 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./driver/app:/app/app  # 開発用: アプリケーションファイルをマウント
+    env_file:
+      - .env
+      - ./driver/.env
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      REDIS_HOST: redis
-      ADMIN_SERVICE_TOKEN: admin-secret-token-2024
-      API_SECRET_KEY: bus-system-api-key-2024
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      ADMIN_SERVICE_TOKEN: ${ADMIN_SERVICE_TOKEN:-admin-secret-token-2024}
+      API_SECRET_KEY: ${API_SECRET_KEY:-bus-system-api-key-2024}
       SKIP_MIGRATION: ${SKIP_MIGRATION:-false}
       ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
@@ -75,9 +82,9 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
     ports:
       - "5432:5432"
     volumes:

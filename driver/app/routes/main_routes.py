@@ -2,13 +2,14 @@
 
 from flask import Blueprint, render_template, request, g
 from datetime import datetime, timedelta
-from app.utils.helper_functions import get_authenticated_user, hash_check, hash_login, verify_password, yukisaki
-from app.models import Bus, Driver
+from app.utils.helper_functions import get_authenticated_user, hash_check, hash_login, verify_password, yukisaki, gakusei
+from app.utils.student_api_client import get_student_client
+from app.models import Driver
 from app.database import db
 import logging
 import json
 
-logger = logging.getLogger('sojo-bus-log')
+logger = logging.getLogger(__name__)
 
 main_bp = Blueprint('main', __name__)
 
@@ -22,58 +23,49 @@ def apply_cookies(response):
     return response
 
 
-def gakusei(username):
-    """学生番号のフォーマット"""
-    if len(username) in [1, 2, 3, 4]:
-        username = "driver" + username
-    elif len(username) < 6:
-        username = "使用不可"
-    elif len(username) == 6:
-        username = "情" + username[:2] + "-" + username[-4:]
-    # 大学院生の場合
-    elif str(username)[2] == "1":
-        username = "情" + str(username[:2]) + "M" + str(username[4:])
-    else:
-        username = "情" + username[:2] + "D" + username[4:]
-    return username
+def get_next_two_buses(bus_number):
+    """指定された号車の次の2つのバスを取得"""
+    try:
+        client = get_student_client()
+        buses = client.get_upcoming_buses_by_number(bus_number, limit=2)
+        
+        firstbus = "バスがありません"
+        secondbus = "バスがありません"
+        
+        if len(buses) > 0:
+            bus_data = buses[0]
+            departure_dt = datetime.fromisoformat(bus_data['departure_time'])
+            ud = yukisaki(bus_data['ud'])
+            firstbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+        
+        if len(buses) > 1:
+            bus_data = buses[1]
+            departure_dt = datetime.fromisoformat(bus_data['departure_time'])
+            ud = yukisaki(bus_data['ud'])
+            secondbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+        
+        return firstbus, secondbus
+    except Exception as e:
+        logger.error(f"Error getting next buses: {e}")
+        return "バスがありません", "バスがありません"
 
 
 def topview(message):
     """topルーティングとloginregister以外で使うとき"""
-    num = request.cookies.get('hashed_num')
-    user = hash_check(num)
+    # Redis優先で認証ユーザーを取得
+    user = get_authenticated_user()
     if not user:
         return render_template('login.html')
-    
-    num = int(user[6])
-    now = datetime.now()
+
+    # usernameからバス番号を抽出（例: driver1 -> 1）
     try:
-        firstbus = db.session.query(Bus).filter(Bus.departure_time > datetime.now(), Bus.busid==num).first()
-        if firstbus:
-            firstbusdate = firstbus.departure_time
-            ud = yukisaki(firstbus.ud)
-            firstbus = {"busid": firstbus.busid, "departure_time": str(firstbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-            firstbus = str(f"行き先|{firstbus['ud']}  出発時刻|{firstbus['departure_time']} {firstbus['busid']}号車")
-        else:
-            firstbus = "バスがありません"
-    except:
-        firstbus = "バスがありません"
-    
-    try:
-        if 'firstbusdate' in locals():
-            secoundbus = db.session.query(Bus).filter(Bus.departure_time > firstbusdate, Bus.busid==num).first()
-            if secoundbus:
-                ud = yukisaki(secoundbus.ud)
-                secoundbus = {"busid": secoundbus.busid, "departure_time": str(secoundbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-                secoundbus = str(f"行き先|{secoundbus['ud']}  出発時刻|{secoundbus['departure_time']} {secoundbus['busid']}号車")
-            else:
-                secoundbus = "バスがありません"
-        else:
-            secoundbus = "バスがありません"
-    except:
-        secoundbus = "バスがありません"
-    
-    return render_template('top.html', firstbus=firstbus, secoundbus=secoundbus, message=message)
+        bus_number = int(user.replace('driver', ''))
+    except (ValueError, AttributeError):
+        logger.error(f"Invalid username format: {user}")
+        return render_template('login.html', message='ユーザー名の形式が正しくありません')
+
+    firstbus, secondbus = get_next_two_buses(bus_number)
+    return render_template('top.html', firstbus=firstbus, secoundbus=secondbus, message=message)
 
 
 @main_bp.route('/login')
@@ -87,7 +79,7 @@ def login_register():
     """ログイン処理"""
     username = request.form['username']
     password = request.form['password']
-    print(f"login: {username},{password}")
+    logger.info(f"Login attempt: {username}")
     
     user = db.session.query(Driver).filter_by(username=username).first()
     if user:
@@ -99,37 +91,21 @@ def login_register():
         return render_template('login.html', message='ユーザー名が間違っています')
     
     hashed_num = hash_login(username)
-    print(f"hash : {hashed_num}")
+    logger.info(f"Hash generated: {hashed_num}")
+    logger.info(f"g.cookies: {getattr(g, 'cookies', {})}")
     if hashed_num is None:
         return render_template('login.html', message='Hash化に失敗しました')
     
+    # usernameからバス番号を抽出
     try:
-        firstbus = db.session.query(Bus).filter(Bus.departure_time > datetime.now(), Bus.busid == int(user.username[6])).first()
-        if firstbus:
-            firstbusdate = firstbus.departure_time
-            ud = yukisaki(firstbus.ud)
-            firstbus = {"busid": firstbus.busid, "departure_time": str(firstbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-            firstbus = str(f"行き先|{firstbus['ud']}  出発時刻|{firstbus['departure_time']} {firstbus['busid']}号車")
-        else:
-            firstbus = "バスがありません"
-            
-        try:
-            if 'firstbusdate' in locals():
-                secoundbus = db.session.query(Bus).filter(Bus.departure_time > firstbusdate, Bus.busid == int(user.username[6])).first()
-                if secoundbus:
-                    ud = yukisaki(secoundbus.ud)
-                    secoundbus = {"busid": secoundbus.busid, "departure_time": str(secoundbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-                    secoundbus = str(f"行き先|{secoundbus['ud']}  出発時刻|{secoundbus['departure_time']} {secoundbus['busid']}号車")
-                else:
-                    secoundbus = "バスがありません"
-            else:
-                secoundbus = "バスがありません"
-        except:
-            secoundbus = "バスがありません"
-        
-        return render_template('top.html', firstbus=firstbus, secoundbus=secoundbus)
-    except:
-        return render_template('login.html', message='Hash化に失敗しました')
+        bus_number = int(username.replace('driver', ''))
+        firstbus, secondbus = get_next_two_buses(bus_number)
+        response = render_template('top.html', firstbus=firstbus, secoundbus=secondbus)
+        logger.info(f"Login successful for {username}, cookies will be set via after_request")
+        return response
+    except Exception as e:
+        logger.error(f"Error in login_register: {e}")
+        return render_template('login.html', message='ログイン処理中にエラーが発生しました')
 
 
 @main_bp.route('/login<num>')
@@ -152,68 +128,60 @@ def drivernumlogin(num):
 def top():
     """topページ"""
     try:
-        hashed_num = request.cookies.get('hashed_num')
+        # Redis優先で認証ユーザーを取得
+        user = get_authenticated_user()
+        if not user:
+            return render_template('login.html')
+        
+        # usernameからバス番号を抽出
         try:
-            user = hash_check(hashed_num)
-            if not user:
-                return render_template('login.html')
-            
-            try:
-                firstbus = db.session.query(Bus).filter(Bus.departure_time > datetime.now(), Bus.busid == int(user[6])).first()
-                if firstbus:
-                    firstbusdate = firstbus.departure_time
-                    ud = yukisaki(firstbus.ud)
-                    firstbus = {"busid": firstbus.busid, "departure_time": str(firstbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-                    firstbus = str(f"行き先|{firstbus['ud']}  出発時刻|{firstbus['departure_time']} {firstbus['busid']}号車")
-                else:
-                    firstbus = "バスがありません"
-            except:
-                firstbus = "バスがありません"
-            
-            try:
-                if 'firstbusdate' in locals():
-                    secoundbus = db.session.query(Bus).filter(Bus.departure_time > firstbusdate, Bus.busid == int(user[6])).first()
-                    if secoundbus:
-                        ud = yukisaki(secoundbus.ud)
-                        secoundbus = {"busid": secoundbus.busid, "departure_time": str(secoundbus.departure_time.strftime('%m/%d %H:%M')), "ud": ud}
-                        secoundbus = str(f"行き先|{secoundbus['ud']}  出発時刻|{secoundbus['departure_time']} {secoundbus['busid']}号車")
-                    else:
-                        secoundbus = "バスがありません"
-                else:
-                    secoundbus = "バスがありません"
-            except:
-                secoundbus = "バスがありません"
-            
-            return render_template('top.html', firstbus=firstbus, secoundbus=secoundbus)
-        except:
-            print("error")
-    except:
-        pass
-    return render_template('login.html')
+            bus_number = int(user.replace('driver', ''))
+            firstbus, secondbus = get_next_two_buses(bus_number)
+            return render_template('top.html', firstbus=firstbus, secoundbus=secondbus)
+        except Exception as e:
+            logger.error(f"Error in top route: {e}")
+            return render_template('login.html', message='エラーが発生しました')
+    except Exception as e:
+        logger.error(f"Unexpected error in top route: {e}")
+        return render_template('login.html')
 
 
 @main_bp.route('/bus')
 def bus():
     """バスの運行便設定選択画面"""
-    hashed_num = request.cookies.get('hashed_num')
-    if hashed_num:
-        user = hash_check(hashed_num)
-        if user:
+    # Redis優先で認証ユーザーを取得
+    user = get_authenticated_user()
+    
+    logger.info(f"Bus route accessed - Authenticated user: {user}")
+    logger.info(f"Cookies received: {dict(request.cookies)}")
+    
+    if user:
             driver_obj = db.session.query(Driver).filter_by(username=user).first()
             if driver_obj:
                 number = driver_obj.number
-                now = datetime.now()
-                busdate = db.session.query(Bus).filter(Bus.departure_time > now, Bus.busid == number).order_by(Bus.departure_time).limit(5).all()
-                print(busdate)
+                
+                # Student ServiceのAPIクライアントを使用してバス情報を取得
+                client = get_student_client()
+                buses = client.get_upcoming_buses_by_number(number, limit=5)
+                
+                logger.info(f"Retrieved {len(buses)} buses for driver {number}")
+                
                 bus_date = []
-                for bus in busdate:
-                    bus_date.append({
-                        "id": bus.id,
-                        "busid": bus.busid,
-                        "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
-                        "seats": bus.seats,
-                        "ud": bus.ud
-                    })
+                for bus_data in buses:
+                    try:
+                        # ISO形式の日時をパース
+                        departure_dt = datetime.fromisoformat(bus_data['departure_time'])
+                        bus_date.append({
+                            "id": bus_data['id'],
+                            "busid": bus_data['busid'],
+                            "departure_time": departure_dt.strftime('%m/%d %H:%M'),
+                            "seats": bus_data['seats'],
+                            "ud": bus_data['ud']
+                        })
+                    except Exception as e:
+                        logger.error(f"Error parsing bus data: {e}")
+                        continue
+                
                 return render_template('bus.html', bus_date=bus_date, number=number)
     return render_template('login.html')
 
@@ -221,29 +189,45 @@ def bus():
 @main_bp.route('/bus/register')
 def bus_register():
     """バスの運行便設定"""
-    hashed_num = request.cookies.get('hashed_num')
-    if hashed_num:
-        user = hash_check(hashed_num)
-        if user:
+    # Redis優先で認証ユーザーを取得
+    user = get_authenticated_user()
+    if user:
             user_obj = Driver.query.filter_by(username=user).first()
             if user_obj:
-                id = request.args.get('id')
-                if not id:
+                bus_id = request.args.get('id')
+                if not bus_id:
                     return render_template('bus_register.html', message='バスIDと出発時刻を選択してください')
-                print(id)
-                businfo = db.session.query(Bus).filter_by(id=id).first()
+                
+                logger.info(f"Registering bus with ID: {bus_id}")
+                
+                # Student ServiceのAPIクライアントを使用してバス情報を取得
+                client = get_student_client()
+                businfo = client.get_bus_by_id(int(bus_id))
+                
                 if businfo:
-                    bus = {
-                        "id": businfo.id,
-                        "busid": businfo.busid,
-                        "departure_time": str(businfo.departure_time.strftime('%Y/%m/%d %H:%M')),
-                        "seats": businfo.seats,
-                        "ud": businfo.ud
-                    }
-                    departure_time = bus["departure_time"]
-                    bus_id = bus["busid"]
-                    with open(f'../yoyaku_system/bus{bus_id}.json', 'w') as file:
-                        json.dump(bus, file)
-                        logger.info(f"success to register unten bus {bus_id}, departure_time {departure_time} bus_id {bus_id}")
-                    return render_template('bus_register.html', bus_id=bus_id, departure_time=departure_time)
+                    try:
+                        # ISO形式の日時をパース
+                        departure_dt = datetime.fromisoformat(businfo['departure_time'])
+                        bus = {
+                            "id": businfo['id'],
+                            "busid": businfo['busid'],
+                            "departure_time": departure_dt.strftime('%Y/%m/%d %H:%M'),
+                            "seats": businfo['seats'],
+                            "ud": businfo['ud']
+                        }
+                        departure_time = bus["departure_time"]
+                        bus_number = bus["busid"]
+                        
+                        # JSONファイルに保存（互換性のため）
+                        with open(f'../yoyaku_system/bus{bus_number}.json', 'w') as file:
+                            json.dump(bus, file)
+                            logger.info(f"Success to register bus {bus_number}, departure_time {departure_time}")
+                        
+                        return render_template('bus_register.html', bus_id=bus_number, departure_time=departure_time)
+                    except Exception as e:
+                        logger.error(f"Error processing bus data: {e}")
+                        return render_template('bus_register.html', message='バス情報の処理に失敗しました')
+                else:
+                    logger.warning(f"Bus not found with ID: {bus_id}")
+                    return render_template('bus_register.html', message='指定されたバスが見つかりませんでした')
     return render_template('login.html')

@@ -134,7 +134,7 @@
                             <!-- 上り -->
                             <div class="mb-4">
                                 <div class="day-header">
-                                    <i class="fas fa-arrow-up"></i> 上り (大学 → 学生寮)
+                                    <i class="fas fa-arrow-up"></i> 上り (高槻駅 → キャンパス)
                                 </div>
                                 <div id="upwardSchedules">
                                     <!-- 上り時刻表がここに表示される -->
@@ -144,7 +144,7 @@
                             <!-- 下り -->
                             <div class="mb-4">
                                 <div class="day-header">
-                                    <i class="fas fa-arrow-down"></i> 下り (学生寮 → 大学)
+                                    <i class="fas fa-arrow-down"></i> 下り (キャンパス → 高槻駅)
                                 </div>
                                 <div id="downwardSchedules">
                                     <!-- 下り時刻表がここに表示される -->
@@ -189,6 +189,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadBuses();
             updateTimetableTitle();
+            updateTimetableDisplay();
         });
 
         // 曜日選択変更時
@@ -332,6 +333,42 @@
             try {
                 const response = await fetch('/admin/management/buses');
                 const buses = await response.json();
+                
+                // 既存のスケジュールをクリア
+                schedules = {};
+                
+                // バスデータから時刻表を構築
+                if (buses && buses.length > 0) {
+                    buses.forEach(bus => {
+                        const departureDate = new Date(bus.departure_time);
+                        const dayOfWeek = departureDate.getDay();
+                        const hours = String(departureDate.getHours()).padStart(2, '0');
+                        const minutes = String(departureDate.getMinutes()).padStart(2, '0');
+                        const time = `${hours}:${minutes}`;
+                        
+                        if (!schedules[dayOfWeek]) {
+                            schedules[dayOfWeek] = [];
+                        }
+                        
+                        // 既に同じ時刻が登録されているかチェック
+                        const existingSchedule = schedules[dayOfWeek].find(
+                            s => s.time === time && s.direction === bus.ud
+                        );
+                        
+                        if (!existingSchedule) {
+                            schedules[dayOfWeek].push({
+                                time: time,
+                                direction: bus.ud,
+                                seats: bus.seats,
+                                dayOfWeek: dayOfWeek,
+                                id: bus.busid || bus.id
+                            });
+                        }
+                    });
+                    
+                    // 時刻表を更新
+                    updateTimetableDisplay();
+                }
                 
                 const container = document.getElementById('busListContainer');
                 
