@@ -3,6 +3,7 @@ import secrets
 import redis
 import json
 import os
+import requests
 from datetime import datetime, timedelta
 
 class PasswordManager:
@@ -127,3 +128,90 @@ class SessionManager:
                 json.dumps(session_data)
             )
         return session_data
+
+class DeviceAuthManager:
+    """MACアドレスベースのデバイス認証マネージャー"""
+    
+    def __init__(self):
+        # 管理システムのURL（環境変数から取得）
+        self.admin_api_url = os.getenv('ADMIN_API_URL', 'http://admin:5000')
+        
+    @staticmethod
+    def get_client_mac_address(request) -> str:
+        """
+        クライアントのMACアドレスを取得
+        
+        注意: 通常のHTTPリクエストではMACアドレスを直接取得できないため、
+        以下のいずれかの方法で取得する必要があります:
+        1. リバースプロキシ(nginx等)でカスタムヘッダーに設定
+        2. クライアント側JavaScriptで取得してヘッダーに含める（セキュリティリスクあり）
+        3. VPN等で管理されたネットワーク内でARPテーブルから取得
+        
+        この実装では、カスタムヘッダー 'X-Client-MAC' から取得することを想定
+        """
+        # カスタムヘッダーからMACアドレスを取得
+        mac_address = request.headers.get('X-Client-MAC')
+        
+        if not mac_address:
+            # フォールバック: X-Forwarded-For等からIPを取得し、
+            # サーバー側でARPテーブルを参照する方法も考えられるが、
+            # セキュリティ上の理由から推奨されない
+            return None
+        
+        return mac_address
+    
+    def verify_device_with_admin(self, username: str, mac_address: str) -> bool:
+        """
+        管理システムのAPIを呼び出してデバイスが登録されているか確認
+        
+        Args:
+            username: ドライバーのユーザー名
+            mac_address: 検証するMACアドレス
+            
+        Returns:
+            bool: デバイスが登録されている場合True
+        """
+        try:
+            # 管理システムのAPIエンドポイント
+            verify_url = f"{self.admin_api_url}/api/driver-devices/{username}/verify"
+            
+            # APIリクエスト
+            response = requests.post(
+                verify_url,
+                json={"mac_address": mac_address},
+                timeout=5,
+                verify=False  # 開発環境用（本番ではverify=Trueにすること）
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('is_registered', False)
+            else:
+                # APIエラーの場合は認証失敗として扱う
+                return False
+                
+        except Exception as e:
+            # ネットワークエラー等の場合は認証失敗として扱う
+            print(f"Error verifying device with admin API: {e}")
+            return False
+    
+    def authenticate_by_device(self, request, username: str) -> bool:
+        """
+        デバイス（MACアドレス）による認証
+        
+        Args:
+            request: Flaskのrequestオブジェクト
+            username: 認証するドライバーのユーザー名
+            
+        Returns:
+            bool: 認証成功の場合True
+        """
+        # MACアドレスを取得
+        mac_address = self.get_client_mac_address(request)
+        
+        if not mac_address:
+            return False
+        
+        # 管理システムに問い合わせて認証
+        return self.verify_device_with_admin(username, mac_address)
+

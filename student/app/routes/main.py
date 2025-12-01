@@ -21,10 +21,17 @@ def personal():
         username = data.get('username', 'Admin')
         user_full_name = request.cookies.get('user_full_name', f'Admin {username}')
         name = f"Admin ({username})"
+        user_id = f"admin_{username}"  # adminユーザーの識別子
         
-        # adminユーザーは予約履歴なしでダッシュボードを表示
-        personal_data = []
-        print(f"Debug: Admin user accessing personal page - name={name}, username={username}")
+        print(f"Debug: Admin user accessing personal page - name={name}, username={username}, user_id={user_id}")
+    elif data.get('type') == 'driver_user':
+        # driverユーザーの場合
+        username = data.get('username', 'Driver')
+        user_full_name = request.cookies.get('user_full_name', f'Driver {username}')
+        name = f"Driver ({username})"
+        user_id = f"driver_{username}"  # driverユーザーの識別子
+        
+        print(f"Debug: Driver user accessing personal page - name={name}, username={username}, user_id={user_id}")
     else:
         # 学生ユーザーの場合（既存のロジック）
         student_id = data.get('student_id')
@@ -43,28 +50,32 @@ def personal():
         
         user_full_name = request.cookies.get('user_full_name', '名前不明')
         username = user_full_name
-        
-        # 個人の情報取得
-        bookedseat = db.session.query(Reservation).filter_by(user_id=student_id).order_by(Reservation.bus_id).all()
-        print(f"予約検索: student_id={student_id}, 見つかった予約数={len(bookedseat)}")
-        personal_data = []
-        if bookedseat:
-            print(bookedseat)
-            for booked in bookedseat[:]:
-                bus = db.session.query(Bus).filter_by(id=booked.bus_id).first()
-                if bus:  # busが存在することを確認
-                    dt = bus.departure_time.date()
-                    if datetime.now().date() > dt:
-                        bookedseat.remove(booked)
-                    else:
-                        personal_data.append({
-                            "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
-                            "seat_number": booked.seat_number,
-                            "busid": bus.busid
-                        })
-                        print(f"dearture_time:{str(bus.departure_time.strftime('%m/%d %H:%M'))}, bus_id:{booked.bus_id}, seat_number:{booked.seat_number}")
+        user_id = student_id
     
-    print(f"Debug: name={name}, user_full_name={user_full_name}")
+    # 個人の情報取得（全ユーザー共通）
+    personal_data = []
+    bookedseat = db.session.query(Reservation).filter_by(user_id=user_id).order_by(Reservation.bus_id).all()
+    print(f"予約検索: user_id={user_id}, 見つかった予約数={len(bookedseat)}")
+    if bookedseat:
+        print(f"予約データ詳細: {[{'bus_id': b.bus_id, 'seat_number': b.seat_number} for b in bookedseat]}")
+        for booked in bookedseat[:]:
+            bus = db.session.query(Bus).filter_by(id=booked.bus_id).first()
+            print(f"バス検索: bus_id={booked.bus_id}, bus存在={bus is not None}")
+            if bus:  # busが存在することを確認
+                dt = bus.departure_time.date()
+                today = datetime.now().date()
+                print(f"日付比較: today={today}, departure_date={dt}, 過去={today > dt}")
+                if datetime.now().date() > dt:
+                    bookedseat.remove(booked)
+                else:
+                    personal_data.append({
+                        "departure_time": str(bus.departure_time.strftime('%m/%d %H:%M')),
+                        "seat_number": booked.seat_number,
+                        "busid": bus.busid
+                    })
+                    print(f"personal_dataに追加: departure_time={bus.departure_time.strftime('%m/%d %H:%M')}, bus_id={booked.bus_id}, seat_number={booked.seat_number}")
+    
+    print(f"Debug: name={name}, user_full_name={user_full_name}, personal_data件数={len(personal_data)}")
     current_time = datetime.now()
     firstbus = db.session.query(Bus).filter(Bus.departure_time > current_time).order_by(Bus.departure_time).first()
 

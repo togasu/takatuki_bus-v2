@@ -56,15 +56,34 @@
             </div>
         </div>
 
+        <!-- ユーザータイプ切り替えタブ -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link {% if user_type != 'driver' %}active{% endif %}" 
+                   href="/admin/users?user_type=admin">
+                    <i class="fas fa-user-shield"></i> 管理者ユーザー
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if user_type == 'driver' %}active{% endif %}" 
+                   href="/admin/users?user_type=driver">
+                    <i class="fas fa-id-card"></i> ドライバーユーザー
+                </a>
+            </li>
+        </ul>
+
         <!-- フィルター・検索セクション -->
         <div class="filter-section">
             <form method="GET" action="/admin/users">
+                <input type="hidden" name="user_type" value="{{ user_type }}">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="search" class="form-label">検索</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               value="{{ search_query }}" placeholder="ユーザー名またはメールアドレス">
+                               value="{{ search_query }}" 
+                               placeholder="{% if user_type == 'driver' %}ユーザー名または運転手番号{% else %}ユーザー名またはメールアドレス{% endif %}">
                     </div>
+                    {% if user_type != 'driver' %}
                     <div class="col-md-3">
                         <label for="role" class="form-label">権限レベル</label>
                         <select class="form-select" id="role" name="role">
@@ -74,6 +93,9 @@
                             <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>管理者</option>
                         </select>
                     </div>
+                    {% else %}
+                    <div class="col-md-3"></div>
+                    {% endif %}
                     <div class="col-md-3">
                         <label for="status" class="form-label">ステータス</label>
                         <select class="form-select" id="status" name="status">
@@ -100,8 +122,8 @@
                             <tr>
                                 <th>ID</th>
                                 <th>ユーザー名</th>
-                                <th>メールアドレス</th>
-                                <th>権限レベル</th>
+                                <th>{% if user_type == 'driver' %}運転手番号{% else %}メールアドレス{% endif %}</th>
+                                <th>{% if user_type != 'driver' %}権限レベル{% else %}種別{% endif %}</th>
                                 <th>ステータス</th>
                                 <th>最終ログイン</th>
                                 <th>作成日時</th>
@@ -122,6 +144,8 @@
                                         <span class="badge bg-danger role-badge">管理者</span>
                                         {% elif user.role == 'normal' %}
                                         <span class="badge bg-primary role-badge">通常</span>
+                                        {% elif user.role == 'driver' %}
+                                        <span class="badge bg-info role-badge">ドライバー</span>
                                         {% else %}
                                         <span class="badge bg-secondary role-badge">ゲスト</span>
                                         {% endif %}
@@ -135,20 +159,34 @@
                                     </td>
                                     <td>
                                         {% if user.last_login %}
-                                        {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                            {% if user.last_login is string %}
+                                                {{ user.last_login[:16] }}
+                                            {% else %}
+                                                {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
                                         {% else %}
                                         <span class="text-muted">未ログイン</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if user.created_at %}
+                                            {% if user.created_at is string %}
+                                                {{ user.created_at[:16] }}
+                                            {% else %}
+                                                {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                     <td class="table-actions">
                                         <button class="btn btn-sm btn-warning" 
-                                                onclick="toggleUserStatus({{ user.id }}, '{{ user.username }}', {{ 'true' if user.is_active else 'false' }})">
+                                                onclick="toggleUserStatus({{ user.id }}, '{{ user.username }}', {{ 'true' if user.is_active else 'false' }}, '{{ user.user_type }}')">
                                             <i class="fas fa-toggle-{{ 'off' if user.is_active else 'on' }}"></i>
                                             {% if user.is_active %}無効化{% else %}有効化{% endif %}
                                         </button>
                                         <button class="btn btn-sm btn-danger" 
-                                                onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
+                                                onclick="deleteUser({{ user.id }}, '{{ user.username }}', '{{ user.user_type }}')">
                                             <i class="fas fa-trash"></i> 削除
                                         </button>
                                     </td>
@@ -177,13 +215,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function toggleUserStatus(userId, username, isActive) {
+        function toggleUserStatus(userId, username, isActive, userType) {
             const action = isActive ? '無効化' : '有効化';
             if (!confirm(`ユーザー「${username}」を${action}しますか?`)) {
                 return;
             }
 
-            fetch(`/admin/users/${userId}/toggle-status`, {
+            fetch(`/admin/users/${userId}/toggle-status?user_type=${userType}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -204,7 +242,7 @@
             });
         }
 
-        function deleteUser(userId, username) {
+        function deleteUser(userId, username, userType) {
             if (!confirm(`ユーザー「${username}」を削除しますか?\n\nこの操作は取り消せません。`)) {
                 return;
             }
@@ -213,7 +251,7 @@
                 return;
             }
 
-            fetch(`/admin/users/${userId}/delete`, {
+            fetch(`/admin/users/${userId}/delete?user_type=${userType}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

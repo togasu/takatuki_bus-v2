@@ -5,6 +5,7 @@ from flask import request, g
 from app.models import Driver
 from app.database import db
 import hashlib
+import bcrypt
 import random
 import logging
 
@@ -96,11 +97,16 @@ def hash_check(hashed_num):
 
 
 def verify_password(stored_password, stored_salt, provided_password):
-    """passwordの暗号化の合致テスト"""
-    library_hashed = hashlib.pbkdf2_hmac(
-        'sha256', provided_password.encode('utf-8'), stored_salt, 1000
-    )
-    return library_hashed == stored_password
+    """passwordの暗号化の合致テスト（bcrypt使用）"""
+    try:
+        # bcrypt形式のハッシュを検証
+        # stored_passwordにはすでにsaltが含まれているため、stored_saltは使用しない
+        stored_hash_bytes = stored_password.encode('utf-8')
+        provided_bytes = provided_password.encode('utf-8')
+        return bcrypt.checkpw(provided_bytes, stored_hash_bytes)
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        return False
 
 
 def yukisaki(ud):

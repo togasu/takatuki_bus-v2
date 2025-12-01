@@ -17,8 +17,7 @@ services:
 
   student:
     build: ./student
-    ports:
-      - "5000:5000"
+    # ポート公開を削除 - nginxを経由してのみアクセス可能
     volumes:
       - ./logs:/app/logs
     env_file:
@@ -38,8 +37,10 @@ services:
 
   admin:
     build: ./admin
+    # ポート公開を削除 - nginxを経由してのみアクセス可能
     volumes:
       - ./logs:/app/logs
+      - ./admin/app:/app/app  # 開発用: アプリケーションファイルをマウント
     env_file:
       - .env
       - ./admin/.env
@@ -59,6 +60,7 @@ services:
 
   driver:
     build: ./driver
+    # ポート公開を削除 - nginxを経由してのみアクセス可能
     volumes:
       - ./logs:/app/logs
       - ./driver/app:/app/app  # 開発用: アプリケーションファイルをマウント

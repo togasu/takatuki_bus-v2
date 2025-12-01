@@ -138,7 +138,13 @@ def seat(bus_id):
     if data['flag'] == False:
         return redirect(url_for('auth.top'))
 
-    username = data['student_id']
+    # ユーザータイプに応じて識別子を設定
+    if data.get('type') == 'admin_user':
+        username = f"admin_{data.get('username')}"
+    elif data.get('type') == 'driver_user':
+        username = f"driver_{data.get('username')}"
+    else:
+        username = data.get('student_id')
 
     bus = db.session.query(Bus).filter_by(id=bus_id).first()
     if bus.status != 0:
@@ -161,7 +167,11 @@ def seat(bus_id):
     if i == bus.seats or bus.status >= 1:
         return render_template('wait_cancel.html', bnum=bus_id)
     
-    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id)
+    # admin/driverユーザーかどうかをテンプレートに渡す
+    user_type = data.get('type', 'student')
+    is_privileged_user = user_type in ['admin_user', 'driver_user']
+    
+    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id, user_type=user_type, is_privileged_user=is_privileged_user)
 
 @booking_bp.route('/choice/<bus_id>/reserve', methods=['POST'])
 def reserve(bus_id):
@@ -178,8 +188,16 @@ def reserve(bus_id):
 
     # User名を保存情報として持つ
     booked = request.form.get('selected_seat')
-    username = data['student_id']
-    k_number = data['k_number']
+    # ユーザータイプに応じて識別子を設定
+    if data.get('type') == 'admin_user':
+        username = f"admin_{data.get('username')}"
+        k_number = username
+    elif data.get('type') == 'driver_user':
+        username = f"driver_{data.get('username')}"
+        k_number = username
+    else:
+        username = data.get('student_id')
+        k_number = data.get('k_number', username)
     
     print(f"予約処理開始: booked={booked}, username={username}, bus_id={bus_id}, k_number={k_number}")
 

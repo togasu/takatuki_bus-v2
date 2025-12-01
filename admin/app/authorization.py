@@ -135,7 +135,8 @@ def check_normal_permissions(resource, action):
         "student_bus",
         "student_seat",
         "student_course",
-        "student_season"
+        "student_season",
+        "reservation"      # 予約確認機能
     ]
     
     return resource in allowed_resources
@@ -182,7 +183,8 @@ def get_user_permissions(user):
             "admin_course_all",
             "admin_season_all",
             "admin_system_all",
-            "admin_semester_all"   # 学期管理権限を追加
+            "admin_semester_all",   # 学期管理権限を追加
+            "admin_reservation_all"  # 予約確認権限を追加
         ]
     
     return []

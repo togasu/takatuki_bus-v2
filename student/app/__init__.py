@@ -42,10 +42,12 @@ def create_app():
         print(f"Redis接続に失敗しました: {e}")
         app.token_manager = None
     
-    # データベース設定
+    # DB設定
     try:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///student.db'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config["POSTGRES_HOST"] = config.POSTGRES_HOST
+        app.config["POSTGRES_DB"] = config.POSTGRES_DB
+        app.config["POSTGRES_USER"] = config.POSTGRES_USER
+        app.config["POSTGRES_PASSWORD"] = config.POSTGRES_PASSWORD
     except Exception as e:
         print(f"データベース設定に失敗しました: {e}")
         return None
@@ -61,9 +63,8 @@ def create_app():
     
     # 拡張機能の初期化
     try:
-        from .database import db, migrate
-        db.init_app(app)
-        migrate.init_app(app, db)
+        from .database import init_db
+        db = init_db(app)
         
         mail = Mail(app)
         

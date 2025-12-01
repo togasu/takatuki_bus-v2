@@ -81,7 +81,7 @@
         {% if loop.index == 1 %}
         <tr>
           <td>
-            <div class="reserved">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
           </td>
           <td>
             <div class="hidden"></div>
@@ -96,7 +96,7 @@
         {% elif loop.index == 2 %}
         <tr>
           <td>
-            <div class="reserved">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
           </td>
           <td>
             <p>補助席<br>↓</p>
@@ -104,16 +104,16 @@
           {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24 %}
           <tr>
             <td>
-              <div class="reserved">×<div class="senaka"></div></div>
+              <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
             </td>
           {% elif loop.index == 3 or loop.index == 5 or loop.index == 6 or loop.index == 9 or loop.index == 10 or
             loop.index == 13 or loop.index == 14 or loop.index == 17 or loop.index == 18 or loop.index == 21 or loop.index == 22 or loop.index == 25 or loop.index == 26 %}
           <td>
-            <div class="reserved">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
           </td>
           {% elif loop.index == 4 %}
           <td>
-            <div class="reserved">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
           </td>
         </tr>
         <tr>
@@ -122,7 +122,7 @@
           </td>
           {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
           <td>
-            <div class="reserved">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved">×<div class="senaka"></div></div>
           </td>
         </tr>
         {% endif %}
@@ -131,7 +131,7 @@
         {% if loop.index == 1 %}
         <tr>
           <td>
-            <div class="reserved me">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
           </td>
           <td>
             <div class="hidden"></div>
@@ -146,7 +146,7 @@
         {% elif loop.index == 2 %}
         <tr>
           <td>
-            <div class="reserved me">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
           </td>
           <td>
             <p>補助席<br>↓</p>
@@ -154,15 +154,15 @@
           {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24 %}
           <tr>
             <td>
-              <div class="reserved me">×<div class="senaka"></div></div>
+              <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
             </td>
           {% elif loop.index == 3 or loop.index == 5 or loop.index == 6 or loop.index == 9 or loop.index == 10 or
             loop.index == 13 or loop.index == 14 or loop.index == 17 or loop.index == 18 or loop.index == 21 or loop.index == 22 or loop.index == 25 or loop.index == 26 %}
           <td>
-            <div class="reserved me">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
           {% elif loop.index == 4 %}
           <td>
-            <div class="reserved me">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
           </td>
         </tr>
         <tr>
@@ -171,7 +171,7 @@
           </td>
           {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
           <td>
-            <div class="reserved me">×<div class="senaka"></div></div>
+            <div id="{{ loop.index }}" class="reserved me">×<div class="senaka"></div></div>
           </td>
         </tr>
         {% endif %}
@@ -199,9 +199,12 @@
 
   <script>
     let activeButton = null;
+    const isPrivilegedUser = {{ 'true' if is_privileged_user else 'false' }};
+    const busId = {{ bus_id }};
 
     var seats = document.getElementsByClassName('seat');
     var auxiliarySeats = document.getElementsByClassName('auxiliary');
+    var reservedSeats = document.getElementsByClassName('reserved');
 
     // すべての補助席以外の席が予約済みかどうかを確認する関数
     function areAllSeatsReserved() {
@@ -211,6 +214,39 @@
         }
       }
       return true; // すべての補助席以外の席が予約済み
+    }
+
+    // 予約者情報を表示する関数（admin/driverのみ）
+    async function showReservationInfo(seatNumber) {
+      if (!isPrivilegedUser) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/seat-info/${busId}/${seatNumber}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          if (data.reserved) {
+            let message = `座席 ${seatNumber}番の予約情報:\n\n`;
+            message += `予約者: ${data.display_name || data.user_id}\n`;
+            if (data.student_id) {
+              message += `学籍番号: ${data.student_id}\n`;
+            }
+            if (data.reserved_time) {
+              message += `予約日時: ${data.reserved_time}\n`;
+            }
+            message += `承認状態: ${data.approved === 1 ? '承認済み' : '未承認'}`;
+            alert(message);
+          } else {
+            alert(data.message || 'この座席は予約されていません');
+          }
+        } else {
+          console.error('座席情報の取得に失敗しました:', data);
+        }
+      } catch (error) {
+        console.error('エラー:', error);
+      }
     }
 
 // 補助席以外の席にクリックイベントリスナーを追加
@@ -241,6 +277,18 @@
     alert(seatId + '番の席を選択しました。');
   });
 }
+
+    // 予約済み座席にクリックイベントリスナーを追加（admin/driverのみ）
+    if (isPrivilegedUser) {
+      for (var i = 0; i < reservedSeats.length; i++) {
+        reservedSeats[i].addEventListener('click', function() {
+          var seatId = this.id || this.getAttribute('id');
+          if (seatId) {
+            showReservationInfo(seatId);
+          }
+        });
+      }
+    }
 
 window.onpageshow = function (event) {
   if (event.persisted) {

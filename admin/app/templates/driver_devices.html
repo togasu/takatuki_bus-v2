@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドライバーデバイス管理 - Sojo Bus Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .device-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #28a745;
+        }
+        .device-card.inactive {
+            border-left-color: #dc3545;
+            opacity: 0.7;
+        }
+        .device-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .mac-address {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #0056b3;
+        }
+        .driver-section {
+            margin-bottom: 2rem;
+        }
+        .add-device-btn {
+            border-style: dashed;
+            border-width: 2px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/">
+                <i class="fas fa-arrow-left"></i> Sojo Bus Admin
+            </a>
+            <span class="navbar-text text-white">
+                ドライバーデバイス管理
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- ヘッダー -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1><i class="fas fa-tablet-alt"></i> ドライバーデバイス管理</h1>
+                <p class="text-muted">各ドライバーに最大5台までのデバイスを登録できます</p>
+            </div>
+        </div>
+
+        <!-- 検索・フィルター -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchDriver" 
+                           placeholder="ドライバー名で検索...">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-success float-end" onclick="showAddDriverModal()">
+                    <i class="fas fa-plus"></i> ドライバーを選択
+                </button>
+            </div>
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">総ドライバー数</h5>
+                        <h2 class="mb-0" id="totalDrivers">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">総デバイス数</h5>
+                        <h2 class="mb-0" id="totalDevices">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">平均デバイス数</h5>
+                        <h2 class="mb-0" id="avgDevices">-</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- デバイス一覧 -->
+        <div id="devicesList">
+            <div class="text-center text-muted">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                <p>読み込み中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ドライバー選択モーダル -->
+    <div class="modal fade" id="addDriverModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ドライバーを選択</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ドライバーユーザー名</label>
+                        <input type="text" class="form-control" id="driverUsername" 
+                               placeholder="例: driver1">
+                        <small class="text-muted">ドライバーシステムのユーザー名を入力してください</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-primary" onclick="loadDriverDevices()">
+                        表示
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- デバイス追加モーダル -->
+    <div class="modal fade" id="addDeviceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">デバイスを追加</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="addDeviceUsername">
+                    <div class="mb-3">
+                        <label class="form-label">MACアドレス / デバイスID</label>
+                        <input type="text" class="form-control" id="deviceMac" 
+                               placeholder="例: AA:BB:CC:DD:EE:FF">
+                        <small class="text-muted">コロン区切りまたはハイフン区切りで入力</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">デバイス名（任意）</label>
+                        <input type="text" class="form-control" id="deviceName" 
+                               placeholder="例: 運転席タブレット1">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        このドライバーは残り <span id="remainingSlots">-</span> 台のデバイスを登録できます
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-success" onclick="addDevice()">
+                        <i class="fas fa-plus"></i> 追加
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentDrivers = {};
+        let addDriverModalInstance, addDeviceModalInstance;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addDriverModalInstance = new bootstrap.Modal(document.getElementById('addDriverModal'));
+            addDeviceModalInstance = new bootstrap.Modal(document.getElementById('addDeviceModal'));
+            
+            loadAllDevices();
+            
+            // 検索機能
+            document.getElementById('searchDriver').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                document.querySelectorAll('.driver-section').forEach(section => {
+                    const driverName = section.dataset.driver.toLowerCase();
+                    section.style.display = driverName.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+        });
+
+        async function loadAllDevices() {
+            try {
+                const response = await fetch('/admin/api/driver-devices');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentDrivers = data.devices_by_user;
+                    updateStatistics(data);
+                    renderDevices();
+                } else {
+                    showError('デバイス情報の取得に失敗しました');
+                }
+            } catch (error) {
+                showError('通信エラー: ' + error.message);
+            }
+        }
+
+        function updateStatistics(data) {
+            document.getElementById('totalDrivers').textContent = data.total_users || 0;
+            document.getElementById('totalDevices').textContent = data.total_devices || 0;
+            const avg = data.total_users > 0 ? (data.total_devices / data.total_users).toFixed(1) : 0;
+            document.getElementById('avgDevices').textContent = avg;
+        }
+
+        function renderDevices() {
+            const container = document.getElementById('devicesList');
+            
+            if (Object.keys(currentDrivers).length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        登録されているデバイスはありません。「ドライバーを選択」から追加してください。
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (const [username, devices] of Object.entries(currentDrivers)) {
+                html += renderDriverSection(username, devices);
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function renderDriverSection(username, devices) {
+            const activeDevices = devices.filter(d => d.is_active !== false);
+            const maxDevices = 5;
+            const remaining = maxDevices - activeDevices.length;
+            
+            return `
+                <div class="driver-section card mb-4" data-driver="${username}">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user"></i> ${username}
+                                    <span class="badge bg-light text-dark ms-2">
+                                        ${activeDevices.length}/${maxDevices} デバイス
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="col-auto">
+                                ${remaining > 0 ? `
+                                    <button class="btn btn-light btn-sm" onclick="showAddDeviceModal('${username}', ${remaining})">
+                                        <i class="fas fa-plus"></i> デバイス追加
+                                    </button>
+                                ` : `
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> 上限達成
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            ${devices.map(device => renderDeviceCard(username, device)).join('')}
+                            ${remaining > 0 ? `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card add-device-btn" onclick="showAddDeviceModal('${username}', ${remaining})">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-plus fa-2x mb-2"></i>
+                                            <p class="mb-0">デバイスを追加</p>
+                                            <small>残り${remaining}台</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDeviceCard(username, device) {
+            const isActive = device.is_active !== false;
+            const createdDate = device.created_at ? new Date(device.created_at).toLocaleString('ja-JP') : '-';
+            const lastUsed = device.last_used_at ? new Date(device.last_used_at).toLocaleString('ja-JP') : '未使用';
+            
+            return `
+                <div class="col-md-4 mb-3">
+                    <div class="card device-card ${isActive ? '' : 'inactive'}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-tablet-alt"></i> 
+                                    ${device.device_name || 'デバイス ' + device.id}
+                                </h6>
+                                <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}">
+                                    ${isActive ? '有効' : '無効'}
+                                </span>
+                            </div>
+                            <div class="mac-address mb-2">${device.mac_address}</div>
+                            <small class="text-muted d-block mb-1">
+                                <i class="fas fa-calendar-plus"></i> 登録: ${createdDate}
+                            </small>
+                            <small class="text-muted d-block mb-3">
+                                <i class="fas fa-clock"></i> 最終使用: ${lastUsed}
+                            </small>
+                            <button class="btn btn-danger btn-sm w-100" 
+                                    onclick="deleteDevice('${username}', ${device.id}, '${device.mac_address}')">
+                                <i class="fas fa-trash"></i> 削除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAddDriverModal() {
+            document.getElementById('driverUsername').value = '';
+            addDriverModalInstance.show();
+        }
+
+        async function loadDriverDevices() {
+            const username = document.getElementById('driverUsername').value.trim();
+            
+            if (!username) {
+                alert('ドライバーユーザー名を入力してください');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/api/driver-devices/${username}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentDrivers[username] = data.devices;
+                    renderDevices();
+                    addDriverModalInstance.hide();
+                } else {
+                    // 新しいドライバーの場合は空の配列で追加
+                    currentDrivers[username] = [];
+                    renderDevices();
+                    addDriverModalInstance.hide();
+                }
+            } catch (error) {
+                showError('通信エラー: ' + error.message);
+            }
+        }
+
+        function showAddDeviceModal(username, remaining) {
+            document.getElementById('addDeviceUsername').value = username;
+            document.getElementById('deviceMac').value = '';
+            document.getElementById('deviceName').value = '';
+            document.getElementById('remainingSlots').textContent = remaining;
+            addDeviceModalInstance.show();
+        }
+
+        async function addDevice() {
+            const username = document.getElementById('addDeviceUsername').value;
+            const macAddress = document.getElementById('deviceMac').value.trim();
+            const deviceName = document.getElementById('deviceName').value.trim();
+
+            if (!macAddress) {
+                alert('MACアドレスを入力してください');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/api/driver-devices/${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mac_address: macAddress,
+                        device_name: deviceName || undefined
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('デバイスを追加しました');
+                    addDeviceModalInstance.hide();
+                    loadAllDevices();
+                } else {
+                    showError(data.error || 'デバイスの追加に失敗しました');
+                }
+            } catch (error) {
+                showError('通信エラー: ' + error.message);
+            }
+        }
+
+        async function deleteDevice(username, deviceId, macAddress) {
+            if (!confirm(`デバイス ${macAddress} を削除しますか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/api/driver-devices/${username}/${deviceId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('デバイスを削除しました');
+                    loadAllDevices();
+                } else {
+                    showError(data.error || 'デバイスの削除に失敗しました');
+                }
+            } catch (error) {
+                showError('通信エラー: ' + error.message);
+            }
+        }
+
+        function showSuccess(message) {
+            // 簡易的なトースト表示
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.style.zIndex = '11';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header bg-success text-white">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong class="me-auto">成功</strong>
+                        <button type="button" class="btn-close btn-close-white" onclick="this.closest('.toast').remove()"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showError(message) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.style.zIndex = '11';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header bg-danger text-white">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong class="me-auto">エラー</strong>
+                        <button type="button" class="btn-close btn-close-white" onclick="this.closest('.toast').remove()"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

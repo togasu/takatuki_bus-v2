@@ -154,6 +154,32 @@ def init_permissions():
                 "description": "システム設定の全操作",
                 "resource": "system",
                 "action": "all"
+            },
+            
+            # ドライバーデバイス管理権限
+            {
+                "permission_name": "driver_device_create",
+                "description": "ドライバーデバイスの登録",
+                "resource": "driver_device",
+                "action": "create"
+            },
+            {
+                "permission_name": "driver_device_read",
+                "description": "ドライバーデバイス情報の読み取り",
+                "resource": "driver_device",
+                "action": "read"
+            },
+            {
+                "permission_name": "driver_device_update",
+                "description": "ドライバーデバイス情報の更新",
+                "resource": "driver_device",
+                "action": "update"
+            },
+            {
+                "permission_name": "driver_device_delete",
+                "description": "ドライバーデバイスの削除",
+                "resource": "driver_device",
+                "action": "delete"
             }
         ]
         

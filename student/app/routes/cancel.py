@@ -20,7 +20,13 @@ def cancelcheck():
     if data['flag'] == False:
         return redirect(url_for('auth.top'))
     
-    username = data['student_id']
+    # ユーザータイプに応じて識別子を設定（booking.pyと同じロジック）
+    if data.get('type') == 'admin_user':
+        username = f"admin_{data.get('username')}"
+    elif data.get('type') == 'driver_user':
+        username = f"driver_{data.get('username')}"
+    else:
+        username = data.get('student_id')
     
     bus_data = db.session.query(Reservation).filter_by(user_id=username).order_by(Reservation.bus_id).all()
     for bus in bus_data[:]:
@@ -65,7 +71,13 @@ def cancelation(bus_id):
     if data['flag'] == False:
         return redirect(url_for('auth.top'))
     
-    username = data['student_id']
+    # ユーザータイプに応じて識別子を設定（booking.pyと同じロジック）
+    if data.get('type') == 'admin_user':
+        username = f"admin_{data.get('username')}"
+    elif data.get('type') == 'driver_user':
+        username = f"driver_{data.get('username')}"
+    else:
+        username = data.get('student_id')
 
     print(username, bus_id)
     

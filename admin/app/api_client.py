@@ -109,12 +109,19 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to create bus: {e}")
             return None
     
-    def get_drivers(self):
+    def get_drivers(self, is_active=None, search_query=None):
         """ドライバー一覧を取得"""
         try:
+            params = {}
+            if is_active is not None:
+                params['is_active'] = 'true' if is_active else 'false'
+            if search_query:
+                params['search'] = search_query
+            
             response = requests.get(
                 'http://driver:5000/api/drivers',
                 headers=self.headers,
+                params=params,
                 timeout=30
             )
             return response.json() if response.status_code == 200 else None
@@ -174,6 +181,107 @@ class AdminAPIClient:
             return response.json() if response.status_code == 200 else None
         except Exception as e:
             current_app.logger.error(f"Failed to delete driver {driver_id}: {e}")
+            return None
+    
+    def toggle_driver_status(self, driver_id):
+        """ドライバーのアクティブ状態を切り替え"""
+        try:
+            response = requests.post(
+                f'http://driver:5000/api/drivers/{driver_id}/toggle-status',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to toggle driver status {driver_id}: {e}")
+            return None
+    
+    # Driver Device管理API
+    def get_driver_devices(self, driver_id=None, is_active=None):
+        """ドライバーデバイス一覧を取得"""
+        try:
+            params = {}
+            if driver_id is not None:
+                params['driver_id'] = driver_id
+            if is_active is not None:
+                params['is_active'] = 'true' if is_active else 'false'
+            
+            response = requests.get(
+                'http://driver:5000/api/driver-devices',
+                headers=self.headers,
+                params=params,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver devices: {e}")
+            return None
+    
+    def get_driver_device_by_id(self, device_id):
+        """特定のドライバーデバイス情報を取得"""
+        try:
+            response = requests.get(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver device {device_id}: {e}")
+            return None
+    
+    def create_driver_device(self, device_data):
+        """ドライバーデバイスを作成"""
+        try:
+            response = requests.post(
+                'http://driver:5000/api/driver-devices',
+                json=device_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 201 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to create driver device: {e}")
+            return None
+    
+    def update_driver_device(self, device_id, device_data):
+        """ドライバーデバイス情報を更新"""
+        try:
+            response = requests.put(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                json=device_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update driver device {device_id}: {e}")
+            return None
+    
+    def toggle_driver_device_status(self, device_id):
+        """ドライバーデバイスのアクティブ状態を切り替え"""
+        try:
+            response = requests.post(
+                f'http://driver:5000/api/driver-devices/{device_id}/toggle-status',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to toggle driver device status {device_id}: {e}")
+            return None
+    
+    def delete_driver_device(self, device_id):
+        """ドライバーデバイスを削除"""
+        try:
+            response = requests.delete(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete driver device {device_id}: {e}")
             return None
 
     # 学生管理API

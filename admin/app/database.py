@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask import current_app
+import psycopg2
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -18,3 +20,14 @@ def init_db(app):
     migrate.init_app(app, db)
     
     return db
+
+def get_db_connection():
+    """PostgreSQLへの直接接続を取得"""
+    return psycopg2.connect(
+        host=current_app.config["POSTGRES_HOST"],
+        database=current_app.config["POSTGRES_DB"],
+        user=current_app.config["POSTGRES_USER"],
+        password=current_app.config["POSTGRES_PASSWORD"],
+        options='-c client_encoding=utf8'
+    )
+

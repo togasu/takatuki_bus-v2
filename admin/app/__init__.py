@@ -77,6 +77,14 @@ def create_app():
         from app import routes
         routes.register_blueprints(app)
         logger.info("Route blueprints registered")
+        
+        # ドライバーデバイス管理のBlueprintを登録
+        logger.info("Registering driver device blueprints...")
+        from app.routes.driver_devices import driver_device_bp, driver_device_ui_bp
+        app.register_blueprint(driver_device_bp)
+        app.register_blueprint(driver_device_ui_bp)
+        logger.info("Driver device blueprints registered")
+        
         # エラーハンドラーを登録
         logger.info("Registering error handlers...")
         from app.utils.error_handlers import register_error_handlers

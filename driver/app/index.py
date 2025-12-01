@@ -10,6 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from app.database import db
 from app.models.driver import Driver, QA
 from app.utils.session_manager import session_manager, add_cookie
+from app.utils.auth_utils import DeviceAuthManager
 
 def create_app():
     """ドライバーアプリケーションを作成"""
@@ -149,6 +150,58 @@ def create_app():
                 "display": f"行き先|{ud} 出発時刻|{bus.departure_time.strftime('%m/%d %H:%M')} {bus.busid}号車"
             })
         return bus_list
+
+    # ルーティング定義
+
+    @app.route('/driver/<username>')
+    def device_login(username):
+        """
+        MACアドレスベースの自動ログイン
+        管理システムに登録されたデバイスからのアクセスの場合、パスワード不要でログイン
+        """
+        logger.info(f"Device-based login attempt: {username}")
+        
+        # デバイス認証マネージャーを初期化
+        device_auth = DeviceAuthManager()
+        
+        # デバイス認証を実行
+        if device_auth.authenticate_by_device(request, username):
+            # 認証成功
+            user = db.session.query(Driver).filter_by(username=username).first()
+            
+            if not user:
+                logger.warning(f"Device authenticated but user not found: {username}")
+                return render_template('login.html', message='ユーザーが見つかりません')
+            
+            if not user.is_active:
+                logger.warning(f"Device authenticated but user is inactive: {username}")
+                return render_template('login.html', message='このアカウントは無効化されています')
+            
+            try:
+                # セッション作成
+                hashed_num = session_manager.create_session(username)
+                add_cookie('hashed_num', hashed_num)
+                
+                logger.info(f"Successful device-based login: {username}")
+                
+                # 担当バス情報を取得してトップページに表示
+                buses = get_driver_buses(user.number)
+                bus_info = get_bus_info_for_display(buses[:2])
+                
+                firstbus = bus_info[0]['display'] if len(bus_info) > 0 else "バスがありません"
+                secondbus = bus_info[1]['display'] if len(bus_info) > 1 else "バスがありません"
+                
+                return render_template('top.html', firstbus=firstbus, secoundbus=secondbus, 
+                                     message='デバイス認証によりログインしました')
+                
+            except Exception as e:
+                logger.error(f"Session creation failed for device login {username}: {e}")
+                return render_template('login.html', message='ログインに失敗しました')
+        else:
+            # 認証失敗 - 通常のログインページを表示
+            logger.warning(f"Device authentication failed for {username}")
+            return render_template('login.html', 
+                                 message='このデバイスは登録されていません。パスワードでログインしてください。')
 
     # ルーティング定義
 

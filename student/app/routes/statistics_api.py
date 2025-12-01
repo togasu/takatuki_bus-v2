@@ -11,6 +11,7 @@ from ..models.reservation import Reservation
 from ..models.cancel import Cancel
 from ..models.bus import Bus
 from ..models.seat import Seat
+from ..decorators import require_service_auth
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, and_, or_
 import logging
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 statistics_api_bp = Blueprint('statistics_api', __name__, url_prefix='/api/statistics')
 
 @statistics_api_bp.route('/user_registrations', methods=['GET'])
+@require_service_auth
 def get_user_registration_statistics():
     """学期期間中における登録者の推移を取得（1日単位）"""
     try:
@@ -114,6 +116,7 @@ def get_user_registration_statistics():
         }), 500
 
 @statistics_api_bp.route('/bus_reservations', methods=['GET'])
+@require_service_auth
 def get_bus_reservation_statistics():
     """バス予約時間統計を取得"""
     try:
@@ -162,6 +165,7 @@ def get_bus_reservation_statistics():
         }), 500
 
 @statistics_api_bp.route('/bus_boardings', methods=['GET'])
+@require_service_auth
 def get_bus_boarding_statistics():
     """バス乗車時刻統計を取得（approved=1の予約データを利用）"""
     try:
@@ -206,6 +210,7 @@ def get_bus_boarding_statistics():
         }), 500
 
 @statistics_api_bp.route('/cancellations', methods=['GET'])
+@require_service_auth
 def get_cancellation_statistics():
     """キャンセル時刻統計を取得"""
     try:
@@ -244,6 +249,7 @@ def get_cancellation_statistics():
         }), 500
 
 @statistics_api_bp.route('/realtime', methods=['GET'])
+@require_service_auth
 def get_realtime_statistics():
     """リアルタイム統計データを取得"""
     try:

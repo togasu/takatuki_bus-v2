@@ -3,6 +3,10 @@ from datetime import datetime
 from app.utils.now_jst import now_jst
 from app.utils.auth_utils import PasswordManager
 import hashlib
+import bcrypt
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Driver(db.Model):
     """ドライバーテーブル - ドライバーサービス固有のテーブル"""
@@ -28,17 +32,19 @@ class Driver(db.Model):
             self.password = password_hash
     
     def verify_password(self, password: str) -> bool:
-        """パスワード検証"""
+        """パスワード検証（bcrypt使用）"""
         if not self.password or not self.salt:
             return False
         
-        stored_password = self.password
-        stored_salt = self.salt
-        
-        library_hashed = hashlib.pbkdf2_hmac(
-            'sha256', password.encode('utf-8'), stored_salt, 1000
-        )
-        return library_hashed == stored_password
+        try:
+            # bcrypt形式のハッシュを検証
+            # stored_passwordにはすでにsaltが含まれているため、stored_saltは使用しない
+            stored_hash_bytes = self.password.encode('utf-8')
+            provided_bytes = password.encode('utf-8')
+            return bcrypt.checkpw(provided_bytes, stored_hash_bytes)
+        except Exception as e:
+            logger.error(f"Password verification error for {self.username}: {e}")
+            return False
 
 class QA(db.Model):
     """Q&Aを格納するテーブル"""

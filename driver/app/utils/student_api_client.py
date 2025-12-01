@@ -2,6 +2,7 @@
 
 import requests
 import logging
+import os
 from typing import List, Dict, Optional
 from datetime import datetime
 
@@ -14,6 +15,15 @@ class StudentServiceClient:
     def __init__(self, base_url: str = 'http://student:5000'):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
+        # 内部API認証用のヘッダーを設定
+        self.admin_token = os.getenv('ADMIN_SERVICE_TOKEN', 'admin-secret-token-2024')
+        self.api_key = os.getenv('API_SECRET_KEY', 'bus-system-api-key-2024')
+        self.session.headers.update({
+            'X-Service-Auth': self.admin_token,
+            'X-API-Key': self.api_key,
+            'User-Agent': 'driver-service-client/1.0',
+            'Content-Type': 'application/json'
+        })
     
     def get_upcoming_buses_by_number(self, bus_number: int, limit: int = 5) -> List[Dict]:
         """指定した号車番号の今後のバス便を取得（departure_timeが現在時刻より後）"""

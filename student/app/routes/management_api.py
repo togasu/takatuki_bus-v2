@@ -6,6 +6,7 @@ from ..models.cancel import Cancel
 from ..models.bus import Bus
 from ..models.seat import Seat
 from ..utils.penalty_manager import PenaltyManager
+from ..decorators import require_service_auth
 from datetime import datetime, timedelta, time
 import logging
 
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 management_api_bp = Blueprint('management_api', __name__, url_prefix='/api/management')
 
 @management_api_bp.route('/all_students', methods=['GET'])
+@require_service_auth
 def get_all_students():
     """全学生一覧を取得するAPI"""
     try:
@@ -83,6 +85,7 @@ def get_all_students():
         }), 500
 
 @management_api_bp.route('/search_student', methods=['GET'])
+@require_service_auth
 def search_student():
     """学生を検索するAPI"""
     try:
@@ -173,6 +176,7 @@ def search_student():
         }), 500
 
 @management_api_bp.route('/delete_student', methods=['DELETE'])
+@require_service_auth
 def delete_student():
     """学生アカウントを削除するAPI"""
     try:
@@ -228,6 +232,7 @@ def delete_student():
         }), 500
 
 @management_api_bp.route('/clear_penalty', methods=['POST'])
+@require_service_auth
 def clear_penalty():
     """ペナルティを解除するAPI（新システム）"""
     try:
@@ -273,6 +278,7 @@ def clear_penalty():
         }), 500
 
 @management_api_bp.route('/apply_penalty', methods=['POST'])
+@require_service_auth
 def apply_penalty():
     """ペナルティを付与するAPI（新システム）"""
     try:
@@ -319,6 +325,7 @@ def apply_penalty():
         }), 500
 
 @management_api_bp.route('/student_reservations/<student_id>', methods=['GET'])
+@require_service_auth
 def get_student_reservations(student_id):
     """学生の予約情報を取得するAPI"""
     try:
@@ -367,6 +374,7 @@ def get_student_reservations(student_id):
         }), 500
 
 @management_api_bp.route('/penalty_details/<student_id>', methods=['GET'])
+@require_service_auth
 def get_penalty_details(student_id):
     """学生のペナルティ詳細情報を取得するAPI"""
     try:
@@ -394,6 +402,7 @@ def get_penalty_details(student_id):
         }), 500
 
 @management_api_bp.route('/check_auto_penalty/<student_id>', methods=['POST'])
+@require_service_auth
 def check_auto_penalty(student_id):
     """学生の自動ペナルティをチェックし、必要に応じて適用するAPI"""
     try:
@@ -430,6 +439,7 @@ def check_auto_penalty(student_id):
 
 # バス管理API
 @management_api_bp.route('/buses', methods=['GET'])
+@require_service_auth
 def get_all_buses():
     """全バス一覧を取得"""
     try:
@@ -454,6 +464,7 @@ def get_all_buses():
         return jsonify({'error': f'バス一覧取得中にエラーが発生しました: {str(e)}'}), 500
 
 @management_api_bp.route('/buses', methods=['POST'])
+@require_service_auth
 def create_bus():
     """新しいバスを作成"""
     try:

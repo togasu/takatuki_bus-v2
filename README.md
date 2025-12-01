@@ -103,6 +103,9 @@
 - [Admin Service](docs/admin-service.md) - 管理者サービスの詳細
 - [Driver Service](docs/driver-service.md) - ドライバーサービスの詳細
 
+### セキュリティ
+- [内部APIセキュリティ](docs/internal-api-security.md) - マイクロサービス間API保護の詳細
+
 ### 開発者向け
 - [Admin Migration Guide](docs/admin-migration.md) - Admin サービスのマイグレーション
 - [Driver Migration Guide](docs/driver-migration.md) - Driver サービスのマイグレーション
@@ -127,6 +130,7 @@
 - LDAP認証（学生）
 - ロールベースアクセス制御（RBAC）
 - Redisベースのセッション管理
+- **内部APIの保護** - マイクロサービス間APIを外部から隠蔽
 
 ## DBマイグレーション
 
@@ -182,6 +186,14 @@ docker-compose down -v
 ./start-dev.ps1 init  # Windows
 ./start-dev.sh init   # Mac/Linux
 ```
+
+### 内部APIセキュリティのテスト
+システムのセキュリティ設定が正しく動作しているか確認できます：
+```powershell
+# Windows
+.\test-internal-api-security.ps1
+```
+詳細は [内部APIセキュリティガイド](docs/internal-api-security.md) を参照してください。
 
 ## ライセンス
 

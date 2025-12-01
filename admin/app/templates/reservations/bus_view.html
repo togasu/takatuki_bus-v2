@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>座席予約状況 - Sojo Bus Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .bus-table {
+            margin: 0 auto;
+            margin-top: 20px;
+            border-collapse: collapse;
+            max-width: 600px;
+        }
+
+        .bus-table td {
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+            width: 20%;
+        }
+
+        .seat-box {
+            width: 100%;
+            aspect-ratio: 1/1;
+            position: relative;
+            border: 2px solid #333;
+            text-align: center;
+            border-radius: 11.5px;
+            line-height: 250%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            min-height: 80px;
+        }
+
+        .seat-available {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+
+        .seat-reserved {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .seat-approved {
+            background-color: #cfe2ff;
+            border-color: #0d6efd;
+        }
+
+        .seat-auxiliary {
+            background-color: #e2e3e5;
+        }
+
+        .seat-number {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .student-id {
+            font-size: 11px;
+            margin-top: 2px;
+            color: #333;
+        }
+
+        .hidden-cell {
+            background-color: white;
+            text-align: center;
+            font-size: 14px;
+            line-height: 250%;
+        }
+
+        .senaka {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            border: 1px solid #333;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .legend {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .legend-box {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+        <a class="navbar-brand" href="/admin/">Sojo Bus Admin</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/reservations/bus/list">
+                    <i class="fas fa-arrow-left"></i> バス一覧
+                </a>
+                <a class="nav-link" href="/admin/reservations/">
+                    <i class="fas fa-list"></i> 予約確認メニュー
+                </a>
+                <a class="nav-link" href="/admin/">
+                    <i class="fas fa-home"></i> ダッシュボード
+                </a>
+                <a class="nav-link btn btn-outline-light ms-2" href="/admin/logout">
+                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <h1 class="mb-3">座席予約状況</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bus"></i> バス情報</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>バスID:</strong> {{ bus.id }}</p>
+                        <p><strong>ルート:</strong> {{ bus.route_name or 'N/A' }}</p>
+                        <p><strong>出発地:</strong> {{ bus.departure_location or 'N/A' }}</p>
+                        <p><strong>到着地:</strong> {{ bus.arrival_location or 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>出発時刻:</strong> {{ bus.departure_time.strftime('%Y-%m-%d %H:%M') if bus.departure_time else 'N/A' }}</p>
+                        <p><strong>到着時刻:</strong> {{ bus.arrival_time.strftime('%Y-%m-%d %H:%M') if bus.arrival_time else 'N/A' }}</p>
+                        <p><strong>定員:</strong> {{ bus.seats }}人</p>
+                        <p><strong>予約数:</strong> {{ seat_status | selectattr('reserved', 'equalto', True) | list | length }}人</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <h6><i class="fas fa-info-circle"></i> 凡例</h6>
+            <div class="legend-item">
+                <span class="legend-box seat-available"></span> 空席
+            </div>
+            <div class="legend-item">
+                <span class="legend-box seat-reserved"></span> 予約済み(未承認)
+            </div>
+            <div class="legend-item">
+                <span class="legend-box seat-approved"></span> 予約済み(承認済み)
+            </div>
+            <div class="legend-item">
+                <span class="legend-box seat-auxiliary"></span> 補助席
+            </div>
+        </div>
+
+        <table class="bus-table">
+            {% for seat in seat_status %}
+            <!-- 座席レイアウト -->
+            {% if loop.index == 1 %}
+            <tr>
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+                <td><div class="hidden-cell"></div></td>
+                <td><div class="hidden-cell"></div></td>
+                <td><div class="hidden-cell">運転席</div></td>
+            </tr>
+            {% elif loop.index == 2 %}
+            <tr>
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+                <td colspan="2"><p>補助席<br>↓</p></td>
+            {% elif loop.index in [8, 12, 16, 20, 24] %}
+            <tr>
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+            {% elif loop.index in [3, 6, 10, 14, 18, 22, 25, 26] %}
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+            {% elif loop.index in [5, 9, 13, 17, 21] %}
+                <td>
+                    <div class="seat-box seat-auxiliary {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+            {% elif loop.index == 4 %}
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><div class="hidden-cell">搭乗口</div></td>
+            {% elif loop.index in [7, 11, 15, 19, 23, 27] %}
+                <td>
+                    <div class="seat-box {% if seat.reserved %}{% if seat.approved == 1 %}seat-approved{% else %}seat-reserved{% endif %}{% else %}seat-available{% endif %}">
+                        <div class="seat-number">{{ seat.number }}</div>
+                        {% if seat.reserved %}
+                        <div class="student-id">{{ seat.user_id }}</div>
+                        {% endif %}
+                        <div class="senaka"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+
+        <div class="text-center mt-4 mb-4">
+            <a href="/admin/reservations/bus/list" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> バス一覧に戻る
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
