@@ -158,8 +158,8 @@
                         <p><strong>到着地:</strong> {{ bus.arrival_location or 'N/A' }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>出発時刻:</strong> {{ bus.departure_time.strftime('%Y-%m-%d %H:%M') if bus.departure_time else 'N/A' }}</p>
-                        <p><strong>到着時刻:</strong> {{ bus.arrival_time.strftime('%Y-%m-%d %H:%M') if bus.arrival_time else 'N/A' }}</p>
+                        <p><strong>出発時刻:</strong> {{ bus.departure_time[:16].replace('T', ' ') if bus.departure_time else 'N/A' }}</p>
+                        <p><strong>到着時刻:</strong> {{ bus.arrival_time[:16].replace('T', ' ') if bus.arrival_time else 'N/A' }}</p>
                         <p><strong>定員:</strong> {{ bus.seats }}人</p>
                         <p><strong>予約数:</strong> {{ seat_status | selectattr('reserved', 'equalto', True) | list | length }}人</p>
                     </div>

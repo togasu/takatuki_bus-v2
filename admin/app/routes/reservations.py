@@ -1,8 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify
-from app.database import get_db_connection
+from app.api_client import admin_api
 from app.authorization import require_permission
 from datetime import datetime
-import psycopg2.extras
+import logging
+
+# ログの設定
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('reservations', __name__, url_prefix='/reservations')
 
@@ -24,172 +27,79 @@ def search():
     if not student_id:
         return render_template('reservations/search.html', error="学籍番号を入力してください")
     
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Student サービスのAPIを使用して予約情報を取得
+        result = admin_api.get_student_reservations(student_id)
         
-        # 予約情報を取得（バス情報も含む）
-        query = """
-            SELECT 
-                r.id as reservation_id,
-                r.seat_number,
-                r.bus_id,
-                r.user_id,
-                r.approved,
-                r.reserved_time,
-                b.departure_time,
-                b.arrival_time,
-                b.status as bus_status,
-                b.seats as total_seats,
-                b.route_name,
-                b.departure_location,
-                b.arrival_location
-            FROM "Reservation" r
-            JOIN bus b ON r.bus_id = b.id
-            WHERE r.user_id = %s
-            ORDER BY b.departure_time DESC
-        """
+        if not result.get('success'):
+            error_message = result.get('message', '予約情報の取得に失敗しました')
+            return render_template('reservations/search.html', error=error_message)
         
-        cursor.execute(query, (student_id,))
-        reservations = cursor.fetchall()
-        
-        cursor.close()
+        reservations = result.get('reservations', [])
         
         return render_template('reservations/search.html', 
                              reservations=reservations, 
                              student_id=student_id)
     
     except Exception as e:
-        print(f"Error searching reservations: {e}")
+        logger.error(f"Error searching reservations: {e}")
         import traceback
         traceback.print_exc()
         error_message = "予約データの検索中にエラーが発生しました。"
-        if "does not exist" in str(e):
-            error_message = "予約データベースが正しく設定されていません。システム管理者にお問い合わせください。"
-        elif "connection" in str(e).lower():
-            error_message = "データベースに接続できませんでした。しばらくしてから再度お試しください。"
         return render_template('reservations/search.html', 
                              error=error_message)
-    finally:
-        conn.close()
 
 @bp.route('/bus/<int:bus_id>', methods=['GET'])
 @require_permission('reservation', 'read')
 def view_bus(bus_id):
     """便ごとの座席予約状況を表示"""
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Student サービスのAPIを使用してバスの座席予約状況を取得
+        result = admin_api.get_bus_seat_status(bus_id)
         
-        # バス情報を取得
-        cursor.execute("""
-            SELECT *
-            FROM bus
-            WHERE id = %s
-        """, (bus_id,))
-        bus = cursor.fetchone()
+        if not result.get('success'):
+            error_message = result.get('message', 'バス情報の取得に失敗しました')
+            return render_template('reservations/bus_seat_view.html', error=error_message)
         
-        if not bus:
-            return render_template('reservations/bus_view.html', 
-                                 error="バスが見つかりませんでした")
+        bus = result.get('bus')
+        seat_status = result.get('seat_status', [])
         
-        # 予約情報を取得
-        cursor.execute("""
-            SELECT seat_number, user_id, approved, reserved_time
-            FROM "Reservation"
-            WHERE bus_id = %s
-            ORDER BY seat_number
-        """, (bus_id,))
-        reservations = cursor.fetchall()
+        # 上り/下りの表示用テキストを追加
+        if bus:
+            bus['ud_text'] = '高槻キャンパス行き' if bus.get('ud') == 0 else '高槻駅行き'
         
-        cursor.close()
-        
-        # 座席ごとの予約状態を作成（27席分）
-        seat_status = []
-        reservation_map = {r['seat_number']: r for r in reservations}
-        
-        for i in range(1, 28):  # 1〜27番の座席
-            if i in reservation_map:
-                reservation = reservation_map[i]
-                seat_status.append({
-                    'number': i,
-                    'reserved': True,
-                    'user_id': reservation['user_id'],
-                    'approved': reservation['approved'],
-                    'reserved_time': reservation['reserved_time']
-                })
-            else:
-                seat_status.append({
-                    'number': i,
-                    'reserved': False,
-                    'user_id': None,
-                    'approved': None,
-                    'reserved_time': None
-                })
-        
-        return render_template('reservations/bus_view.html', 
+        return render_template('reservations/bus_seat_view.html', 
                              bus=bus, 
                              seat_status=seat_status)
     
     except Exception as e:
-        print(f"Error viewing bus reservations: {e}")
+        logger.error(f"Error viewing bus reservations: {e}")
         import traceback
         traceback.print_exc()
         error_message = "バス予約情報の取得中にエラーが発生しました。"
-        if "does not exist" in str(e):
-            error_message = "予約データベースが正しく設定されていません。システム管理者にお問い合わせください。"
-        elif "connection" in str(e).lower():
-            error_message = "データベースに接続できませんでした。しばらくしてから再度お試しください。"
-        return render_template('reservations/bus_view.html', 
+        return render_template('reservations/bus_seat_view.html', 
                              error=error_message)
-    finally:
-        conn.close()
 
 @bp.route('/bus/list', methods=['GET'])
 @require_permission('reservation', 'read')
 def bus_list():
     """予約があるバス一覧を表示"""
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Student サービスのAPIを使用して予約があるバス一覧を取得
+        result = admin_api.get_buses_with_reservations()
         
-        # 予約があるバスのみを取得
-        query = """
-            SELECT 
-                b.id,
-                b.departure_time,
-                b.arrival_time,
-                b.status,
-                b.seats as total_seats,
-                b.route_name,
-                b.departure_location,
-                b.arrival_location,
-                COUNT(r.id) as reservation_count
-            FROM bus b
-            LEFT JOIN "Reservation" r ON b.id = r.bus_id
-            GROUP BY b.id
-            HAVING COUNT(r.id) > 0
-            ORDER BY b.departure_time DESC
-            LIMIT 100
-        """
+        if not result.get('success'):
+            error_message = result.get('message', 'バス一覧の取得に失敗しました')
+            return render_template('reservations/bus_list.html', error=error_message)
         
-        cursor.execute(query)
-        buses = cursor.fetchall()
-        
-        cursor.close()
+        buses = result.get('buses', [])
         
         return render_template('reservations/bus_list.html', buses=buses)
     
     except Exception as e:
-        print(f"Error listing buses: {e}")
+        logger.error(f"Error listing buses: {e}")
         import traceback
         traceback.print_exc()
         error_message = "バス一覧の取得中にエラーが発生しました。"
-        if "does not exist" in str(e):
-            error_message = "予約データベースが正しく設定されていません。システム管理者にお問い合わせください。"
-        elif "connection" in str(e).lower():
-            error_message = "データベースに接続できませんでした。しばらくしてから再度お試しください。"
         return render_template('reservations/bus_list.html', 
                              error=error_message)
-    finally:
-        conn.close()

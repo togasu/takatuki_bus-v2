@@ -212,9 +212,16 @@ class AdminAPIClient:
                 params=params,
                 timeout=30
             )
-            return response.json() if response.status_code == 200 else None
+            
+            if response.status_code == 200:
+                data = response.json()
+                current_app.logger.info(f"Driver devices response type: {type(data)}")
+                return data
+            else:
+                current_app.logger.error(f"Failed to get driver devices: HTTP {response.status_code}")
+                return None
         except Exception as e:
-            current_app.logger.error(f"Failed to get driver devices: {e}")
+            current_app.logger.error(f"Failed to get driver devices: {e}", exc_info=True)
             return None
     
     def get_driver_device_by_id(self, device_id):
@@ -732,6 +739,43 @@ class AdminAPIClient:
                 
         except Exception as e:
             current_app.logger.error(f"Failed to delete semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    # 予約管理関連のメソッド
+    def get_buses_with_reservations(self):
+        """予約があるバス一覧を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/management/buses/with_reservations',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get buses with reservations: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_seat_status(self, bus_id):
+        """特定バスの座席予約状況を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/buses/{bus_id}/seats',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus seat status for bus {bus_id}: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
 # シングルトンインスタンス

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>デバイス登録 - Sojo Bus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/top.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/bus.ico') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .body {
+            padding: 30px;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #1976D2;
+            font-size: 16px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .device-id-display {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .device-id-display label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .device-id-display .device-id {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2196F3;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #757575 0%, #616161 100%);
+        }
+        .steps {
+            margin: 20px 0;
+        }
+        .step {
+            display: flex;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .step-number {
+            background: #2196F3;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .step-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚌 デバイス登録</h1>
+            <p>Driver {{ driver_number }} - 初回セットアップ</p>
+        </div>
+        <div class="body">
+            <div class="info-box">
+                <h3>📱 このデバイスを登録します</h3>
+                <p>安全なログインのため、このデバイス固有のIDを生成します。</p>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>デバイスIDを生成中...</p>
+            </div>
+
+            <div id="deviceInfo" style="display: none;">
+                <div class="device-id-display">
+                    <label>生成されたデバイスID</label>
+                    <div class="device-id" id="deviceIdValue">---</div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>デバイスIDをコピー</h4>
+                            <p>上記のIDをメモまたはコピーしてください</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>管理者に登録を依頼</h4>
+                            <p>管理者にこのIDを伝えて、デバイス登録を依頼してください</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>登録後に再アクセス</h4>
+                            <p>登録完了後、このページに戻ってログインしてください</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="copyDeviceId()">📋 デバイスIDをコピー</button>
+                <button class="btn btn-secondary" onclick="retryLogin()">🔄 ログインを再試行</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deviceId = '';
+
+        // デバイスフィンガープリントを生成
+        async function generateDeviceFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('fingerprint', 2, 2);
+            const canvasData = canvas.toDataURL();
+            
+            const data = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                platform: navigator.platform,
+                screenResolution: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                canvas: canvasData.substring(0, 50),
+                vendor: navigator.vendor,
+                timestamp: Date.now()
+            };
+            
+            const fingerprint = JSON.stringify(data);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // MAC形式に変換
+            return hashHex.substring(0, 12).match(/.{2}/g).join(':').toUpperCase();
+        }
+
+        // デバイスIDをコピー
+        function copyDeviceId() {
+            navigator.clipboard.writeText(deviceId).then(() => {
+                alert('デバイスIDをコピーしました！\n管理者に伝えてください。');
+            }).catch(() => {
+                // フォールバック: テキストエリアを使用
+                const textarea = document.createElement('textarea');
+                textarea.value = deviceId;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('デバイスIDをコピーしました！\n管理者に伝えてください。');
+            });
+        }
+
+        // ログイン再試行
+        function retryLogin() {
+            window.location.href = '/driver/login{{ driver_number }}';
+        }
+
+        // ページロード時の処理
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // 既存のデバイスIDをチェック
+                let storedId = localStorage.getItem('device_mac');
+                
+                if (!storedId) {
+                    // 新規生成
+                    storedId = await generateDeviceFingerprint();
+                    localStorage.setItem('device_mac', storedId);
+                }
+                
+                deviceId = storedId;
+                
+                // Cookieにも保存
+                document.cookie = `device_mac=${deviceId}; path=/; max-age=31536000; SameSite=Strict`;
+                
+                // 表示
+                document.getElementById('deviceIdValue').textContent = deviceId;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('deviceInfo').style.display = 'block';
+                
+                console.log('Device ID generated:', deviceId);
+            } catch (error) {
+                console.error('Error generating device ID:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: red;">エラー: デバイスIDの生成に失敗しました</p>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -154,9 +154,11 @@ def seat(bus_id):
     reservation_date = db.session.query(Reservation).filter_by(bus_id=bus_id).all()
     i = 0
     reservedtf = []
+    
     for seat in seat_data:
         reserved = any(reservation.seat_number == seat.number for reservation in reservation_date)
         my_reserve = db.session.query(Reservation).filter_by(bus_id=bus_id, seat_number=seat.number, user_id=username).first()
+        
         if reserved and my_reserve is None:
             i += 1
         if my_reserve:
@@ -167,11 +169,7 @@ def seat(bus_id):
     if i == bus.seats or bus.status >= 1:
         return render_template('wait_cancel.html', bnum=bus_id)
     
-    # admin/driverユーザーかどうかをテンプレートに渡す
-    user_type = data.get('type', 'student')
-    is_privileged_user = user_type in ['admin_user', 'driver_user']
-    
-    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id, user_type=user_type, is_privileged_user=is_privileged_user)
+    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id)
 
 @booking_bp.route('/choice/<bus_id>/reserve', methods=['POST'])
 def reserve(bus_id):

@@ -64,13 +64,11 @@
                                 <th>予約ID</th>
                                 <th>座席番号</th>
                                 <th>バスID</th>
-                                <th>ルート</th>
-                                <th>出発地 → 到着地</th>
+                                <th>方向</th>
                                 <th>出発時刻</th>
-                                <th>到着時刻</th>
                                 <th>承認状態</th>
                                 <th>予約日時</th>
-                                <th>操作</th>
+                                <th>状態</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -79,23 +77,22 @@
                                 <td>{{ reservation.reservation_id }}</td>
                                 <td><span class="badge bg-info">{{ reservation.seat_number }}番</span></td>
                                 <td>{{ reservation.bus_id }}</td>
-                                <td>{{ reservation.route_name or 'N/A' }}</td>
-                                <td>{{ reservation.departure_location or 'N/A' }} → {{ reservation.arrival_location or 'N/A' }}</td>
-                                <td>{{ reservation.departure_time.strftime('%Y-%m-%d %H:%M') if reservation.departure_time else 'N/A' }}</td>
-                                <td>{{ reservation.arrival_time.strftime('%Y-%m-%d %H:%M') if reservation.arrival_time else 'N/A' }}</td>
+                                <td>{{ reservation.ud }}</td>
+                                <td>{{ reservation.bus_departure_time[:16].replace('T', ' ') if reservation.bus_departure_time else 'N/A' }}</td>
                                 <td>
-                                    {% if reservation.approved == 1 %}
+                                    {% if reservation.approved %}
                                     <span class="badge bg-success">承認済み</span>
                                     {% else %}
                                     <span class="badge bg-warning">未承認</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ reservation.reserved_time.strftime('%Y-%m-%d %H:%M:%S') if reservation.reserved_time else 'N/A' }}</td>
+                                <td>{{ reservation.reserved_time[:19].replace('T', ' ') if reservation.reserved_time else 'N/A' }}</td>
                                 <td>
-                                    <a href="/admin/reservations/bus/{{ reservation.bus_id }}" 
-                                       class="btn btn-sm btn-outline-primary" title="この便の座席状況を見る">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                    {% if reservation.is_past %}
+                                    <span class="badge bg-secondary">過去</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">予約中</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

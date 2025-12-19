@@ -59,13 +59,13 @@
                                 <td>{{ bus.id }}</td>
                                 <td>{{ bus.route_name or 'N/A' }}</td>
                                 <td>{{ bus.departure_location or 'N/A' }} → {{ bus.arrival_location or 'N/A' }}</td>
-                                <td>{{ bus.departure_time.strftime('%Y-%m-%d %H:%M') if bus.departure_time else 'N/A' }}</td>
-                                <td>{{ bus.arrival_time.strftime('%Y-%m-%d %H:%M') if bus.arrival_time else 'N/A' }}</td>
+                                <td>{{ bus.departure_time[:16].replace('T', ' ') if bus.departure_time else 'N/A' }}</td>
+                                <td>{{ bus.arrival_time[:16].replace('T', ' ') if bus.arrival_time else 'N/A' }}</td>
                                 <td>
-                                    <strong>{{ bus.reservation_count }}</strong> / {{ bus.total_seats }}
+                                    <strong>{{ bus.reservation_count }}</strong> / {{ bus.seats }}
                                 </td>
                                 <td>
-                                    {% set occupancy_rate = (bus.reservation_count / bus.total_seats * 100) | round(1) if bus.total_seats > 0 else 0 %}
+                                    {% set occupancy_rate = (bus.reservation_count / bus.seats * 100) | round(1) if bus.seats > 0 else 0 %}
                                     <div class="progress" style="height: 20px;">
                                         {% if occupancy_rate >= 90 %}
                                         <div class="progress-bar bg-danger" role="progressbar" 

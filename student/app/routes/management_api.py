@@ -463,6 +463,117 @@ def get_all_buses():
         logger.error(f"バス一覧取得エラー: {str(e)}")
         return jsonify({'error': f'バス一覧取得中にエラーが発生しました: {str(e)}'}), 500
 
+@management_api_bp.route('/buses/with_reservations', methods=['GET'])
+@require_service_auth
+def get_buses_with_reservations():
+    """予約があるバス一覧を取得"""
+    try:
+        # 予約があるバスのみを取得
+        buses_with_reservations = db.session.query(
+            Bus,
+            db.func.count(Reservation.id).label('reservation_count')
+        ).outerjoin(
+            Reservation, Bus.id == Reservation.bus_id
+        ).group_by(Bus.id).having(
+            db.func.count(Reservation.id) > 0
+        ).order_by(Bus.departure_time.desc()).limit(100).all()
+        
+        buses_data = []
+        for bus, reservation_count in buses_with_reservations:
+            # バス情報を構築
+            buses_data.append({
+                'id': bus.id,
+                'busid': bus.busid,
+                'departure_time': bus.departure_time.isoformat() if bus.departure_time else None,
+                'arrival_time': None,  # arrival_timeフィールドがある場合は追加
+                'route_name': f"{'上り' if bus.ud == 0 else '下り'}",
+                'departure_location': '大学' if bus.ud == 0 else '駅',
+                'arrival_location': '駅' if bus.ud == 0 else '大学',
+                'seats': bus.seats,
+                'status': bus.status,
+                'reservation_count': reservation_count
+            })
+        
+        return jsonify({
+            'success': True,
+            'buses': buses_data
+        })
+        
+    except Exception as e:
+        logger.error(f"予約バス一覧取得エラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'予約バス一覧取得中にエラーが発生しました: {str(e)}'
+        }), 500
+
+@management_api_bp.route('/buses/<int:bus_id>/seats', methods=['GET'])
+@require_service_auth
+def get_bus_seat_status(bus_id):
+    """特定バスの座席予約状況を取得"""
+    try:
+        # バス情報を取得
+        bus = Bus.query.filter_by(id=bus_id).first()
+        if not bus:
+            return jsonify({
+                'success': False,
+                'message': 'バスが見つかりませんでした'
+            }), 404
+        
+        # 予約情報を取得
+        reservations = db.session.query(
+            Reservation, User
+        ).join(
+            User, Reservation.user_id == User.id
+        ).filter(
+            Reservation.bus_id == bus_id
+        ).order_by(Reservation.seat_number).all()
+        
+        # 座席ごとの予約状態を作成（27席分）
+        seat_status = []
+        reservation_map = {r.seat_number: (r, u) for r, u in reservations}
+        
+        for i in range(1, 28):  # 1〜27番の座席
+            if i in reservation_map:
+                reservation, user = reservation_map[i]
+                seat_status.append({
+                    'number': i,
+                    'reserved': True,
+                    'user_id': user.student_id,
+                    'approved': reservation.approved,
+                    'reserved_time': reservation.reserved_time.isoformat() if reservation.reserved_time else None
+                })
+            else:
+                seat_status.append({
+                    'number': i,
+                    'reserved': False,
+                    'user_id': None,
+                    'approved': None,
+                    'reserved_time': None
+                })
+        
+        return jsonify({
+            'success': True,
+            'bus': {
+                'id': bus.id,
+                'busid': bus.busid,
+                'departure_time': bus.departure_time.isoformat() if bus.departure_time else None,
+                'arrival_time': None,
+                'route_name': f"{'上り' if bus.ud == 0 else '下り'}",
+                'departure_location': '大学' if bus.ud == 0 else '駅',
+                'arrival_location': '駅' if bus.ud == 0 else '大学',
+                'seats': bus.seats,
+                'status': bus.status
+            },
+            'seat_status': seat_status
+        })
+        
+    except Exception as e:
+        logger.error(f"バス座席状況取得エラー: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'バス座席状況取得中にエラーが発生しました: {str(e)}'
+        }), 500
+
 @management_api_bp.route('/buses', methods=['POST'])
 @require_service_auth
 def create_bus():

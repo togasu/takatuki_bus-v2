@@ -110,17 +110,45 @@ def login_register():
 
 @main_bp.route('/login<num>')
 def drivernumlogin(num):
-    """運転手用の特殊ログイン"""
+    """運転手用の特殊ログイン - MACアドレス認証必須"""
+    from app.utils.device_auth import validate_device_access, get_client_mac_address
+    
     username = 'driver' + str(num)
+    
+    # まずMACアドレスが取得できるか確認
+    mac_address = get_client_mac_address()
+    
+    # MACアドレスが取得できない場合は、デバイス登録ページを表示
+    if not mac_address:
+        logger.info(f"No device MAC found for {username}, showing device registration page")
+        return render_template('device_register.html', 
+                             driver_number=num,
+                             message='初回アクセス: デバイスIDを設定してください')
+    
     try:
+        # ユーザー存在確認
         user = db.session.query(Driver).filter_by(username=username).first()
         if not user:
+            logger.warning(f"Login attempt for non-existent user: {username}")
             return render_template('login.html', message='ユーザー名が間違っています')
+        
+        # デバイス認証
+        success, message, device = validate_device_access(user.id, mac_address)
+        if not success:
+            logger.warning(f"Device authentication failed for {username}: {message}")
+            return render_template('login.html', 
+                                 message=f'デバイス認証失敗: {message}',
+                                 error_detail='このデバイスは登録されていません。管理者にデバイス登録を依頼してください。')
+        
+        # 認証成功 - ログイン処理
         hash_login(username)
-        logger.info(f"success to login unten driver {num}")
-        return topview('運転手用特殊ログインを行いました')
-    except:
-        pass
+        logger.info(f"Device login successful - User: {username}, Device: {device.device_name}")
+        return topview(f'運転手用特殊ログインを行いました（デバイス: {device.device_name}）')
+        
+    except Exception as e:
+        logger.error(f"Error in drivernumlogin: {e}", exc_info=True)
+        return render_template('login.html', message='ログイン処理中にエラーが発生しました')
+    
     return render_template('login.html', message='ユーザーログインに失敗しました')
 
 

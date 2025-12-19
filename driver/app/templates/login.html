@@ -117,7 +117,7 @@
             </div>
             {% endif %}
             
-            <form method="POST" action="{{ url_for('main.login_register') }}">
+            <form method="POST" action="{{ url_for('main.login_register') }}" id="loginForm">
                 <div class="form-group">
                     <label for="username">ユーザー名</label>
                     <input 
@@ -143,15 +143,94 @@
                     >
                 </div>
                 
+                <!-- デバイスMAC（開発/テスト用） -->
+                <input type="hidden" name="device_mac" id="device_mac" value="">
+                
                 <button type="submit" class="btn-login">
                     ログイン
                 </button>
             </form>
             
             <div class="info-text">
-                ドライバー専用システムです
+                ドライバー専用システムです<br>
+                <small id="deviceInfo" style="color: #999;"></small>
             </div>
         </div>
     </div>
-</body>
-</html>
+    
+    <script>
+        // デバイス情報を取得して送信する機能
+        // ブラウザから直接MACアドレスは取得できないため、代替手段を使用
+        
+        // 方法1: localStorage からデバイスIDを取得（初回登録時に保存）
+        function getStoredDeviceMac() {
+            return localStorage.getItem('device_mac');
+        }
+        
+        // 方法2: ブラウザフィンガープリントを生成（一意なデバイスIDの代替）
+        async function generateDeviceFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('fingerprint', 2, 2);
+            const canvasData = canvas.toDataURL();
+            
+            const data = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                platform: navigator.platform,
+                screenResolution: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                canvas: canvasData.substring(0, 50),
+                vendor: navigator.vendor
+            };
+            
+            const fingerprint = JSON.stringify(data);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // MAC形式に変換（実際のMACアドレスではないが、一意なIDとして使用）
+            return hashHex.substring(0, 12).match(/.{2}/g).join(':').toUpperCase();
+        }
+        
+        // ページロード時にデバイス情報をセット
+        window.addEventListener('DOMContentLoaded', async function() {
+            let deviceMac = getStoredDeviceMac();
+            
+            if (!deviceMac) {
+                // 保存されていない場合はフィンガープリントを生成
+                deviceMac = await generateDeviceFingerprint();
+                localStorage.setItem('device_mac', deviceMac);
+            }
+            
+            // hidden フィールドにセット
+            document.getElementById('device_mac').value = deviceMac;
+            
+            // デバイス情報を表示
+            document.getElementById('deviceInfo').textContent = `デバイスID: ${deviceMac}`;
+            
+            console.log('Device MAC/ID:', deviceMac);
+        });
+        
+        // フォーム送信時にヘッダーとしても送信
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const deviceMac = document.getElementById('device_mac').value;
+            
+            // Cookieにも保存
+            document.cookie = `device_mac=${deviceMac}; path=/; max-age=31536000; SameSite=Strict`;
+            
+            console.log('Submitting login with device MAC:', deviceMac);
+        });
+        
+        // 開発用: MACアドレス手動入力機能
+        if (window.location.search.includes('debug=1')) {
+            const manualMac = prompt('デバッグモード: MACアドレスを入力してください\n（例: AA:BB:CC:DD:EE:FF）');
+            if (manualMac) {
+                document.getElementById('device_mac').value = manualMac;
+                localStorage.setItem('device_mac', manualMac);
+                document.getElementById('deviceInfo').textContent = `デバイスID（手動設定）: ${manualMac}`;
+            }
+        }
+    </script>

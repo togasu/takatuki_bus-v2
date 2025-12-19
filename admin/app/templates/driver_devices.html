@@ -147,6 +147,7 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="addDeviceUsername">
+                    <input type="hidden" id="addDeviceDriverId">
                     <div class="mb-3">
                         <label class="form-label">MACアドレス / デバイスID</label>
                         <input type="text" class="form-control" id="deviceMac" 
@@ -176,6 +177,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentDrivers = {};
+        let driverInfo = {};  // ドライバー情報を保持
         let addDriverModalInstance, addDeviceModalInstance;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -197,16 +199,23 @@
         async function loadAllDevices() {
             try {
                 const response = await fetch('/admin/api/driver-devices');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
-                    currentDrivers = data.devices_by_user;
+                    currentDrivers = data.devices_by_user || {};
+                    driverInfo = data.driver_info || {};  // ドライバー情報を保存
                     updateStatistics(data);
                     renderDevices();
                 } else {
-                    showError('デバイス情報の取得に失敗しました');
+                    showError('デバイス情報の取得に失敗しました: ' + (data.error || '不明なエラー'));
                 }
             } catch (error) {
+                console.error('Load devices error:', error);
                 showError('通信エラー: ' + error.message);
             }
         }
@@ -221,7 +230,7 @@
         function renderDevices() {
             const container = document.getElementById('devicesList');
             
-            if (Object.keys(currentDrivers).length === 0) {
+            if (!currentDrivers || Object.keys(currentDrivers).length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> 
@@ -244,8 +253,16 @@
             const maxDevices = 5;
             const remaining = maxDevices - activeDevices.length;
             
+            // driverInfoから取得、なければdevicesから取得
+            let driverId = null;
+            if (driverInfo[username]) {
+                driverId = driverInfo[username].id;
+            } else if (devices.length > 0) {
+                driverId = devices[0].driver_id;
+            }
+            
             return `
-                <div class="driver-section card mb-4" data-driver="${username}">
+                <div class="driver-section card mb-4" data-driver="${username}" data-driver-id="${driverId}">
                     <div class="card-header bg-primary text-white">
                         <div class="row align-items-center">
                             <div class="col">
@@ -257,10 +274,14 @@
                                 </h5>
                             </div>
                             <div class="col-auto">
-                                ${remaining > 0 ? `
-                                    <button class="btn btn-light btn-sm" onclick="showAddDeviceModal('${username}', ${remaining})">
+                                ${remaining > 0 && driverId ? `
+                                    <button class="btn btn-light btn-sm" onclick="showAddDeviceModal('${username}', ${driverId}, ${remaining})">
                                         <i class="fas fa-plus"></i> デバイス追加
                                     </button>
+                                ` : remaining > 0 ? `
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> ドライバーID不明
+                                    </span>
                                 ` : `
                                     <span class="badge bg-warning">
                                         <i class="fas fa-exclamation-triangle"></i> 上限達成
@@ -272,9 +293,9 @@
                     <div class="card-body">
                         <div class="row">
                             ${devices.map(device => renderDeviceCard(username, device)).join('')}
-                            ${remaining > 0 ? `
+                            ${remaining > 0 && driverId ? `
                                 <div class="col-md-4 mb-3">
-                                    <div class="card add-device-btn" onclick="showAddDeviceModal('${username}', ${remaining})">
+                                    <div class="card add-device-btn" onclick="showAddDeviceModal('${username}', ${driverId}, ${remaining})">
                                         <div class="text-center text-muted">
                                             <i class="fas fa-plus fa-2x mb-2"></i>
                                             <p class="mb-0">デバイスを追加</p>
@@ -315,7 +336,7 @@
                                 <i class="fas fa-clock"></i> 最終使用: ${lastUsed}
                             </small>
                             <button class="btn btn-danger btn-sm w-100" 
-                                    onclick="deleteDevice('${username}', ${device.id}, '${device.mac_address}')">
+                                    onclick="deleteDevice(${device.id}, '${device.mac_address}')">
                                 <i class="fas fa-trash"></i> 削除
                             </button>
                         </div>
@@ -356,8 +377,9 @@
             }
         }
 
-        function showAddDeviceModal(username, remaining) {
+        function showAddDeviceModal(username, driverId, remaining) {
             document.getElementById('addDeviceUsername').value = username;
+            document.getElementById('addDeviceDriverId').value = driverId;
             document.getElementById('deviceMac').value = '';
             document.getElementById('deviceName').value = '';
             document.getElementById('remainingSlots').textContent = remaining;
@@ -366,8 +388,14 @@
 
         async function addDevice() {
             const username = document.getElementById('addDeviceUsername').value;
+            const driverId = document.getElementById('addDeviceDriverId').value;
             const macAddress = document.getElementById('deviceMac').value.trim();
             const deviceName = document.getElementById('deviceName').value.trim();
+
+            if (!driverId) {
+                showError('ドライバーIDが見つかりません');
+                return;
+            }
 
             if (!macAddress) {
                 alert('MACアドレスを入力してください');
@@ -375,16 +403,21 @@
             }
 
             try {
-                const response = await fetch(`/admin/api/driver-devices/${username}`, {
+                const response = await fetch('/admin/api/driver-devices', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        driver_id: parseInt(driverId),
                         mac_address: macAddress,
                         device_name: deviceName || undefined
                     })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const data = await response.json();
 
@@ -396,19 +429,24 @@
                     showError(data.error || 'デバイスの追加に失敗しました');
                 }
             } catch (error) {
+                console.error('Add device error:', error);
                 showError('通信エラー: ' + error.message);
             }
         }
 
-        async function deleteDevice(username, deviceId, macAddress) {
+        async function deleteDevice(deviceId, macAddress) {
             if (!confirm(`デバイス ${macAddress} を削除しますか？`)) {
                 return;
             }
 
             try {
-                const response = await fetch(`/admin/api/driver-devices/${username}/${deviceId}`, {
+                const response = await fetch(`/admin/api/driver-devices/${deviceId}`, {
                     method: 'DELETE'
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const data = await response.json();
 
@@ -419,6 +457,7 @@
                     showError(data.error || 'デバイスの削除に失敗しました');
                 }
             } catch (error) {
+                console.error('Delete device error:', error);
                 showError('通信エラー: ' + error.message);
             }
         }
