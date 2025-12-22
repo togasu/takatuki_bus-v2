@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bus-select.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="main">
     <div class="bus-schedule">
@@ -31,19 +35,4 @@
     updateDateTime(); // 初回実行
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-{% endblock %}
-
-{% block styles %}
-<style>
-    .datetime {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background-color: #ffffff;
-        border: 1px solid #cccccc;
-        border-radius: 5px;
-        padding: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-</style>
 {% endblock %}

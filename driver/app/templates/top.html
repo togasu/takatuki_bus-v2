@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/top-page.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="main">
   <p class="error">{{message}}</p>
@@ -28,16 +32,4 @@
     setInterval(updateDateTime, 1000);
   });
 </script>
-{% endblock %}
-{% block styles %}
-<style>
-  .main {
-    text-align: center;
-    font-size:large;
-  }
-
-  .error{
-    color: red;
-  }
-</style>
 {% endblock %}

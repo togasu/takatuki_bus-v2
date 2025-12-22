@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mail.css') }}">
+{% endblock %}
+
 {% block content %}
     <form action="{{ url_for('mailsend') }}" method="post">
         <label for="email_body">メールの本文:</label>
@@ -7,20 +11,4 @@
         <br>
         <button type="submit">送信</button>
     </form>
-{% endblock %}
-
-{% block styles %}
-<style>
-  main{
-    margin-top:50px;
-    text-align: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-  }
-  form{
-    margin-top: 50px;
-    text-align: center;
-    justify-content: center;
-  }
-</style>
 {% endblock %}

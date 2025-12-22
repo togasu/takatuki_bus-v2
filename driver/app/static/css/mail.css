@@ -1,0 +1,57 @@
+/* mail.html専用スタイル */
+
+main {
+  margin-top: 80px;
+  text-align: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
+form {
+  margin: 30px auto;
+  text-align: left;
+  max-width: 800px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+textarea {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 200px;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+button[type="submit"] {
+  width: 100%;
+  margin-top: 20px;
+  padding: 18px;
+  font-size: 20px;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  min-height: 56px;
+}

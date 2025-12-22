@@ -1,0 +1,10 @@
+/* top.html専用スタイル */
+
+.main {
+  text-align: center;
+  font-size: large;
+}
+
+.error {
+  color: red;
+}

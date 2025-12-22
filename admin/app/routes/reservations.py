@@ -59,7 +59,10 @@ def view_bus(bus_id):
         
         if not result.get('success'):
             error_message = result.get('message', 'バス情報の取得に失敗しました')
-            return render_template('reservations/bus_seat_view.html', error=error_message)
+            return render_template('reservations/bus_seat_view.html', 
+                                 error=error_message, 
+                                 bus=None, 
+                                 seat_status=[])
         
         bus = result.get('bus')
         seat_status = result.get('seat_status', [])
@@ -78,7 +81,9 @@ def view_bus(bus_id):
         traceback.print_exc()
         error_message = "バス予約情報の取得中にエラーが発生しました。"
         return render_template('reservations/bus_seat_view.html', 
-                             error=error_message)
+                             error=error_message,
+                             bus=None,
+                             seat_status=[])
 
 @bp.route('/bus/list', methods=['GET'])
 @require_permission('reservation', 'read')

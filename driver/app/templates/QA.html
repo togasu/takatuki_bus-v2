@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/QA.css') }}">
+{% endblock %}
+
 {% block content %}
     <div class="main">
       <section>
@@ -13,50 +17,4 @@
           <!-- Add more Q&A items as needed -->
       </section>
     </div>
-{% endblock %}
-
-{% block styles %}
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f8f9fa;
-        color: #333333; /* 落ち着いた文字色 */
-    }
-    main {
-        margin-top: 50px;
-        text-align: center;
-        justify-content: center;
-        font-size: large;
-    }
-    h2 {
-        color: #2c3e50; /* 落ち着いた見出し色 */
-    }
-    .qa-item {
-        margin-bottom: 20px;
-    }
-    .qa-item h3 {
-        color: #555;
-    }
-    .qa-item p {
-        color: #777;
-    }
-    .header-title-sojobus {
-        color: #333333; /* リンクの色をベースに合わせる */
-        text-decoration: none; /* リンクの下線を消す */
-        font-family: inherit; /* フォントを継承 */
-    }
-    .header-title-sojobus:hover {
-        color: #333333; /* ホバー時も色を変更しない */
-    }
-    .nav-items__item a {
-        color: #333333; /* リンクの色をベースに合わせる */
-        text-decoration: none; /* リンクの下線を消す */
-        font-family: inherit; /* フォントを継承 */
-    }
-    .nav-items__item a:hover {
-        color: #333333; /* ホバー時も色を変更しない */
-    }
-</style>
 {% endblock %}

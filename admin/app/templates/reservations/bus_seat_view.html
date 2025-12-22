@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}座席予約状況 - {{ bus.busid }}号車{% endblock %}
+{% block title %}座席予約状況{% if bus %} - {{ bus.busid }}号車{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>

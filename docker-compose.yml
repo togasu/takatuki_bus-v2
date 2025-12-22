@@ -20,6 +20,7 @@ services:
     # ポート公開を削除 - nginxを経由してのみアクセス可能
     volumes:
       - ./logs:/app/logs
+      - ./student/app:/app/app  # 開発用: アプリケーションファイルをマウント
     env_file:
       - .env
       - ./student/.env

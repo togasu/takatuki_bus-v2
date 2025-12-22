@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/date-select.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="maincontainer">
     <h2 class="my-4">日付と行き先</h2>
@@ -79,58 +83,4 @@
         });
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f8f9fa;
-        color: #333333; /* 落ち着いた文字色 */
-    }
-    main{
-        margin-top:50px;
-        text-align: center;
-        justify-content: center;
-        font-size: 140%;
-    }
-    .maincontainer{
-        text-align: center;
-        justify-content: center;
-    }
-    h2 {
-        color: #2c3e50; /* 落ち着いた見出し色 */
-    }
-    .btn-group {
-        margin-top: 15px;
-    }
-    .btn-date,
-    .btn-confirm,
-    .btn-destination {
-        background-color: #6c757d; /* 落ち着いた色 */
-        color: #ffffff;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin: 5px;
-        cursor: pointer;
-        display: inline-block;
-        text-decoration: none;
-    }
-    .btn-date:hover,
-    .btn-confirm:hover,
-    .btn-destination:hover {
-        background-color: #5a6268; /* 落ち着いた色 */
-    }
-    .selected-values {
-        margin-top: 30px;
-    }
-    .btn-back,
-    .btn-confirm {
-        padding: 10px 20px;
-        margin-top: 20px;
-    }
-</style>
 {% endblock %}

@@ -523,7 +523,7 @@ def get_bus_seat_status(bus_id):
         reservations = db.session.query(
             Reservation, User
         ).join(
-            User, Reservation.user_id == User.id
+            User, Reservation.user_id == User.student_id
         ).filter(
             Reservation.bus_id == bus_id
         ).order_by(Reservation.seat_number).all()

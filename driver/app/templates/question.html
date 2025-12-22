@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/question.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <h2>問題発生</h2>
@@ -29,58 +33,4 @@
     setInterval(updateDateTime, 1000); // 1秒ごとに更新
     updateDateTime(); // 初回実行
 </script>
-{% endblock %}
-
-{% block styles %}
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f8f9fa;
-        color: #333333; /* 落ち着いた文字色 */
-    }
-    main {
-        margin-top: 50px;
-        text-align: center;
-        justify-content: center;
-        font-size: large;
-    }
-
-    h2 {
-        color: #2c3e50; /* 落ち着いた見出し色 */
-    }
-    .button-below-header {
-        background-color: #6c757d; /* 落ち着いた色 */
-        color: #ffffff;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin: 10px;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-    }
-    .button-below-header:hover {
-        background-color: #5a6268; /* 落ち着いた色 */
-    }
-    .button-below-header a {
-        color: #ffffff; /* リンクの色を白に */
-        text-decoration: none; /* リンクの下線を消す */
-        font-family: inherit; /* フォントを継承 */
-    }
-    .button-below-header a:hover {
-        color: #ffffff; /* ホバー時も色を白に */
-    }
-    .datetime {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background-color: #ffffff;
-        border: 1px solid #cccccc;
-        border-radius: 5px;
-        padding: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-</style>
 {% endblock %}
