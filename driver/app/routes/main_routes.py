@@ -23,11 +23,15 @@ def apply_cookies(response):
     return response
 
 
-def get_next_two_buses(bus_number):
-    """指定された号車の次の2つのバスを取得"""
+def get_next_two_buses(bus_number=None):
+    """次の2つのバスを取得（全てのバスから）
+    
+    Args:
+        bus_number: 後方互換性のため残していますが使用されません
+    """
     try:
         client = get_student_client()
-        buses = client.get_upcoming_buses_by_number(bus_number, limit=2)
+        buses = client.get_all_upcoming_buses(limit=2)
         
         firstbus = "バスがありません"
         secondbus = "バスがありません"
@@ -36,13 +40,13 @@ def get_next_two_buses(bus_number):
             bus_data = buses[0]
             departure_dt = datetime.fromisoformat(bus_data['departure_time'])
             ud = yukisaki(bus_data['ud'])
-            firstbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+            firstbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}番"
         
         if len(buses) > 1:
             bus_data = buses[1]
             departure_dt = datetime.fromisoformat(bus_data['departure_time'])
             ud = yukisaki(bus_data['ud'])
-            secondbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+            secondbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}番"
         
         return firstbus, secondbus
     except Exception as e:
@@ -188,11 +192,11 @@ def bus():
             if driver_obj:
                 number = driver_obj.number
                 
-                # Student ServiceのAPIクライアントを使用してバス情報を取得
+                # Student ServiceのAPIクライアントを使用して全てのバス情報を取得
                 client = get_student_client()
-                buses = client.get_upcoming_buses_by_number(number, limit=5)
+                buses = client.get_all_upcoming_buses(limit=10)  # 10便まで表示
                 
-                logger.info(f"Retrieved {len(buses)} buses for driver {number}")
+                logger.info(f"Retrieved {len(buses)} upcoming buses for driver {number}")
                 
                 bus_date = []
                 for bus_data in buses:

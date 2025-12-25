@@ -92,7 +92,7 @@ class ReservationSimulator:
                 reservation = Reservation()
                 reservation.seat_number = seat.number
                 reservation.bus_id = bus.id
-                reservation.user_id = user.id
+                reservation.user_id = user.student_id  # user.idではなくstudent_idを使用
                 reservation.approved = 0  # 未承認状態
                 reservation.reserved_time = now_jst()
                 
@@ -163,7 +163,8 @@ class ReservationSimulator:
                 if random.random() < 0.2 and reservations:
                     reservation = random.choice(reservations)
                     
-                    user = User.query.get(reservation.user_id)
+                    # user_idは学籍番号なのでstudent_idで検索
+                    user = User.query.filter_by(student_id=reservation.user_id).first()
                     bus = Bus.query.get(reservation.bus_id)
                     
                     # 予約を削除（キャンセル扱い）

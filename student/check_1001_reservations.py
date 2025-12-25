@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-1001号車の予約件数を確認するスクリプト
+1号車の予約件数を確認するスクリプト
 """
 import sys
 import os
@@ -13,12 +13,12 @@ from app.models.reservation import Reservation
 def check_1001_reservations():
     app = create_app()
     with app.app_context():
-        bus = Bus.query.filter_by(busid=1001).first()
+        bus = Bus.query.filter_by(busid=1).first()
         if not bus:
-            print("1001号車が見つかりません")
+            print("1号車が見つかりません")
             return
         count = Reservation.query.filter_by(bus_id=bus.id).count()
-        print(f"1001号車の予約件数: {count}")
+        print(f"1号車の予約件数: {count}")
 
 if __name__ == "__main__":
     check_1001_reservations()

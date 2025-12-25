@@ -13,7 +13,8 @@ from app.models.reservation import Reservation
 def clear_debug_bus_reservations():
     app = create_app()
     with app.app_context():
-        debug_busids = [1001, 1002, 1003, 1004, 1005, 1006]
+        # busidは1～4の号車番号
+        debug_busids = [1, 2, 3, 4]
         buses = Bus.query.filter(Bus.busid.in_(debug_busids)).all()
         bus_ids = [bus.id for bus in buses]
         deleted_count = 0

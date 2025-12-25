@@ -41,7 +41,7 @@ def get_all_students():
             current_reservations_count = db.session.query(Reservation).join(
                 Bus, Reservation.bus_id == Bus.id
             ).filter(
-                Reservation.user_id == user.id,
+                Reservation.user_id == user.student_id,  # user.idではなくuser.student_idを使用
                 Bus.departure_time >= datetime.now()
             ).count()
             
@@ -126,7 +126,7 @@ def search_student():
         ).join(
             Seat, Reservation.seat_number == Seat.number
         ).filter(
-            Reservation.user_id == user.id,
+            Reservation.user_id == user.student_id,  # user.idではなくuser.student_idを使用
             Bus.departure_time >= datetime.now()
         ).all()
         
@@ -345,7 +345,7 @@ def get_student_reservations(student_id):
         ).join(
             Seat, Reservation.seat_number == Seat.number
         ).filter(
-            Reservation.user_id == user.id
+            Reservation.user_id == user.student_id  # user.idではなくuser.student_idを使用
         ).order_by(Bus.departure_time.desc()).all()
         
         reservation_list = []
@@ -520,13 +520,45 @@ def get_bus_seat_status(bus_id):
             }), 404
         
         # 予約情報を取得
+        logger.info(f"Querying reservations for bus_id={bus_id}")
+        logger.info(f"Reservation table name: {Reservation.__tablename__}")
+        logger.info(f"User table name: {User.__tablename__ if hasattr(User, '__tablename__') else 'users'}")
+        
+        # まずReservationテーブルから直接データを確認
+        all_reservations = db.session.query(Reservation).filter(
+            Reservation.bus_id == bus_id
+        ).all()
+        logger.info(f"Direct query: Found {len(all_reservations)} reservations in Reservation table")
+        for r in all_reservations:
+            logger.info(f"  Reservation: id={r.id}, seat={r.seat_number}, user_id='{r.user_id}', bus_id={r.bus_id}")
+        
+        # Userテーブルのstudent_idも確認
+        if all_reservations:
+            sample_user_id = all_reservations[0].user_id
+            matching_user = db.session.query(User).filter(User.student_id == sample_user_id).first()
+            logger.info(f"Looking for user with student_id='{sample_user_id}': {'Found' if matching_user else 'NOT FOUND'}")
+            if matching_user:
+                logger.info(f"  User found: student_id='{matching_user.student_id}'")
+            else:
+                # ユーザーが見つからない場合、すべてのユーザーのstudent_idを確認
+                all_users = db.session.query(User.student_id).limit(10).all()
+                logger.info(f"  Sample user student_ids in database: {[u.student_id for u in all_users]}")
+        
+        # LEFT JOINを使用してユーザーが見つからない場合でも予約を表示
         reservations = db.session.query(
             Reservation, User
-        ).join(
+        ).outerjoin(
             User, Reservation.user_id == User.student_id
         ).filter(
             Reservation.bus_id == bus_id
         ).order_by(Reservation.seat_number).all()
+        
+        logger.info(f"Found {len(reservations)} reservations for bus {bus_id}")
+        for r, u in reservations:
+            if u:
+                logger.info(f"  Seat {r.seat_number}: user={u.student_id}, approved={r.approved}")
+            else:
+                logger.info(f"  Seat {r.seat_number}: user_id={r.user_id} (User not found), approved={r.approved}")
         
         # 座席ごとの予約状態を作成（27席分）
         seat_status = []
@@ -535,18 +567,35 @@ def get_bus_seat_status(bus_id):
         for i in range(1, 28):  # 1〜27番の座席
             if i in reservation_map:
                 reservation, user = reservation_map[i]
-                seat_status.append({
-                    'number': i,
-                    'reserved': True,
-                    'user_id': user.student_id,
-                    'approved': reservation.approved,
-                    'reserved_time': reservation.reserved_time.isoformat() if reservation.reserved_time else None
-                })
+                # ユーザーが見つからない場合はreservation.user_idを使用
+                if user:
+                    seat_status.append({
+                        'seat_number': i,
+                        'reserved': True,
+                        'student_id': user.student_id,
+                        'user_id': user.student_id,
+                        'display_name': user.name if hasattr(user, 'name') and user.name else user.student_id,
+                        'approved': reservation.approved,
+                        'reserved_time': reservation.reserved_time.isoformat() if reservation.reserved_time else None
+                    })
+                else:
+                    # Userレコードが見つからない場合
+                    seat_status.append({
+                        'seat_number': i,
+                        'reserved': True,
+                        'student_id': reservation.user_id,
+                        'user_id': reservation.user_id,
+                        'display_name': f'{reservation.user_id} (未登録)',
+                        'approved': reservation.approved,
+                        'reserved_time': reservation.reserved_time.isoformat() if reservation.reserved_time else None
+                    })
             else:
                 seat_status.append({
-                    'number': i,
+                    'seat_number': i,
                     'reserved': False,
+                    'student_id': None,
                     'user_id': None,
+                    'display_name': None,
                     'approved': None,
                     'reserved_time': None
                 })
@@ -595,9 +644,11 @@ def create_bus():
         else:
             departure_time = departure_time_str
         
-        # 新しいバスIDを生成（既存の最大busidの次の番号）
-        max_busid = db.session.query(Bus.busid).order_by(Bus.busid.desc()).first()
-        new_busid = (max_busid[0] if max_busid else 0) + 1
+        # busidは号車番号（1～4）として扱う
+        # リクエストで指定されていない場合は1をデフォルトとする
+        new_busid = int(data.get('busid', 1))
+        if new_busid < 1 or new_busid > 4:
+            return jsonify({'error': 'busidは1～4の範囲で指定してください'}), 400
         
         # 新しいバスを作成
         new_bus = Bus()

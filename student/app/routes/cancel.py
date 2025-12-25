@@ -49,9 +49,9 @@ def cancelcheck():
             }
             bus_info_list.append(bus_info)
             
-        return render_template('yyoyakucancel.html', bus_data=bus_info_list)
+        return render_template('reservation_cancel_list.html', bus_data=bus_info_list)
     else:
-        return render_template('yyoyakucancel.html')
+        return render_template('reservation_cancel_list.html')
 
 @cancel_bp.route('/cancel/<bus_id>')
 def cancel(bus_id):

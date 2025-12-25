@@ -61,7 +61,7 @@ class SimpleReservationSimulator:
                 reservation = Reservation()
                 reservation.seat_number = seat.number
                 reservation.bus_id = bus.id
-                reservation.user_id = user.id
+                reservation.user_id = user.student_id  # user.idではなくstudent_idを使用
                 reservation.approved = random.choice([0, 1])  # ランダムで承認状態
                 reservation.reserved_time = datetime.now()
                 

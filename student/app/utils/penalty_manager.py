@@ -58,7 +58,7 @@ class PenaltyManager:
             # 最後のペナルティ解除以降のapproved=0の予約を取得
             query = Reservation.query.filter(
                 and_(
-                    Reservation.user_id == user.id,
+                    Reservation.user_id == student_id,  # user.idではなくstudent_idを使用
                     Reservation.approved == 0
                 )
             )
@@ -299,7 +299,7 @@ class PenaltyManager:
                 
             query = Reservation.query.filter(
                 and_(
-                    Reservation.user_id == user.id,
+                    Reservation.user_id == student_id,  # user.idではなくstudent_idを使用
                     Reservation.approved == 0
                 )
             )

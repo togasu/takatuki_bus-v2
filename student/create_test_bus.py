@@ -25,52 +25,52 @@ def create_debug_buses():
             # 現在時刻を基準にした出発時刻を設定
             base_time = datetime.utcnow()
             
-            # デバッグ用バスのデータ
+            # デバッグ用バスのデータ（busidは1～4の号車番号）
             debug_buses = [
                 {
-                    'busid': 1001,
+                    'busid': 1,  # 1号車
                     'departure_time': base_time + timedelta(hours=2),  # 2時間後
-                    'seats': 20,
+                    'seats': 27,
                     'ud': 0,  # 上り
                     'bookable_time': 60,  # 予約可能時間（分）
                     'status': 0  # アクティブ
                 },
                 {
-                    'busid': 1002,
+                    'busid': 2,  # 2号車
                     'departure_time': base_time + timedelta(hours=4),  # 4時間後
-                    'seats': 20,
+                    'seats': 27,
                     'ud': 1,  # 下り
                     'bookable_time': 60,
                     'status': 0
                 },
                 {
-                    'busid': 1003,
+                    'busid': 3,  # 3号車
                     'departure_time': base_time + timedelta(hours=6),  # 6時間後
-                    'seats': 30,
+                    'seats': 27,
                     'ud': 0,  # 上り
                     'bookable_time': 90,
                     'status': 0
                 },
                 {
-                    'busid': 1004,
+                    'busid': 4,  # 4号車
                     'departure_time': base_time + timedelta(hours=8),  # 8時間後
-                    'seats': 30,
+                    'seats': 27,
                     'ud': 1,  # 下り
                     'bookable_time': 90,
                     'status': 0
                 },
                 {
-                    'busid': 1005,
+                    'busid': 1,  # 1号車（翌日）
                     'departure_time': base_time + timedelta(days=1),  # 翌日
-                    'seats': 25,
+                    'seats': 27,
                     'ud': 0,  # 上り
                     'bookable_time': 120,
                     'status': 0
                 },
                 {
-                    'busid': 1006,
+                    'busid': 2,  # 2号車（翌日）
                     'departure_time': base_time + timedelta(days=1, hours=2),  # 翌日2時間後
-                    'seats': 25,
+                    'seats': 27,
                     'ud': 1,  # 下り
                     'bookable_time': 120,
                     'status': 0
@@ -81,13 +81,15 @@ def create_debug_buses():
             created_seats_count = 0
             
             for bus_data in debug_buses:
-                # 既存バスの確認
+                # 既存バスの確認（同じbusidと出発時刻の組み合わせ）
                 existing_bus = Bus.query.filter(
-                    Bus.busid == bus_data['busid']
+                    Bus.busid == bus_data['busid'],
+                    Bus.departure_time == bus_data['departure_time']
                 ).first()
                 
                 if existing_bus:
-                    print(f"⚠️  バス (ID: {bus_data['busid']}) は既に存在します")
+                    departure_str = bus_data['departure_time'].strftime('%Y-%m-%d %H:%M')
+                    print(f"⚠️  バス ({bus_data['busid']}号車 {departure_str}発) は既に存在します")
                     continue
                 
                 # 新しいバスを作成
@@ -105,7 +107,7 @@ def create_debug_buses():
                 
                 created_buses_count += 1
                 direction = "上り" if bus_data['ud'] == 0 else "下り"
-                print(f"✅ デバッグバス作成: ID {bus_data['busid']} ({direction}, {bus_data['seats']}席)")
+                print(f"✅ デバッグバス作成: {bus_data['busid']}号車 ({direction}, {bus_data['seats']}席)")
                 
                 # バスの座席を作成
                 for seat_number in range(1, bus_data['seats'] + 1):
@@ -125,7 +127,7 @@ def create_debug_buses():
                 for bus_data in debug_buses:
                     direction = "上り" if bus_data['ud'] == 0 else "下り"
                     departure_str = bus_data['departure_time'].strftime('%Y-%m-%d %H:%M')
-                    print(f"   - バスID {bus_data['busid']}: {direction} ({departure_str}出発, {bus_data['seats']}席)")
+                    print(f"   - {bus_data['busid']}号車: {direction} ({departure_str}出発, {bus_data['seats']}席)")
             else:
                 print("ℹ️  新規作成されたバスはありません")
                 

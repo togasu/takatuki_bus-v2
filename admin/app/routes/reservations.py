@@ -49,31 +49,66 @@ def search():
         return render_template('reservations/search.html', 
                              error=error_message)
 
-@bp.route('/bus/<int:bus_id>', methods=['GET'])
+@bp.route('/bus/<int:bus_id>', methods=['GET', 'POST'])
 @require_permission('reservation', 'read')
 def view_bus(bus_id):
     """便ごとの座席予約状況を表示"""
     try:
         # Student サービスのAPIを使用してバスの座席予約状況を取得
         result = admin_api.get_bus_seat_status(bus_id)
-        
-        if not result.get('success'):
-            error_message = result.get('message', 'バス情報の取得に失敗しました')
+
+        logger.info(f"Bus seat status API raw result type={type(result)}, value={result}")
+
+        # result が期待する dict でない、または success が False の場合はエラー扱い
+        if not isinstance(result, dict) or not result.get('success'):
+            # エラーメッセージを可能な限り取り出す
+            if isinstance(result, dict):
+                error_message = result.get('message', 'バス情報の取得に失敗しました')
+            else:
+                error_message = f'無効なレスポンス: {result}'
+
+            logger.error(f"Failed to get bus seat status: {error_message}")
+            # ここではテンプレートに空の seat_status ではなく、全席空の reservedtf を渡して
+            # 座席レイアウト自体は表示させる（情報取得エラーは画面上に出す）
             return render_template('reservations/bus_seat_view.html', 
                                  error=error_message, 
                                  bus=None, 
-                                 seat_status=[])
+                                 seat_status=[],
+                                 reservedtf=['0'] * 27,
+                                 bus_id=bus_id,
+                                 is_privileged_user=True)
         
         bus = result.get('bus')
-        seat_status = result.get('seat_status', [])
+        seat_status = result.get('seat_status', []) if isinstance(result.get('seat_status', []), list) else []
+
+        logger.info(f"Seat status count: {len(seat_status)}")
+        logger.debug(f"Full seat_status payload: {seat_status}")
         
         # 上り/下りの表示用テキストを追加
         if bus:
             bus['ud_text'] = '高槻キャンパス行き' if bus.get('ud') == 0 else '高槻駅行き'
         
+        # 座席状態リスト（27席分）を作成
+        # '0': 空席, '1': 予約済み, その他: ユーザーIDなど
+        reservedtf = ['0'] * 27  # 初期状態は全席空席
+        
+        for seat_info in seat_status:
+            try:
+                seat_number = int(seat_info.get('seat_number', 0)) if seat_info.get('seat_number') is not None else 0
+            except (ValueError, TypeError):
+                seat_number = 0
+
+            if 1 <= seat_number <= 27:
+                # student サービス側のレスポンスは 'user_id' または 'student_id' を含むはず
+                if seat_info.get('user_id') or seat_info.get('student_id'):
+                    reservedtf[seat_number - 1] = '1'  # 予約済み
+        
         return render_template('reservations/bus_seat_view.html', 
                              bus=bus, 
-                             seat_status=seat_status)
+                             seat_status=seat_status,
+                             reservedtf=reservedtf,
+                             bus_id=bus_id,
+                             is_privileged_user=True)
     
     except Exception as e:
         logger.error(f"Error viewing bus reservations: {e}")
@@ -83,7 +118,10 @@ def view_bus(bus_id):
         return render_template('reservations/bus_seat_view.html', 
                              error=error_message,
                              bus=None,
-                             seat_status=[])
+                             seat_status=[],
+                             reservedtf=[],
+                             bus_id=bus_id,
+                             is_privileged_user=True)
 
 @bp.route('/bus/list', methods=['GET'])
 @require_permission('reservation', 'read')
@@ -108,3 +146,49 @@ def bus_list():
         error_message = "バス一覧の取得中にエラーが発生しました。"
         return render_template('reservations/bus_list.html', 
                              error=error_message)
+
+@bp.route('/api/seat-info/<int:bus_id>/<int:seat_number>', methods=['GET'])
+@require_permission('reservation', 'read')
+def get_seat_info(bus_id, seat_number):
+    """特定座席の予約情報を取得するAPI（管理者用）"""
+    try:
+        # Student サービスのAPIを使用して座席情報を取得
+        result = admin_api.get_bus_seat_status(bus_id)
+        
+        if not result.get('success'):
+            return jsonify({
+                'success': False,
+                'message': 'バス情報の取得に失敗しました'
+            }), 400
+        
+        seat_status = result.get('seat_status', [])
+        
+        # 指定された座席番号の情報を検索
+        for seat_info in seat_status:
+            if seat_info.get('seat_number') == seat_number:
+                if seat_info.get('user_id'):
+                    return jsonify({
+                        'reserved': True,
+                        'user_id': seat_info.get('user_id'),
+                        'display_name': seat_info.get('display_name', seat_info.get('user_id')),
+                        'student_id': seat_info.get('student_id'),
+                        'reserved_time': seat_info.get('reserved_time'),
+                        'approved': seat_info.get('approved', 0)
+                    })
+                else:
+                    return jsonify({
+                        'reserved': False,
+                        'message': 'この座席は予約されていません'
+                    })
+        
+        return jsonify({
+            'reserved': False,
+            'message': '座席情報が見つかりません'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error getting seat info: {e}")
+        return jsonify({
+            'success': False,
+            'message': '座席情報の取得中にエラーが発生しました'
+        }), 500

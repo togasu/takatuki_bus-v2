@@ -25,20 +25,19 @@ class StudentServiceClient:
             'Content-Type': 'application/json'
         })
     
-    def get_upcoming_buses_by_number(self, bus_number: int, limit: int = 5) -> List[Dict]:
-        """指定した号車番号の今後のバス便を取得（departure_timeが現在時刻より後）"""
+    def get_all_upcoming_buses(self, limit: int = 5) -> List[Dict]:
+        """全ての今後のバス便を取得（departure_timeが現在時刻より後）"""
         try:
             # まず全バスを取得
             response = self.session.get(f"{self.base_url}/api/management/buses")
             response.raise_for_status()
             all_buses = response.json()
             
-            # フィルタリング: 該当の号車で、出発時刻が未来のもの
+            # フィルタリング: 出発時刻が未来のもの
             now = datetime.now()
             upcoming_buses = [
                 bus for bus in all_buses
-                if bus.get('busid') == bus_number 
-                and bus.get('departure_time')
+                if bus.get('departure_time')
                 and datetime.fromisoformat(bus['departure_time']) > now
             ]
             
@@ -49,6 +48,17 @@ class StudentServiceClient:
         except requests.RequestException as e:
             logger.error(f"Failed to get upcoming buses from student service: {e}")
             return []
+    
+    def get_upcoming_buses_by_number(self, bus_number: int, limit: int = 5) -> List[Dict]:
+        """指定した号車番号の今後のバス便を取得（departure_timeが現在時刻より後）
+        
+        注: busidはバスの号車番号（1～4）です。
+        ドライバーは全てのバスから運行便を選択できるため、このメソッドの使用は推奨されません。
+        代わりに get_all_upcoming_buses() を使用してください。
+        """
+        # 後方互換性のため、全てのバスを返す
+        logger.warning(f"get_upcoming_buses_by_number is deprecated. Use get_all_upcoming_buses instead.")
+        return self.get_all_upcoming_buses(limit)
     
     def get_buses_by_number_and_time(self, bus_number: int, limit: int = 5) -> List[Dict]:
         """指定した号車番号の今後のバス便を取得"""

@@ -17,7 +17,7 @@ def choice():
     today = datetime.date(datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d")
     nextday = (datetime.now() + timedelta(days=1) + timedelta(hours=1)).strftime("%Y-%m-%d")
 
-    return render_template('yukisaki.html', today=today, nextday=nextday)
+    return render_template('destination_selection.html', today=today, nextday=nextday)
 
 @booking_bp.route('/select/ud', methods=['POST'])
 def ud():
@@ -83,7 +83,7 @@ def upchoice(selecteddate):
 
     time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
     yukisaki = '高槻キャンパス行き'
-    return render_template('yyoyakuchoice.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
+    return render_template('bus_selection.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
 
 @booking_bp.route('/choice/down/<selecteddate>')
 def downchoice(selecteddate):
@@ -129,7 +129,7 @@ def downchoice(selecteddate):
 
     time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
     yukisaki = '高槻駅行き'
-    return render_template('yyoyakuchoice.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
+    return render_template('bus_selection.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
 
 @booking_bp.route('/choice/<bus_id>')
 def seat(bus_id):
@@ -169,7 +169,7 @@ def seat(bus_id):
     if i == bus.seats or bus.status >= 1:
         return render_template('wait_cancel.html', bnum=bus_id)
     
-    return render_template('bnum.html', reservedtf=reservedtf, bus_id=bus_id)
+    return render_template('seat_selection.html', reservedtf=reservedtf, bus_id=bus_id)
 
 @booking_bp.route('/choice/<bus_id>/reserve', methods=['POST'])
 def reserve(bus_id):

@@ -1,0 +1,227 @@
+/* bus_seat_view.html専用スタイル - 座席表ページ */
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    font-size: 18px;
+}
+
+.info-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: fixed;
+    top: 56px;
+    z-index: 1000;
+}
+
+.reservation-info, .bus-info {
+    width: 45%;
+    text-align: center;
+}
+
+.reservation-info h2, .bus-info h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.reservation-info p, .bus-info p {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+main {
+    margin-top: 80px;
+    text-align: center;
+    justify-content: center;
+}
+
+.bus-seats {
+    text-align: center;
+    width: auto;
+    max-width: 320px;
+    margin: 200px auto 80px;
+    padding: 30px 15px;
+    background: linear-gradient(to bottom, #e8e8e8 0%, #f5f5f5 100%);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border: 3px solid #ccc;
+}
+
+.bus-seats h1 {
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.seat {
+    width: 56px;
+    height: 56px;
+    margin: 6px;
+    border: 2px solid #333;
+    background-color: #d3d3d3;
+    border-radius: 12px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.seat:active {
+    transform: scale(0.95);
+}
+
+.seat.occupied {
+    background-color: #ff6347;
+    color: white;
+}
+
+.seat.approved {
+    background-color: #4778ff;
+    color: white;
+}
+
+.seat.selected {
+    background-color: #90ee90;
+    border-color: #45a049;
+    box-shadow: 0 0 12px rgba(144, 238, 144, 0.6);
+}
+
+.aisle {
+    width: 56px;
+    height: 56px;
+    margin: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.auxiliary-seat {
+    width: 44px;
+    height: 44px;
+    margin: 6px;
+    border: 2px solid #333;
+    background-color: #d3d3d3;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.auxiliary-seat:active {
+    transform: scale(0.95);
+}
+
+.auxiliary-seat.occupied {
+    background-color: #ff6347;
+    color: white;
+}
+
+.auxiliary-seat.approved {
+    background-color: #4778ff;
+    color: white;
+}
+
+.auxiliary-seat.selected {
+    background-color: #90ee90;
+    border-color: #45a049;
+    box-shadow: 0 0 12px rgba(144, 238, 144, 0.6);
+}
+
+.none {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    cursor: default;
+}
+
+.dark {
+    background-color: #333;
+    color: white;
+}
+
+#refresh-button {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 0;
+    background-color: #8d8d8d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#refresh-button:hover {
+    background-color: #727472;
+    transform: scale(1.05);
+}
+
+#refresh-button:active {
+    transform: scale(0.95);
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 18px;
+    margin: 20px;
+    padding: 15px;
+    background-color: #ffebee;
+    border: 1px solid #ef5350;
+    border-radius: 4px;
+}
+
+/* iPad横向きの最適化 */
+@media screen and (min-width: 768px) and (orientation: landscape) {
+    .bus-seats {
+        max-width: 320px;
+    }
+
+    .seat {
+        width: 64px;
+        height: 64px;
+        font-size: 20px;
+    }
+
+    .auxiliary-seat {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+}
