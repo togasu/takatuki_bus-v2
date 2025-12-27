@@ -21,6 +21,9 @@ def index():
         # 未認証の場合はログインページにリダイレクト
         return redirect(url_for('main.login'))
     
+    # クエリパラメータからメッセージを取得
+    message = request.args.get('message', '')
+    
     # 認証済みの場合はtopページを表示
     try:
         # ドライバー情報を取得
@@ -37,32 +40,43 @@ def index():
         client = get_student_client()
         buses = client.get_upcoming_buses_by_number(bus_number, limit=2)
         
-        firstbus = "バスがありません"
-        secondbus = "バスがありません"
+        logger.info(f"Bus number: {bus_number}, Retrieved buses count: {len(buses)}")
+        logger.info(f"Buses data: {buses}")
+        
+        firstbus = None
+        secondbus = None
         
         if len(buses) > 0:
             bus_data = buses[0]
             departure_dt = datetime.fromisoformat(bus_data['departure_time'])
-            ud = yukisaki(bus_data['ud'])
-            firstbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+            firstbus = {
+                'destination': yukisaki(bus_data['ud']),
+                'date': departure_dt.strftime('%m/%d'),
+                'time': departure_dt.strftime('%H:%M'),
+                'bus_number': bus_data['busid']
+            }
         
         if len(buses) > 1:
             bus_data = buses[1]
             departure_dt = datetime.fromisoformat(bus_data['departure_time'])
-            ud = yukisaki(bus_data['ud'])
-            secondbus = f"行き先|{ud}  出発時刻|{departure_dt.strftime('%m/%d %H:%M')} {bus_data['busid']}号車"
+            secondbus = {
+                'destination': yukisaki(bus_data['ud']),
+                'date': departure_dt.strftime('%m/%d'),
+                'time': departure_dt.strftime('%H:%M'),
+                'bus_number': bus_data['busid']
+            }
         
         return render_template('top.html', 
-                             message="", 
+                             message=message, 
                              firstbus=firstbus, 
-                             secoundbus=secondbus)
+                             secondbus=secondbus)
     except Exception as e:
         logger.error(f"Error in index route: {e}")
-        # エラーの場合は模擬データを表示
+        # エラーの場合はNoneを返す
         return render_template('top.html', 
                              message="バス情報の取得中にエラーが発生しました", 
-                             firstbus="情報取得中...", 
-                             secoundbus="情報取得中...")
+                             firstbus=None, 
+                             secondbus=None)
 
 @bp.route("/health", methods=["GET"])
 def health_check():

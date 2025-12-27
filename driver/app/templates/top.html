@@ -6,11 +6,56 @@
 
 {% block content %}
 <div class="main">
-  <p class="error">{{message}}</p>
-  <p id="date"></p>
-  <p id="time"></p>
-  <p>先発：{{firstbus}}</p>
-  <p>次発：{{secoundbus}}</p>   
+  {% if message %}
+  <div class="error-message">{{message}}</div>
+  {% endif %}
+  
+  <div class="datetime-card">
+    <div class="date" id="date"></div>
+    <div class="time" id="time"></div>
+  </div>
+
+  <div class="bus-info-grid">
+    <div class="bus-card bus-card--primary">
+      <div class="bus-card__header">
+        <div class="bus-card__label">先発</div>
+      </div>
+      {% if firstbus %}
+      <div class="bus-card__content">
+        <div class="bus-card__destination">{{firstbus.destination}}</div>
+        <div class="bus-card__time-wrapper">
+          <div class="bus-card__time">{{firstbus.time}}</div>
+          <div class="bus-card__date">{{firstbus.date}}</div>
+        </div>
+        <div class="bus-card__number">{{firstbus.bus_number}}号車</div>
+      </div>
+      {% else %}
+      <div class="bus-card__empty">
+        <div class="empty-state">運行予定なし</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="bus-card bus-card--secondary">
+      <div class="bus-card__header">
+        <div class="bus-card__label">次発</div>
+      </div>
+      {% if secondbus %}
+      <div class="bus-card__content">
+        <div class="bus-card__destination">{{secondbus.destination}}</div>
+        <div class="bus-card__time-wrapper">
+          <div class="bus-card__time">{{secondbus.time}}</div>
+          <div class="bus-card__date">{{secondbus.date}}</div>
+        </div>
+        <div class="bus-card__number">{{secondbus.bus_number}}号車</div>
+      </div>
+      {% else %}
+      <div class="bus-card__empty">
+        <div class="empty-state">運行予定なし</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}
 

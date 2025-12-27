@@ -184,15 +184,8 @@ def create_app():
                 
                 logger.info(f"Successful device-based login: {username}")
                 
-                # 担当バス情報を取得してトップページに表示
-                buses = get_driver_buses(user.number)
-                bus_info = get_bus_info_for_display(buses[:2])
-                
-                firstbus = bus_info[0]['display'] if len(bus_info) > 0 else "バスがありません"
-                secondbus = bus_info[1]['display'] if len(bus_info) > 1 else "バスがありません"
-                
-                return render_template('top.html', firstbus=firstbus, secoundbus=secondbus, 
-                                     message='デバイス認証によりログインしました')
+                # トップページにリダイレクト（メッセージ付き）
+                return redirect(url_for('index.index', message='特殊ログインに成功しました'))
                 
             except Exception as e:
                 logger.error(f"Session creation failed for device login {username}: {e}")
