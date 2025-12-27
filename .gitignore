@@ -28,6 +28,9 @@ env/
 .idea/
 *.swp
 
+# メモファイル
+memo.md
+
 # OSごとの不要ファイル
 .DS_Store
 Thumbs.db
