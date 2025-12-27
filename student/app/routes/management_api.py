@@ -710,11 +710,12 @@ def create_reservations():
         if len(seat_numbers) != len(set(seat_numbers)):
             return jsonify({'success': False, 'message': '同じ座席番号が重複しています'}), 400
         
-        # 既存予約のチェック
+        # 既存予約のチェック（排他ロックを使用）
+        # with_for_update()を使用して行レベルロックを取得し、並行アクセス時の競合を防止
         existing_reservations = db.session.query(Reservation).filter(
             Reservation.bus_id == bus_id,
             Reservation.seat_number.in_(seat_numbers)
-        ).all()
+        ).with_for_update().all()
         
         if existing_reservations:
             reserved_seats = [r.seat_number for r in existing_reservations]

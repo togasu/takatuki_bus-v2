@@ -247,11 +247,16 @@ def reserve(bus_id):
                     error_message = "既に別の座席を予約済みです"
                     return render_template('error.html', error_message=error_message)
                 
-            # 席が空いているか確認（最新データを取得）
-            seat = db.session.query(Reservation).filter_by(bus_id=bus_id, seat_number=booked).all()
-            print(f"座席確認: bus_id={bus_id}, seat_number={booked}, 既存予約数={len(seat)}")
+            # 席が空いているか確認（排他ロックを使用して最新データを取得）
+            # with_for_update()を使用して行レベルロックを取得し、並行アクセス時の競合を防止
+            seat = db.session.query(Reservation).filter_by(
+                bus_id=bus_id, 
+                seat_number=booked
+            ).with_for_update().first()
+            
+            print(f"座席確認: bus_id={bus_id}, seat_number={booked}, 既存予約={seat is not None}")
             if seat:
-                print(f"座席が既に予約済み: {[s.user_id for s in seat]}")
+                print(f"座席が既に予約済み: user_id={seat.user_id}")
                 error_message = "別の利用者が登録済みです"
                 return render_template('error.html', error_message=error_message)
 

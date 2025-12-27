@@ -8,3 +8,8 @@ class Reservation(db.Model):
     user_id = db.Column(db.String(50), nullable=False)  # admin/driver対応のため文字列型に変更
     approved = db.Column(db.Integer, nullable=False)  # 0なら未認証(デフォルト)、1なら認証済み
     reserved_time = db.Column(db.DateTime)
+    
+    # 一意制約: 同じバスの同じ座席に複数の予約を防ぐ
+    __table_args__ = (
+        db.UniqueConstraint('bus_id', 'seat_number', name='uq_bus_seat'),
+    )
