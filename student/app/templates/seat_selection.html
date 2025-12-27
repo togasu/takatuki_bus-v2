@@ -20,6 +20,18 @@
   <main>
     <div class="container">
       <table>
+        {# 座席番号のマッピング定義 #}
+        {% set seat_labels = {
+          1: '1A',
+          2: '2A', 3: '2B', 4: '2C', 5: '2S',
+          6: '3A', 7: '3B',
+          8: '4A', 9: '4S', 10: '4B', 11: '4C',
+          12: '5A', 13: '5S', 14: '5B', 15: '5C',
+          16: '6A', 17: '6S', 18: '6B', 19: '6C',
+          20: '7A', 21: '7S', 22: '7B', 23: '7C',
+          24: '8A', 25: '8S', 26: '8B', 27: '8C'
+        } %}
+        
         {# バスの座席レイアウトを生成 #}
         {% for seat in reservedtf %}
           {# 座席の状態を設定 #}
@@ -57,7 +69,7 @@
           {% if loop.index == 1 %}
             <tr>
               <td>
-                <div class="{{ seat_class }}" id="{{ loop.index }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div class="{{ seat_class }}" id="{{ loop.index }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
               <td><div class="hidden"></div></td>
               <td><div class="hidden"></div></td>
@@ -68,14 +80,14 @@
           {% elif loop.index == 2 %}
             <tr>
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
               <td><p>補助席<br>↓</p></td>
           
           {# 座席4: 搭乗口との間で行を閉じる #}
           {% elif loop.index == 4 %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
             </tr>
             <tr>
@@ -85,20 +97,20 @@
           {% elif loop.index in [8, 12, 16, 20, 24] %}
             <tr>
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
           
           {# 行の終了座席 (7, 11, 15, 19, 23, 27) #}
           {% elif loop.index in [7, 11, 15, 19, 23, 27] %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
             </tr>
           
           {# その他の通常座席 #}
           {% else %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
           {% endif %}
 
@@ -135,22 +147,32 @@
      * @returns {boolean} すべての通常席が予約済みの場合true
      */
     function areAllSeatsReserved() {
-      for (let i = 0; i < seats.length; i++) {
-        const isAuxiliary = seats[i].classList.contains('auxiliary');
-        const isAvailable = seats[i].textContent.trim() === '○';
+      // 全座席を取得（availableとreservedの両方）
+      const allSeats = document.querySelectorAll('[id]:not(.hidden)');
+      
+      for (let seat of allSeats) {
+        // 座席番号が1-27の範囲内かチェック
+        const seatId = parseInt(seat.id);
+        if (isNaN(seatId) || seatId < 1 || seatId > 27) continue;
         
-        if (!isAuxiliary && isAvailable) {
-          return false; // 選択可能な通常席が見つかった
+        // 補助席かどうかを判定（座席5, 9, 13, 17, 21）
+        const isAuxiliary = [5, 9, 13, 17, 21].includes(seatId);
+        
+        // 通常席で、かつ利用可能な席があればfalseを返す
+        if (!isAuxiliary && seat.classList.contains('seat')) {
+          return false;
         }
       }
+      
       return true; // すべての通常席が予約済み
     }
 
     /**
      * 予約者情報を表示する関数（admin/driverのみ）
      * @param {string} seatNumber - 座席番号
+     * @param {string} seatLabel - 座席ラベル
      */
-    async function showReservationInfo(seatNumber) {
+    async function showReservationInfo(seatNumber, seatLabel) {
       if (!isPrivilegedUser) return;
 
       try {
@@ -159,7 +181,7 @@
 
         if (response.ok && data.reserved) {
           const info = [
-            `座席 ${seatNumber}番の予約情報:`,
+            `座席 ${seatLabel}の予約情報:`,
             '',
             `予約者: ${data.display_name || data.user_id}`,
             data.student_id ? `学籍番号: ${data.student_id}` : '',
@@ -196,8 +218,8 @@
       // 新しい座席を選択
       this.classList.add('selected');
       const seatId = this.id || this.getAttribute('id') || '不明';
-      document.getElementById('selected_seat').value = seatId;
-      alert(`${seatId}番の席を選択しました。`);
+      const seatLabel = this.getAttribute('data-seat-label') || seatId;
+      document.getElementById('selected_seat').value = seatId
     }
 
     /**
@@ -214,8 +236,9 @@
         Array.from(reservedSeats).forEach(seat => {
           seat.addEventListener('click', function() {
             const seatId = this.id || this.getAttribute('id');
+            const seatLabel = this.getAttribute('data-seat-label') || seatId;
             if (seatId) {
-              showReservationInfo(seatId);
+              showReservationInfo(seatId, seatLabel);
             }
           });
         });

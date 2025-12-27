@@ -210,6 +210,18 @@
       </div>
 
       <table>
+        {# 座席番号のマッピング定義 #}
+        {% set seat_labels = {
+          1: '1A',
+          2: '2A', 3: '2B', 4: '2C', 5: '2S',
+          6: '3A', 7: '3B',
+          8: '4A', 9: '4S', 10: '4B', 11: '4C',
+          12: '5A', 13: '5S', 14: '5B', 15: '5C',
+          16: '6A', 17: '6S', 18: '6B', 19: '6C',
+          20: '7A', 21: '7S', 22: '7B', 23: '7C',
+          24: '8A', 25: '8S', 26: '8B', 27: '8C'
+        } %}
+        
         {# バスの座席レイアウトを生成 #}
         {% for seat in reservedtf %}
           {# 座席の状態を設定 #}
@@ -247,7 +259,7 @@
           {% if loop.index == 1 %}
             <tr>
               <td>
-                <div class="{{ seat_class }}" id="{{ loop.index }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div class="{{ seat_class }}" id="{{ loop.index }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
               <td><div class="hidden"></div></td>
               <td><div class="hidden"></div></td>
@@ -258,14 +270,14 @@
           {% elif loop.index == 2 %}
             <tr>
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
               <td><p>補助席<br>↓</p></td>
           
           {# 座席4: 搭乗口との間で行を閉じる #}
           {% elif loop.index == 4 %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
             </tr>
             <tr>
@@ -275,20 +287,20 @@
           {% elif loop.index in [8, 12, 16, 20, 24] %}
             <tr>
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
           
           {# 行の終了座席 (7, 11, 15, 19, 23, 27) #}
           {% elif loop.index in [7, 11, 15, 19, 23, 27] %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
             </tr>
           
           {# その他の通常座席 #}
           {% else %}
               <td>
-                <div id="{{ loop.index }}" class="{{ seat_class }}">{{ seat_symbol }}<div class="senaka"></div></div>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
               </td>
           {% endif %}
 
@@ -409,8 +421,10 @@
     function updateSeatInfoPanel(seatNumber, data) {
       const panel = document.getElementById('seat-info-panel');
       
-      // 座席番号を常に表示
-      document.querySelector('#seat-number span').textContent = seatNumber;
+      // 座席番号を表示（座席ラベルを使用）
+      const seatElement = document.getElementById(seatNumber);
+      const seatLabel = seatElement ? seatElement.getAttribute('data-seat-label') : seatNumber;
+      document.querySelector('#seat-number span').textContent = seatLabel;
 
       console.log('Updating seat info panel:', seatNumber, data);
 
@@ -458,6 +472,7 @@
       }
 
       const seatId = parseInt(this.id || this.getAttribute('id'));
+      const seatLabel = this.getAttribute('data-seat-label') || seatId;
       
       // 既に選択済みの場合は選択解除
       if (this.classList.contains('selected')) {
@@ -545,7 +560,12 @@
       
       if (selectedSeats.length > 0) {
         selectedSeats.sort((a, b) => a - b);
-        listElement.textContent = selectedSeats.join('番, ') + '番';
+        // 座席ラベルを取得して表示
+        const seatLabels = selectedSeats.map(seatId => {
+          const element = document.getElementById(seatId);
+          return element ? element.getAttribute('data-seat-label') : seatId;
+        });
+        listElement.textContent = seatLabels.join(', ');
         panel.style.display = 'block';
       } else {
         listElement.textContent = 'なし';
@@ -576,7 +596,12 @@
       
       const modalSeatsElement = document.getElementById('modal-selected-seats');
       selectedSeats.sort((a, b) => a - b);
-      modalSeatsElement.textContent = selectedSeats.join('番, ') + '番';
+      // 座席ラベルを取得して表示
+      const seatLabels = selectedSeats.map(seatId => {
+        const element = document.getElementById(seatId);
+        return element ? element.getAttribute('data-seat-label') : seatId;
+      });
+      modalSeatsElement.textContent = seatLabels.join(', ');
       
       $('#reserveModal').modal('show');
     }
