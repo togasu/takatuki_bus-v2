@@ -60,6 +60,8 @@
             background-repeat: no-repeat;
             background-position: right 10px center;
             padding-right: 30px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .selection-item select:hover {
             background-color: #f8f9fa;
@@ -87,6 +89,8 @@
             font-size: 1.8rem;
             font-weight: bold;
             padding: 10px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .arrow-icon {
             width: 60px;
@@ -99,6 +103,8 @@
             margin: 0 20px;
             cursor: pointer;
             transition: background-color 0.3s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .arrow-icon:hover {
             background-color: #0b5ed7;
@@ -122,6 +128,8 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .notice-header:hover {
             background-color: #ffeaa7;
@@ -159,6 +167,8 @@
             font-size: 1.3rem;
             cursor: pointer;
             font-weight: bold;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .btn-back:hover {
             background-color: #5a6268;
@@ -174,12 +184,204 @@
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .btn-confirm:hover {
             background-color: #0b5ed7;
         }
         .selected-values {
             display: none;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 70px;
+                margin-bottom: 15px;
+                border-radius: 12px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+
+            .date-header {
+                padding: 15px;
+                font-size: 1.2rem;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .selection-section {
+                padding: 10px;
+            }
+
+            .selection-row {
+                gap: 8px;
+            }
+
+            .selection-item select {
+                padding: 10px 25px 10px 8px;
+                font-size: 1rem;
+                background-position: right 5px center;
+            }
+
+            .station-section {
+                padding: 15px 10px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .station-box {
+                width: 100%;
+            }
+
+            .station-label {
+                font-size: 0.85rem;
+                margin-bottom: 8px;
+            }
+
+            .station-name {
+                font-size: 1.3rem;
+                padding: 8px;
+                width: 100%;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+
+            .arrow-icon {
+                width: 50px;
+                height: 50px;
+                margin: 0;
+                transform: rotate(90deg);
+            }
+
+            .arrow-icon::before {
+                font-size: 1.5rem;
+            }
+
+            .notice-header {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+
+            .notice-content {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+
+            .notice-toggle {
+                font-size: 1rem;
+            }
+
+            .button-section {
+                padding: 15px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .btn-back,
+            .btn-confirm {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* 小さいスマホ対応 */
+        @media (max-width: 375px) {
+            .container {
+                margin-top: 65px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+
+            .date-header {
+                padding: 12px;
+                font-size: 1.1rem;
+            }
+
+            .selection-item select {
+                padding: 8px 22px 8px 6px;
+                font-size: 0.9rem;
+            }
+
+            .station-name {
+                font-size: 1.2rem;
+                max-width: 250px;
+            }
+
+            .arrow-icon {
+                width: 45px;
+                height: 45px;
+            }
+
+            .notice-header {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .notice-content {
+                padding: 12px;
+                font-size: 0.85rem;
+            }
+
+            .btn-back,
+            .btn-confirm {
+                padding: 12px 15px;
+                font-size: 1rem;
+            }
+        }
+
+        /* タッチデバイス用のホバー効果無効化 */
+        @media (hover: none) {
+            .selection-item select:hover,
+            .arrow-icon:hover,
+            .notice-header:hover,
+            .btn-back:hover,
+            .btn-confirm:hover {
+                background-color: initial;
+            }
+
+            .arrow-icon:active {
+                background-color: #0b5ed7;
+                transform: scale(0.95) rotate(90deg);
+            }
+
+            .btn-back:active {
+                background-color: #5a6268;
+                opacity: 0.8;
+            }
+
+            .btn-confirm:active {
+                background-color: #0b5ed7;
+                opacity: 0.8;
+            }
+        }
+
+        /* 横向き対応 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .container {
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            .date-header {
+                padding: 10px;
+                font-size: 1rem;
+            }
+
+            .station-section {
+                flex-direction: row;
+                padding: 10px;
+            }
+
+            .arrow-icon {
+                transform: none;
+            }
+
+            .button-section {
+                flex-direction: row;
+                padding: 10px;
+            }
         }
     </style>
 </head>
