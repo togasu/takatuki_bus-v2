@@ -192,3 +192,44 @@ def get_seat_info(bus_id, seat_number):
             'success': False,
             'message': '座席情報の取得中にエラーが発生しました'
         }), 500
+
+@bp.route('/api/reserve', methods=['POST'])
+@require_permission('reservation', 'write')
+def create_reservation():
+    """管理者用：予約を作成するAPI"""
+    try:
+        from flask import session
+        
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'リクエストデータが不正です'}), 400
+        
+        bus_id = data.get('bus_id')
+        seat_numbers = data.get('seat_numbers', [])
+        
+        if not bus_id or not seat_numbers:
+            return jsonify({'success': False, 'message': '必須パラメータが不足しています'}), 400
+        
+        # セッションから管理者のユーザーIDを取得
+        admin_username = session.get('username')
+        if not admin_username:
+            return jsonify({'success': False, 'message': 'セッション情報が取得できません'}), 401
+        
+        # 管理者として予約（user_idに "admin_" プレフィックスを付与）
+        user_id = f"admin_{admin_username}"
+        
+        # Student サービスのAPIを使用して予約を作成
+        result = admin_api.create_reservations(bus_id, seat_numbers, user_id)
+        
+        if result.get('success'):
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 400
+    
+    except Exception as e:
+        logger.error(f"Error creating reservation: {e}")
+        return jsonify({
+            'success': False,
+            'message': '予約作成中にエラーが発生しました'
+        }), 500

@@ -201,6 +201,14 @@
         </div>
       </div>
 
+      <!-- 選択中の座席一覧 -->
+      <div id="selected-seats-panel" class="alert alert-success mb-4" style="display: none;">
+        <h5>選択中の座席</h5>
+        <p id="selected-seats-list" class="mb-2">なし</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openReserveModal()">予約する</button>
+        <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="clearSelectedSeats()">選択をクリア</button>
+      </div>
+
       <table>
         {# バスの座席レイアウトを生成 #}
         {% for seat in reservedtf %}
@@ -288,6 +296,35 @@
       </table>
       <!-- 選択済み座席を保持する隠しフィールド（JSの参照用） -->
       <input type="hidden" id="selected_seat" name="selected_seat" value="">
+      
+      <!-- 予約モーダル -->
+      <div class="modal fade" id="reserveModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">予約情報入力</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-info">
+                <strong>管理者として予約</strong>
+                <p class="mb-0">選択した座席を管理者アカウントで予約します。</p>
+              </div>
+              <div class="form-group">
+                <label>選択座席</label>
+                <p id="modal-selected-seats" class="form-control-plaintext font-weight-bold"></p>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+              <button type="button" class="btn btn-primary" onclick="submitReservation()">予約を確定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="d-flex justify-content-center">
         <button type="button" class="btn btn-success btn-lg" style="width: 100%; max-width: 500px;" onclick="location.reload()">更新</button>
       </div>
@@ -311,6 +348,9 @@
     // 座席情報をJavaScriptで利用可能にする
     const seatStatusData = {{ seat_status | tojson | safe }};
     console.log('Seat status data:', seatStatusData);
+
+    // 選択座席を管理する配列
+    let selectedSeats = [];
 
     /**
      * すべての補助席以外の席が予約済みかどうかを確認する関数
@@ -408,7 +448,7 @@
     }
 
     /**
-     * 座席選択時の処理
+     * 座席選択時の処理（複数選択対応）
      */
     function handleSeatSelection() {
       // 補助席の選択制限チェック
@@ -417,22 +457,25 @@
         return;
       }
 
-      // 既存の選択を解除
-      const selectedSeat = document.querySelector('.selected');
-      if (selectedSeat) {
-        selectedSeat.classList.remove('selected');
-      }
-
-      // 新しい座席を選択
-      this.classList.add('selected');
-      const seatId = this.id || this.getAttribute('id') || '不明';
-      const selectedSeatInput = document.getElementById('selected_seat');
-      if (selectedSeatInput) {
-        selectedSeatInput.value = seatId;
+      const seatId = parseInt(this.id || this.getAttribute('id'));
+      
+      // 既に選択済みの場合は選択解除
+      if (this.classList.contains('selected')) {
+        this.classList.remove('selected');
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+      } else {
+        // 新しく選択
+        this.classList.add('selected');
+        selectedSeats.push(seatId);
       }
       
-      // 利用可能座席の情報を表示
-      updateSeatInfoPanel(seatId, { reserved: false });
+      // 選択座席パネルを更新
+      updateSelectedSeatsPanel();
+      
+      // 座席情報パネルを更新
+      if (selectedSeats.length > 0) {
+        updateSeatInfoPanel(seatId, { reserved: false });
+      }
     }
 
     /**
@@ -492,6 +535,91 @@
       }
     `;
     document.head.appendChild(style);
+
+    /**
+     * 選択座席パネルを更新
+     */
+    function updateSelectedSeatsPanel() {
+      const panel = document.getElementById('selected-seats-panel');
+      const listElement = document.getElementById('selected-seats-list');
+      
+      if (selectedSeats.length > 0) {
+        selectedSeats.sort((a, b) => a - b);
+        listElement.textContent = selectedSeats.join('番, ') + '番';
+        panel.style.display = 'block';
+      } else {
+        listElement.textContent = 'なし';
+        panel.style.display = 'none';
+      }
+    }
+
+    /**
+     * 選択座席をクリア
+     */
+    function clearSelectedSeats() {
+      // すべての選択を解除
+      document.querySelectorAll('.seat.selected').forEach(seat => {
+        seat.classList.remove('selected');
+      });
+      selectedSeats = [];
+      updateSelectedSeatsPanel();
+    }
+
+    /**
+     * 予約モーダルを開く
+     */
+    function openReserveModal() {
+      if (selectedSeats.length === 0) {
+        showToast('座席を選択してください', 'warning');
+        return;
+      }
+      
+      const modalSeatsElement = document.getElementById('modal-selected-seats');
+      selectedSeats.sort((a, b) => a - b);
+      modalSeatsElement.textContent = selectedSeats.join('番, ') + '番';
+      
+      $('#reserveModal').modal('show');
+    }
+
+    /**
+     * 予約を送信（管理者として）
+     */
+    async function submitReservation() {
+      if (selectedSeats.length === 0) {
+        showToast('座席を選択してください', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/admin/reservations/api/reserve', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            bus_id: busId,
+            seat_numbers: selectedSeats
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          $('#reserveModal').modal('hide');
+          showToast(result.message || '予約が完了しました', 'success');
+          
+          // 2秒後にページをリロード
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showToast(result.message || '予約に失敗しました', 'warning');
+        }
+      } catch (error) {
+        console.error('予約エラー:', error);
+        showToast('予約処理中にエラーが発生しました', 'warning');
+      }
+    }
 
     /**
      * イベントリスナーの設定

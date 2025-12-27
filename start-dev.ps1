@@ -93,7 +93,7 @@ if ((Test-Path "certs/server.crt") -and (Test-Path "certs/server.key")) {
     }
 }
 
-# 2. 既存のDockerコンテナを停止
+# 2. 既存のDockerコンテナを停止とビルドキャッシュのクリア
 Write-Info "Step 2: 既存のDockerコンテナを停止"
 try {
     $containers = docker ps -q --filter "name=takatuki_bus-v2-"
@@ -116,6 +116,18 @@ try {
     }
 } catch {
     Write-Warning "Dockerコンテナの停止でエラーが発生しましたが、続行します"
+}
+
+# 2a. ビルドキャッシュのクリア
+if ($Action -eq "init") {
+    Write-Info "Step 2a: Dockerビルドキャッシュのクリア"
+    try {
+        Write-Info "未使用のビルドキャッシュを削除中..."
+        docker builder prune -f
+        Write-Success "ビルドキャッシュをクリアしました"
+    } catch {
+        Write-Warning "ビルドキャッシュのクリアでエラーが発生しましたが、続行します"
+    }
 }
 
 # 3. データベースの初期化判定
@@ -146,8 +158,14 @@ if ($Action -eq "init") {
 # 4. Dockerコンテナの起動
 Write-Info "Step 4: Dockerコンテナの起動"
 try {
-    Write-Info "docker-compose up --build -d を実行中..."
-    docker-compose up --build -d
+    if ($Action -eq "init") {
+        Write-Info "docker-compose up --build --no-cache -d を実行中（クリーンビルド）..."
+        docker-compose build --no-cache
+        docker-compose up -d
+    } else {
+        Write-Info "docker-compose up --build -d を実行中..."
+        docker-compose up --build -d
+    }
     
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Dockerコンテナの起動が完了しました"

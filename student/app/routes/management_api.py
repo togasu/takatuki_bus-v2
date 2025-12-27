@@ -679,3 +679,87 @@ def create_bus():
         db.session.rollback()
         logger.error(f"バス作成エラー: {str(e)}")
         return jsonify({'error': f'バス作成中にエラーが発生しました: {str(e)}'}), 500
+
+@management_api_bp.route('/reservations', methods=['POST'])
+@require_service_auth
+def create_reservations():
+    """管理者用：複数座席の予約を作成するAPI"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'リクエストデータが不正です'}), 400
+        
+        bus_id = data.get('bus_id')
+        seat_numbers = data.get('seat_numbers', [])
+        user_id = data.get('user_id')
+        
+        if not bus_id or not seat_numbers or not user_id:
+            return jsonify({'success': False, 'message': '必須パラメータが不足しています'}), 400
+        
+        # バスの存在確認
+        bus = db.session.query(Bus).filter_by(id=bus_id).first()
+        if not bus:
+            return jsonify({'success': False, 'message': '指定されたバスが見つかりません'}), 404
+        
+        # 座席番号のバリデーション
+        if not isinstance(seat_numbers, list) or not all(isinstance(s, int) for s in seat_numbers):
+            return jsonify({'success': False, 'message': '座席番号は整数のリストで指定してください'}), 400
+        
+        # 重複チェック
+        if len(seat_numbers) != len(set(seat_numbers)):
+            return jsonify({'success': False, 'message': '同じ座席番号が重複しています'}), 400
+        
+        # 既存予約のチェック
+        existing_reservations = db.session.query(Reservation).filter(
+            Reservation.bus_id == bus_id,
+            Reservation.seat_number.in_(seat_numbers)
+        ).all()
+        
+        if existing_reservations:
+            reserved_seats = [r.seat_number for r in existing_reservations]
+            return jsonify({
+                'success': False,
+                'message': f'既に予約済みの座席があります: {", ".join(map(str, reserved_seats))}'
+            }), 400
+        
+        # 予約を作成
+        created_reservations = []
+        for seat_number in seat_numbers:
+            reservation = Reservation(
+                seat_number=seat_number,
+                user_id=user_id,
+                bus_id=bus_id,
+                approved=0,
+                reserved_time=datetime.now()
+            )
+            db.session.add(reservation)
+            created_reservations.append({
+                'seat_number': seat_number,
+                'user_id': user_id,
+                'bus_id': bus_id
+            })
+        
+        db.session.commit()
+        
+        logger.info(f"管理者による予約作成: user_id={user_id}, bus_id={bus_id}, seats={seat_numbers}")
+        
+        # WebSocketでリアルタイム更新をブロードキャスト
+        try:
+            from flask import current_app
+            if hasattr(current_app, 'socketio'):
+                from .ws import broadcast_bus_update
+                broadcast_bus_update(current_app.socketio)
+        except Exception as ws_error:
+            logger.warning(f"WebSocket更新エラー: {ws_error}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'{len(created_reservations)}件の予約を作成しました',
+            'reservations': created_reservations
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"予約作成エラー: {str(e)}")
+        return jsonify({'success': False, 'message': f'予約作成中にエラーが発生しました: {str(e)}'}), 500

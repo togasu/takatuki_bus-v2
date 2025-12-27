@@ -498,6 +498,31 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to get penalty details for student {student_id}: {e}")
             return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
+    def create_reservations(self, bus_id, seat_numbers, user_id):
+        """管理者用：複数座席の予約を作成"""
+        try:
+            payload = {
+                'bus_id': bus_id,
+                'seat_numbers': seat_numbers,
+                'user_id': user_id
+            }
+            
+            response = requests.post(
+                'http://student:5000/api/management/reservations',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to create reservations: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
     # 統計情報取得API
     def get_user_registration_statistics(self, start_date=None, end_date=None):
         """ユーザー登録統計を取得"""
