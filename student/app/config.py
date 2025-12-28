@@ -50,6 +50,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 ADMIN_SERVICE_TOKEN = os.getenv('ADMIN_SERVICE_TOKEN', 'admin-secret-token-2024')
 API_SECRET_KEY = os.getenv('API_SECRET_KEY', 'bus-system-api-key-2024')
 
+# Auth System APIキー（バス車内認証システム専用）
+AUTH_SYSTEM_API_KEY = os.getenv('AUTH_SYSTEM_API_KEY', 'auth-system-secret-key-2024-change-in-production')
+
 # Cookie設定
 COOKIE_DOMAIN = os.getenv('COOKIE_DOMAIN', 'localhost')
 SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'true').lower() == 'true'

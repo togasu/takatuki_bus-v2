@@ -422,3 +422,249 @@ def admin_login():
     # 認証に失敗した場合はadminログインページにリダイレクト
     logger.warning("Admin authentication failed, redirecting to admin login")
     return redirect("https://localhost/admin/login")
+
+
+# ========================================
+# Auth System用エンドポイント
+# ========================================
+
+@auth_bp.route('/auth', methods=['GET'])
+def nfc_auth():
+    """
+    バス車内認証システム用エンドポイント
+    NFCカードのIDmで予約を検索し、座席番号を返す
+    
+    Request JSON:
+        {
+            "idm": "カードIDm（16進数文字列）",
+            "number": バス号車番号（1-4）
+        }
+    
+    Response:
+        200: {"seat_number": 座席番号, "reservation_id": 予約ID}
+        401: {"error": "Card not registered"}
+        403: {"error": "Bus ID mismatch", "bus_number": 正しいバス号車}
+        404: {"error": "No reservation found"}
+        500: {"error": "Internal server error"}
+    """
+    from ..database import db
+    from ..models.user import User
+    from ..models.reservation import Reservation
+    from ..models.bus import Bus
+    from datetime import datetime, timedelta
+    
+    try:
+        data = request.get_json()
+        idm = data.get('idm')
+        bus_number = data.get('number')
+        
+        if not idm or bus_number is None:
+            return {'error': 'Missing required parameters'}, 400
+        
+        logger.info(f"NFC auth request: IDM={idm}, Bus={bus_number}")
+        
+        # IDmからユーザーを検索
+        user = User.query.filter_by(idm_bus=idm).first()
+        if not user:
+            logger.warning(f"User not found for IDM: {idm}")
+            return {'error': 'Card not registered'}, 401
+        
+        # 現在時刻から近い未来のバス便を検索（当日～翌日）
+        now = datetime.now()
+        future_time = now + timedelta(hours=24)
+        
+        # ユーザーの予約を検索
+        reservation = Reservation.query.filter(
+            Reservation.user_id == user.student_id,
+            Reservation.approved == 0  # 未認証の予約のみ
+        ).join(Bus).filter(
+            Bus.busid == bus_number,
+            Bus.departure_time >= now,
+            Bus.departure_time <= future_time
+        ).order_by(Bus.departure_time.asc()).first()
+        
+        if not reservation:
+            logger.warning(f"No reservation found for user {user.student_id} on bus {bus_number}")
+            
+            # 別のバスに予約がないか確認
+            other_reservation = Reservation.query.filter(
+                Reservation.user_id == user.student_id,
+                Reservation.approved == 0
+            ).join(Bus).filter(
+                Bus.departure_time >= now,
+                Bus.departure_time <= future_time
+            ).first()
+            
+            if other_reservation:
+                correct_bus = Bus.query.get(other_reservation.bus_id)
+                logger.info(f"User has reservation on different bus: {correct_bus.busid}")
+                return {'error': 'Bus ID mismatch', 'bus_number': correct_bus.busid}, 403
+            
+            return {'error': 'No reservation found'}, 404
+        
+        logger.info(f"Reservation found: ID={reservation.id}, Seat={reservation.seat_number}")
+        return {
+            'seat_number': reservation.seat_number,
+            'reservation_id': reservation.id,
+            'user_id': user.student_id
+        }, 200
+        
+    except Exception as e:
+        logger.error(f"NFC auth error: {type(e).__name__}: {str(e)}")
+        return {'error': 'Internal server error'}, 500
+
+
+@auth_bp.route('/auth/approve', methods=['POST'])
+def approve_reservation():
+    """
+    予約承認エンドポイント（auth_system専用）
+    バス車内での認証完了後、予約をapproved=1に更新
+    
+    セキュリティ対策:
+    - APIキー認証（X-Auth-System-Keyヘッダー必須）
+    - 予約とバスの整合性チェック
+    - 時間制限（バス出発時刻の前後1時間のみ）
+    - 重複承認防止
+    
+    Request Headers:
+        X-Auth-System-Key: auth_system専用APIキー
+    
+    Request JSON:
+        {
+            "reservation_id": 予約ID,
+            "bus_number": バス号車番号
+        }
+    
+    Response:
+        200: {"success": true, "message": "Reservation approved"}
+        400: {"error": "Missing required parameters"}
+        401: {"error": "Unauthorized - Invalid API key"}
+        403: {"error": "Already approved" | "Bus time window expired"}
+        404: {"error": "Reservation not found"}
+        409: {"error": "Bus number mismatch"}
+        500: {"error": "Internal server error"}
+    """
+    from ..database import db
+    from ..models.reservation import Reservation
+    from ..models.bus import Bus
+    from datetime import datetime, timedelta
+    
+    try:
+        # APIキー認証
+        api_key = request.headers.get('X-Auth-System-Key')
+        if not api_key or api_key != config.AUTH_SYSTEM_API_KEY:
+            logger.warning(f"Unauthorized approve attempt from {request.remote_addr}")
+            return {'error': 'Unauthorized - Invalid API key'}, 401
+        
+        data = request.get_json()
+        reservation_id = data.get('reservation_id')
+        bus_number = data.get('bus_number')
+        
+        if not reservation_id or bus_number is None:
+            return {'error': 'Missing required parameters'}, 400
+        
+        logger.info(f"Approve request: Reservation={reservation_id}, Bus={bus_number}")
+        
+        # 予約を検索（バス情報も取得）
+        reservation = Reservation.query.join(Bus).filter(
+            Reservation.id == reservation_id
+        ).first()
+        
+        if not reservation:
+            logger.warning(f"Reservation not found: {reservation_id}")
+            return {'error': 'Reservation not found'}, 404
+        
+        # バス情報を取得
+        bus = Bus.query.get(reservation.bus_id)
+        if not bus:
+            logger.error(f"Bus not found for reservation {reservation_id}")
+            return {'error': 'Bus information not found'}, 404
+        
+        # バス号車の整合性チェック
+        if bus.busid != bus_number:
+            logger.warning(f"Bus number mismatch: expected {bus.busid}, got {bus_number}")
+            return {'error': 'Bus number mismatch', 'expected': bus.busid}, 409
+        
+        # 時間制限チェック（バス出発時刻の前後1時間）
+        now = datetime.now()
+        time_window_start = bus.departure_time - timedelta(hours=1)
+        time_window_end = bus.departure_time + timedelta(hours=1)
+        
+        if not (time_window_start <= now <= time_window_end):
+            logger.warning(f"Approve attempt outside time window for reservation {reservation_id}")
+            return {'error': 'Bus time window expired', 'departure_time': bus.departure_time.isoformat()}, 403
+        
+        # 重複承認防止
+        if reservation.approved == 1:
+            logger.info(f"Reservation {reservation_id} already approved")
+            return {'error': 'Already approved', 'approved_at': reservation.reserved_time.isoformat() if reservation.reserved_time else None}, 403
+        
+        # 予約を承認済みに更新
+        reservation.approved = 1
+        reservation.reserved_time = now  # 承認時刻を記録
+        db.session.commit()
+        
+        logger.info(f"Reservation {reservation_id} approved successfully by auth_system")
+        return {
+            'success': True, 
+            'message': 'Reservation approved',
+            'approved_at': now.isoformat(),
+            'user_id': reservation.user_id,
+            'seat_number': reservation.seat_number
+        }, 200
+        
+    except Exception as e:
+        logger.error(f"Approve reservation error: {type(e).__name__}: {str(e)}")
+        db.session.rollback()
+        return {'error': 'Internal server error'}, 500
+
+
+@auth_bp.route('/auth/getbus', methods=['GET'])
+def get_bus_for_auth():
+    """
+    auth_system用：次のバス便情報を取得
+    
+    Request JSON:
+        {
+            "number": バス号車番号（1-4）
+        }
+    
+    Response:
+        200: {
+            "id": バスID,
+            "departure_time": "出発時刻（YYYY/MM/DD HH:MM形式）",
+            "ud": 上下区分（0:上り、1:下り）
+        }
+        404: {"error": "No bus found"}
+    """
+    from ..models.bus import Bus
+    from datetime import datetime
+    
+    try:
+        data = request.get_json()
+        bus_number = data.get('number')
+        
+        if bus_number is None:
+            return {'error': 'Missing bus number'}, 400
+        
+        # 現在時刻以降の最も近いバス便を検索
+        now = datetime.now()
+        bus = Bus.query.filter(
+            Bus.busid == bus_number,
+            Bus.departure_time >= now
+        ).order_by(Bus.departure_time.asc()).first()
+        
+        if not bus:
+            logger.warning(f"No upcoming bus found for bus number {bus_number}")
+            return {'error': 'No bus found'}, 404
+        
+        return {
+            'id': bus.busid,
+            'departure_time': bus.departure_time.strftime('%Y/%m/%d %H:%M'),
+            'ud': bus.ud
+        }, 200
+        
+    except Exception as e:
+        logger.error(f"Get bus error: {type(e).__name__}: {str(e)}")
+        return {'error': 'Internal server error'}, 500
+
