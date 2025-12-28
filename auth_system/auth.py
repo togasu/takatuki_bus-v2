@@ -2,21 +2,26 @@ from flask import Flask, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os, logging
+from dotenv import load_dotenv
+load_dotenv()
 
 # 高速起動のため、重いライブラリは遅延インポート
 # nfc, pygameは実際に使用する時にインポート
 
 app = Flask(__name__)
-app.secret_key = '0000'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yoyaku_seki.db'
-app.config['SQLALCHEMY_BINDS'] = {'db2':'sqlite:///users.db'}
+app.config['SQLALCHEMY_BINDS'] = {
+    'db2':'sqlite:///users.db',
+    'driver_db': 'sqlite:///../driver/instance/driver.db'  # driverシステムのDB
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # オーバーヘッド削減
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
 }
 
-STUDENT_API_URL = os.environ.get('STUDENT_API_URL', 'http://shuttlebus.kutc.kansai-u.ac.jp')
+STUDENT_API_URL = os.environ.get('STUDENT_API_URL', 'https://shuttlebus.kutc.kansai-u.ac.jp')
 db = SQLAlchemy(app)
 
 # ログ設定（簡素化）
@@ -115,6 +120,22 @@ class auth(db.Model):
 	busid = db.Column(db.Integer, nullable=False)
 	departure_time = db.Column(db.DateTime, nullable=False)
 	ud = db.Column(db.Integer, nullable=False)  # 上りなら0、下りなら1
+
+class BusCode(db.Model):
+	"""バス運行便コード管理テーブル（driverシステムと共有）"""
+	__bind_key__ = 'driver_db'
+	__tablename__ = 'bus_codes'
+	
+	id = db.Column(db.Integer, primary_key=True)
+	code = db.Column(db.String(6), unique=True, nullable=False, index=True)
+	bus_id = db.Column(db.Integer, nullable=False)
+	busid = db.Column(db.Integer, nullable=False)
+	departure_time = db.Column(db.DateTime, nullable=False)
+	ud = db.Column(db.Integer, nullable=False)
+	created_at = db.Column(db.DateTime, nullable=False)
+	expires_at = db.Column(db.DateTime, nullable=False)
+	is_used = db.Column(db.Boolean, default=False, nullable=False)
+	used_at = db.Column(db.DateTime, nullable=True)
 
 # データベース初期化フラグ
 _db_initialized = False
@@ -242,6 +263,65 @@ def auth_iddifferent(id):
 @app.route('/auth/wait')
 def auth_wait():
 	return render_template("auth_wait.html")
+
+@app.route('/auth/code/input')
+def auth_code_input():
+	"""コード入力画面"""
+	ensure_db_initialized()
+	return render_template("auth_code_input.html")
+
+@app.route('/auth/code/verify', methods=['POST'])
+def auth_code_verify():
+	"""コードを検証してバス情報を設定"""
+	from flask import request
+	ensure_db_initialized()
+	
+	code = request.form.get('code', '').strip()
+	
+	if not code:
+		return render_template("auth_code_input.html", message='コードを入力してください', error=True)
+	
+	# コードの検証
+	bus_code = db.session.query(BusCode).filter_by(code=code).first()
+	
+	if not bus_code:
+		logger.warning(f"Code not found: {code}")
+		return render_template("auth_code_input.html", message='コードが見つかりません', error=True)
+	
+	if bus_code.is_used:
+		logger.warning(f"Code already used: {code}")
+		return render_template("auth_code_input.html", message='このコードは既に使用済みです', error=True)
+	
+	if bus_code.expires_at < datetime.now():
+		logger.warning(f"Code expired: {code}")
+		return render_template("auth_code_input.html", message='このコードは期限切れです', error=True)
+	
+	try:
+		# authテーブルに新しいバス情報を追加
+		new_bus = auth(
+			busid=bus_code.busid,
+			departure_time=bus_code.departure_time,
+			ud=bus_code.ud
+		)
+		db.session.add(new_bus)
+		
+		# コードを使用済みにマーク
+		bus_code.is_used = True
+		bus_code.used_at = datetime.now()
+		
+		db.session.commit()
+		
+		logger.info(f"Bus configured with code {code}: Bus{bus_code.busid} at {bus_code.departure_time}")
+		
+		# 環境変数IDを更新（オプション）
+		os.environ['ID'] = str(bus_code.busid)
+		
+		return redirect(url_for('home'))
+		
+	except Exception as e:
+		logger.error(f"Error setting bus from code: {e}")
+		db.session.rollback()
+		return render_template("auth_code_input.html", message='バス設定中にエラーが発生しました', error=True)
 
 @app.route('/auth/data_get')
 def auth_data_get():

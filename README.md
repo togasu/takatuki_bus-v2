@@ -1,4 +1,4 @@
-# タカツキバスシステム v2
+# Takatsuki-bus system v2
 
 ## 概要
 
