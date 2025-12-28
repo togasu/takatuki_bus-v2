@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <meta name="viewport" content="width=1080, height=1080, initial-scale=1.0">
+    <title>バスの利用認証システムトップページ</title>
+
+    <style>
+        /* 点滅アニメーション */
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .blink {
+            animation: blink 3s infinite;
+        }
+
+        body{
+            margin: 0px;
+            padding: 0px;
+            border: 0px;
+            width: 1080px;
+            height: 1080px;
+        }
+
+        .container{
+            display: grid;
+            width: 1080px;
+            height: 1080px;
+            grid-template-columns: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+            grid-template-rows: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+        }
+
+        .header{
+            grid-column: 1 / 21;
+            grid-row: 1 / 5;
+            background-color: #212166;
+        }
+
+        .footer{
+            grid-column: 1 / 21;
+            grid-row: 17 / 21;
+            background-color: #212166;
+        }
+
+        .title{
+            color: #fff;
+            text-align: center;
+            font-size: 96px;
+            position: relative;
+            top: -20px;
+        }
+
+        .text{
+            grid-column: 3 / 19;
+            grid-row: 5 / 9;
+            font-size: 70px;
+            text-align: center;
+        }
+
+        .line{
+            background-color: #fffdfd;
+            position: relative;
+            height: 10px;
+            top: -75px;
+        }
+
+        .back_text{
+            font-size: 94px;
+            text-align: center;
+            position: relative;
+            top: -80px;
+            left: 10px;
+        }
+
+        .p{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <p class="title">Sojo Bus</p>
+        </div>
+        <div class="footer"></div>
+        <div class="text">
+            <p>学生証または定期券を<br>かざしてください<br></p>
+            <p class="blink">{{ date }}発<br>{{ number }}号車</p>
+            <form id="scanForm" action="/scan" method="post">
+                <input type="hidden" name="hidden_field" id="hiddenField" value="{{ delay }}">
+                <input type="hidden" name="idm_bus" value="{{ idm_bus }}">
+            </form>
+        </div>
+    </div>
+    <div class="line"></div>
+</body>
+<script>
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            window.location.href = "/scan";
+        }
+    };
+
+    window.onload = function() {
+        document.getElementById('scanForm').submit();
+    }
+
+    var delayInSeconds = parseInt(document.getElementById('hiddenField').value);
+    var delayInMilliseconds = delayInSeconds * 3000;
+    function redirectTo() {
+        window.location.href = '/auth/wait'; // 遷移先のURLに遷移
+    }
+    setTimeout(redirectTo, delayInMilliseconds);
+</script>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1080, initial-scale=1.0">
+    <title>バスの利用認証システム予約失敗</title>
+
+    <style>
+        span{
+            color:red;
+        }
+
+        body{
+            margin: 0px;
+            padding: 0px;
+            border: 0px;
+            width: 1080px;
+            height: 1080px;
+        }
+
+        .container{
+            display: grid;
+            width: 1080px;
+            height: 1080px;
+            grid-template-columns: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+            grid-template-rows: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+        }
+
+        .header{
+            grid-column: 1 / 21;
+            grid-row: 1 / 5;
+            background-color: #212166;
+        }
+
+        .footer{
+            grid-column: 1 / 21;
+            grid-row: 17 / 21;
+            background-color: #212166;
+        }
+
+        .text{
+            grid-column: 3 / 19;
+            grid-row: 5 / 10;
+            font-size: 70px;
+            text-align: center;
+            color: red;
+            text-decoration:underline;
+        }
+        .subtext{
+            grid-column: 3 / 19;
+            grid-row: 8 / 13;
+            font-size: 70px;
+            text-align: center;
+        }
+
+        .title{
+            color: #fff;
+            text-align: center;
+            font-size: 96px;
+            position: relative;
+            top: -20px;
+        }
+
+        .back{
+            grid-column: 5 / 12;
+            grid-row: 14 / 16;
+        }
+
+        .back_btn{
+            font-size: 80px;
+            width: 648px;
+            height: 120px;
+            background-color: #d9d9d9;
+            border-radius: 75px;
+        }
+
+        .back_btn:active{
+            background-color: #a1a1a1;
+        }
+
+        .line{
+            background-color: #fffdfd;
+            position: relative;
+            height: 10px;
+            top: -75px
+        }
+
+        .back_text{
+            font-size: 94px;
+            text-align: center;
+            position: relative;
+            top: -80px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <p class="title">Sojo Bus</p>
+        </div>
+        <div class="footer"></div>
+        <div class="text">
+            <p>カードエラー</p>
+        </div>
+        <div class="subtext">
+            <p>他のカードと重なっている可能性があります</p>
+        </div>
+        
+    </div>
+    <div class="line"></div>
+
+    <script>
+        function moveToAnotherPage(){
+            setTimeout(function() {
+                window.location.href = "/";
+            },3000);
+        }
+
+        moveToAnotherPage();
+    </script>
+
+</body>
+</html>
