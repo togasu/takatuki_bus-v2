@@ -126,18 +126,53 @@ def view_bus(bus_id):
 @bp.route('/bus/list', methods=['GET'])
 @require_permission('reservation', 'read')
 def bus_list():
-    """予約があるバス一覧を表示"""
+    """すべてのバス一覧を表示（ソート機能付き）"""
     try:
-        # Student サービスのAPIを使用して予約があるバス一覧を取得
-        result = admin_api.get_buses_with_reservations()
+        # ソートパラメータを取得
+        sort_by = request.args.get('sort_by', 'departure_time')  # デフォルトは出発時刻
+        order = request.args.get('order', 'asc')  # デフォルトは昇順
         
-        if not result.get('success'):
-            error_message = result.get('message', 'バス一覧の取得に失敗しました')
-            return render_template('reservations/bus_list.html', error=error_message)
+        # Student サービスのAPIを使用してすべてのバス一覧を取得
+        result = admin_api.get_buses()
         
-        buses = result.get('buses', [])
+        if not result:
+            error_message = 'バス一覧の取得に失敗しました'
+            return render_template('reservations/bus_list.html', error=error_message, sort_by=sort_by, order=order)
         
-        return render_template('reservations/bus_list.html', buses=buses)
+        # レスポンスが辞書形式の場合とリスト形式の場合に対応
+        if isinstance(result, dict):
+            if not result.get('success'):
+                error_message = result.get('message', 'バス一覧の取得に失敗しました')
+                return render_template('reservations/bus_list.html', error=error_message, sort_by=sort_by, order=order)
+            buses = result.get('buses', [])
+        elif isinstance(result, list):
+            buses = result
+        else:
+            error_message = '無効なレスポンス形式です'
+            return render_template('reservations/bus_list.html', error=error_message, sort_by=sort_by, order=order)
+        
+        # 各バスに予約数情報を取得して追加
+        for bus in buses:
+            reservation_result = admin_api.get_bus_seat_status(bus['id'])
+            if reservation_result and reservation_result.get('success'):
+                seat_status = reservation_result.get('seat_status', [])
+                # 予約数をカウント
+                bus['reservation_count'] = sum(1 for seat in seat_status if seat.get('user_id') or seat.get('student_id'))
+            else:
+                bus['reservation_count'] = 0
+        
+        # ソート処理
+        reverse = (order == 'desc')
+        if sort_by == 'departure_time':
+            buses.sort(key=lambda x: x.get('departure_time') or '', reverse=reverse)
+        elif sort_by == 'reservation_count':
+            buses.sort(key=lambda x: x.get('reservation_count', 0), reverse=reverse)
+        elif sort_by == 'route_name':
+            buses.sort(key=lambda x: x.get('route_name') or '', reverse=reverse)
+        elif sort_by == 'occupancy_rate':
+            buses.sort(key=lambda x: (x.get('reservation_count', 0) / x.get('seats', 1) * 100) if x.get('seats', 0) > 0 else 0, reverse=reverse)
+        
+        return render_template('reservations/bus_list.html', buses=buses, sort_by=sort_by, order=order)
     
     except Exception as e:
         logger.error(f"Error listing buses: {e}")
@@ -145,7 +180,7 @@ def bus_list():
         traceback.print_exc()
         error_message = "バス一覧の取得中にエラーが発生しました。"
         return render_template('reservations/bus_list.html', 
-                             error=error_message)
+                             error=error_message, sort_by='departure_time', order='asc')
 
 @bp.route('/api/seat-info/<int:bus_id>/<int:seat_number>', methods=['GET'])
 @require_permission('reservation', 'read')

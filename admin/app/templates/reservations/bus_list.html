@@ -26,7 +26,36 @@
     </nav>
 
     <div class="container mt-4">
-        <h1 class="mb-4">予約があるバス一覧</h1>
+        <h1 class="mb-4">バス一覧</h1>
+        
+        <!-- ソート用フォーム -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" action="/admin/reservations/bus/list" class="row g-3">
+                    <div class="col-md-5">
+                        <label for="sort_by" class="form-label">並び替え</label>
+                        <select name="sort_by" id="sort_by" class="form-select">
+                            <option value="departure_time" {% if sort_by == 'departure_time' %}selected{% endif %}>出発時刻</option>
+                            <option value="reservation_count" {% if sort_by == 'reservation_count' %}selected{% endif %}>予約数</option>
+                            <option value="occupancy_rate" {% if sort_by == 'occupancy_rate' %}selected{% endif %}>稼働率</option>
+                            <option value="route_name" {% if sort_by == 'route_name' %}selected{% endif %}>ルート名</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="order" class="form-label">順序</label>
+                        <select name="order" id="order" class="form-select">
+                            <option value="asc" {% if order == 'asc' %}selected{% endif %}>昇順</option>
+                            <option value="desc" {% if order == 'desc' %}selected{% endif %}>降順</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sort"></i> 並び替え
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
         
         {% if error %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -58,7 +87,15 @@
                             <tr>
                                 <td>{{ bus.id }}</td>
                                 <td>{{ bus.route_name or 'N/A' }}</td>
-                                <td>{{ bus.departure_location or 'N/A' }} → {{ bus.arrival_location or 'N/A' }}</td>
+                                <td>
+                                    {% if bus.ud == 0 %}
+                                    高槻駅 → 高槻キャンパス
+                                    {% elif bus.ud == 1 %}
+                                    高槻キャンパス → 高槻駅
+                                    {% else %}
+                                    {{ bus.departure_location or 'N/A' }} → {{ bus.arrival_location or 'N/A' }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ bus.departure_time[:16].replace('T', ' ') if bus.departure_time else 'N/A' }}</td>
                                 <td>{{ bus.arrival_time[:16].replace('T', ' ') if bus.arrival_time else 'N/A' }}</td>
                                 <td>
@@ -110,13 +147,18 @@
                     </table>
                 </div>
                 <div class="mt-3">
-                    <p class="text-muted">合計 {{ buses|length }} 件のバスが見つかりました（最新100件まで表示）</p>
+                    <p class="text-muted">
+                        合計 {{ buses|length }} 件のバスが見つかりました
+                        {% if sort_by %}
+                        （{{ {'departure_time': '出発時刻', 'reservation_count': '予約数', 'occupancy_rate': '稼働率', 'route_name': 'ルート名'}[sort_by] }}で{{ '昇順' if order == 'asc' else '降順' }}に並び替え）
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>
         {% else %}
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> 予約があるバスは見つかりませんでした
+            <i class="fas fa-info-circle"></i> バスが見つかりませんでした
         </div>
         {% endif %}
     </div>
