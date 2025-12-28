@@ -14,8 +14,15 @@
         <div>
             <p>{{ bus_id }}号車</p>
             <p>出発時刻: {{ departure_time }}発</p>
+            {% if auth_code %}
+            <div class="auth-code-section">
+                <h2>認証システム用コード</h2>
+                <p class="auth-code">{{ auth_code }}</p>
+                <p class="auth-instruction">このコードを認証システムに入力してください</p>
+            </div>
+            {% endif %}
             <p id="countdown">10秒で元のページに戻ります</p>
-            <p>元のページは<a href="{{ url_for('top') }}">ここ</a>から</p>
+            <p>元のページは<a href="{{ url_for('main.top') }}">ここ</a>から</p>
         </div>
     </div>
 

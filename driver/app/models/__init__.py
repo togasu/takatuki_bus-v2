@@ -1,10 +1,11 @@
 # Driver Service Models
 from app.models.driver import Driver, QA, Bus, Seat, Reservation
 from app.models.driver_device import DriverDevice
+from app.models.bus_code import BusCode
 
 # Export models
 # Hash は Redis で管理するため削除
-__all__ = ['Driver', 'QA', 'Bus', 'Seat', 'Reservation', 'DriverDevice']
+__all__ = ['Driver', 'QA', 'Bus', 'Seat', 'Reservation', 'DriverDevice', 'BusCode']
 
 def register_model_blueprints(app):
     """モデルに定義されたBlueprintを自動登録（現在はなし）"""

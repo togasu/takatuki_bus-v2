@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, g
 from datetime import datetime, timedelta
 from app.utils.helper_functions import get_authenticated_user, hash_check, hash_login, verify_password, yukisaki, gakusei
 from app.utils.student_api_client import get_student_client
-from app.models import Driver
+from app.models import Driver, BusCode
 from app.database import db
 import logging
 import json
@@ -255,7 +255,26 @@ def bus_register():
                             json.dump(bus, file)
                             logger.info(f"Success to register bus {bus_number}, departure_time {departure_time}")
                         
-                        return render_template('bus_register.html', bus_id=bus_number, departure_time=departure_time)
+                        # 6桁のコードを生成
+                        try:
+                            bus_code = BusCode.create_code(
+                                bus_id=businfo['id'],
+                                busid=businfo['busid'],
+                                departure_time=departure_dt,
+                                ud=businfo['ud']
+                            )
+                            logger.info(f"Generated code {bus_code.code} for bus {bus_number}")
+                            
+                            return render_template('bus_register.html', 
+                                                 bus_id=bus_number, 
+                                                 departure_time=departure_time,
+                                                 auth_code=bus_code.code)
+                        except Exception as e:
+                            logger.error(f"Error generating code: {e}")
+                            return render_template('bus_register.html', 
+                                                 bus_id=bus_number, 
+                                                 departure_time=departure_time,
+                                                 message='コード生成に失敗しました')
                     except Exception as e:
                         logger.error(f"Error processing bus data: {e}")
                         return render_template('bus_register.html', message='バス情報の処理に失敗しました')
