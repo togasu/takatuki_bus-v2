@@ -148,7 +148,8 @@ Type=simple
 User=pi
 WorkingDirectory=/home/pi/auth_system
 Environment="ID=1"
-Environment="API_URL=http://shuttlebus.kutc.kansai-u.ac.jp:49155"
+Environment="STIDENT_API_URL=http://shuttlebus.kutc.kansai-u.ac.jp"
+Environment="DRIVER_API_URL=http://shuttlebus.kutc.kansai-u.ac.jp/driver"
 Environment="PYTHONOPTIMIZE=2"
 ExecStart=/usr/bin/python3 -O /home/pi/auth_system/auth.py
 Restart=always
@@ -662,6 +663,15 @@ python auth.py  # 自動的にテーブルが作成される
 - ファイアウォール設定を確認
 
 ## 開発者向け情報
+
+### 開発者向けの起動方法
+```bash
+cd auth_system
+./start_auth.ps1 -DevMode
+```
+これを用いることでnfcリーダー不要で試せます。
+`https://localhost:8080/dev/manual-scan`
+にidm打ち込みで予約認証情報の確認ができます。
 
 ### studentサービスとの互換性
 データベース構造はstudentサービスと完全に同期しており、同じテーブル構成を使用しています。
