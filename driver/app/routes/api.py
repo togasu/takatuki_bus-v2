@@ -1,13 +1,17 @@
 from flask import Blueprint, request, jsonify
 from app.database import db
-from app.models import Driver
+from app.models import Driver, BusCode
 from app.models.driver_device import DriverDevice
 from datetime import datetime
 from app.utils.now_jst import now_jst
 from app.utils.auth_utils import SessionManager
 from app.utils.decorators import safe_api_route, safe_route
 from app.utils.error_handlers import create_error_response
+from app.utils.student_api_client import get_student_client
 import secrets
+import logging
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -406,3 +410,64 @@ def delete_driver_device(device_id):
             "error": str(e)
         }), 500
 
+
+@bp.route("/bus/verify-code", methods=["POST"])
+@safe_api_route(required_fields=["code"])
+def verify_bus_code():
+    """
+    6桁のバスコードを検証し、バス情報をJSON形式で返す
+    authシステムから呼び出される
+    """
+    data = request.get_json()
+    code = data.get("code", "").strip()
+    
+    if not code:
+        return create_error_response("コードを入力してください", 400, "Missing Code")
+    
+    # コードの検証
+    bus_code = BusCode.query.filter_by(code=code).first()
+    
+    if not bus_code:
+        logger.warning(f"Code not found: {code}")
+        return create_error_response("コードが見つかりません", 404, "Code Not Found")
+    
+    if bus_code.is_used:
+        logger.warning(f"Code already used: {code}")
+        return create_error_response("このコードは既に使用済みです", 400, "Code Already Used")
+    
+    if bus_code.expires_at < datetime.now():
+        logger.warning(f"Code expired: {code}")
+        return create_error_response("このコードは期限切れです", 400, "Code Expired")
+    
+    try:
+        # Student ServiceのAPIクライアントを使用してバス情報を取得
+        client = get_student_client()
+        businfo = client.get_bus_by_id(bus_code.bus_id)
+        
+        if not businfo:
+            logger.error(f"Bus not found for code {code}, bus_id: {bus_code.bus_id}")
+            return create_error_response("バス情報が見つかりません", 404, "Bus Not Found")
+        
+        # コードを使用済みにマーク
+        bus_code.is_used = True
+        bus_code.used_at = datetime.now()
+        db.session.commit()
+        
+        logger.info(f"Code {code} verified successfully: Bus{bus_code.busid} at {bus_code.departure_time}")
+        
+        # JSON形式でバス情報を返す
+        return jsonify({
+            "success": True,
+            "bus": {
+                "id": businfo['id'],
+                "busid": businfo['busid'],
+                "departure_time": businfo['departure_time'],  # ISO形式
+                "seats": businfo['seats'],
+                "ud": businfo['ud']
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error verifying code {code}: {e}", exc_info=True)
+        db.session.rollback()
+        return create_error_response("バス情報の取得中にエラーが発生しました", 500, "Server Error")

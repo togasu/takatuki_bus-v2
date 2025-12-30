@@ -7,6 +7,7 @@ Student サービス用のテストバス・座席作成スクリプト
 import sys
 import os
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 # Flaskアプリケーションのパスを追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
@@ -23,7 +24,16 @@ def create_debug_buses():
     with app.app_context():
         try:
             # 現在時刻を基準にした出発時刻を設定
-            base_time = datetime.utcnow()
+            base_time_aware = datetime.now(ZoneInfo("Asia/Tokyo"))
+            base_time = base_time_aware.replace(tzinfo=None)  # タイムゾーン情報を削除してnaiveに
+            
+            print("=" * 60)
+            print("⏰ 時刻情報デバッグ")
+            print("=" * 60)
+            print(f"📅 タイムゾーン付き: {base_time_aware.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            print(f"📅 タイムゾーンなし（保存用）: {base_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"🌍 タイムゾーン: {base_time_aware.tzinfo}")
+            print("=" * 60)
             
             # デバッグ用バスのデータ（busidは1～4の号車番号）
             debug_buses = [
@@ -107,7 +117,10 @@ def create_debug_buses():
                 
                 created_buses_count += 1
                 direction = "上り" if bus_data['ud'] == 0 else "下り"
+                departure_str = bus_data['departure_time'].strftime('%Y-%m-%d %H:%M:%S')
                 print(f"✅ デバッグバス作成: {bus_data['busid']}号車 ({direction}, {bus_data['seats']}席)")
+                print(f"   📅 出発時刻（データベース保存値）: {departure_str}")
+                print(f"   ⏱️  現在時刻からの差分: +{int((bus_data['departure_time'] - base_time).total_seconds() / 3600)}時間")
                 
                 # バスの座席を作成
                 for seat_number in range(1, bus_data['seats'] + 1):

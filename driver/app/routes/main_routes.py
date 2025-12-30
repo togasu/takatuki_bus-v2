@@ -7,7 +7,6 @@ from app.utils.student_api_client import get_student_client
 from app.models import Driver, BusCode
 from app.database import db
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +199,9 @@ def bus():
                 
                 bus_date = []
                 for bus_data in buses:
+                    if bus_data['busid'] != number:
+                        continue
+                    
                     try:
                         # ISO形式の日時をパース
                         departure_dt = datetime.fromisoformat(bus_data['departure_time'])
@@ -240,20 +242,8 @@ def bus_register():
                     try:
                         # ISO形式の日時をパース
                         departure_dt = datetime.fromisoformat(businfo['departure_time'])
-                        bus = {
-                            "id": businfo['id'],
-                            "busid": businfo['busid'],
-                            "departure_time": departure_dt.strftime('%Y/%m/%d %H:%M'),
-                            "seats": businfo['seats'],
-                            "ud": businfo['ud']
-                        }
-                        departure_time = bus["departure_time"]
-                        bus_number = bus["busid"]
-                        
-                        # JSONファイルに保存（互換性のため）
-                        with open(f'../yoyaku_system/bus{bus_number}.json', 'w') as file:
-                            json.dump(bus, file)
-                            logger.info(f"Success to register bus {bus_number}, departure_time {departure_time}")
+                        departure_time = departure_dt.strftime('%Y/%m/%d %H:%M')
+                        bus_number = businfo['busid']
                         
                         # 6桁のコードを生成
                         try:

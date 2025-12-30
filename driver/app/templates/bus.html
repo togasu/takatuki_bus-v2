@@ -14,13 +14,13 @@
         <ul class="bus-list">
             {% for bus in bus_date %}
             <li class="bus-item">
-                <a href="{{ url_for('main.bus_register', id=bus.id) }}">
+                <a href="bus/register?id={{ bus.id }}">
                     <button class="bus-button">
                         <div class="bus-info">
                             <span class="departure-time">{{ bus.departure_time }}</span>
                             <span class="bus-number">{{ bus.busid }}号車</span>
                         </div>
-                        <div class="bus-details">
+                        <div class="bus-details">   
                             <span class="direction">{{ '高槻駅' if bus.ud == 1 else '高槻キャンパス' }}</span>
                             <span class="seats">座席数: {{ bus.seats }}</span>
                         </div>

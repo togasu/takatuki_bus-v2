@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="10;url={{ url_for('top') }}">
+    <meta http-equiv="refresh" content="10;url={{ url_for('main.top') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Sojo Bus</title>
@@ -21,14 +21,14 @@
                 <p class="auth-instruction">このコードを認証システムに入力してください</p>
             </div>
             {% endif %}
-            <p id="countdown">10秒で元のページに戻ります</p>
-            <p>元のページは<a href="{{ url_for('main.top') }}">ここ</a>から</p>
+            <p id="countdown">1000秒で元のページに戻ります</p>
+            <p>元のページは<a href="/driver">ここ</a>から</p>
         </div>
     </div>
 
     <script>
         var countdownElement = document.getElementById('countdown');
-        var countdown = 10;
+        var countdown = 1000;
 
         function updateCountdown() {
             countdown--;
