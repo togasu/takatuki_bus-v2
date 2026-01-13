@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+    <title>Sojo Bus</title>
+    <style>
+        /* CSSスタイル */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .error-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #ff3b3b;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <p>Sojo Bus</p>
+    </header>
+    <div class="error-container">
+        <h1>400 Bad Request</h1>
+        <p>申し訳ありませんが、リクエストが無効です。</p>
+        <p>入力した情報が正しいかどうかを確認し、再度お試しください。</p>
+        {% if username == 'student' %}
+            <button onclick="redirectToNextPage('{{ url_for('main.personal') }}')">メニューへ</button>
+        {% else %}
+            <button onclick="redirectToNextPage('{{ url_for('auth.top') }}')">ログイン画面へ</button>
+        {% endif %}
+    </div>
+
+    <script>
+        function redirectToNextPage(nextPageURL) {
+            // ここに遷移先のURLを設定
+            window.location.href = nextPageURL;
+        }
+    </script>
+</body>
+</html>

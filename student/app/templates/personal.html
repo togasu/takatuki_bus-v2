@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+	  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/personal.css')}}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Sojo Bus</title>
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+      }
+	
+	main{
+		margin-top:90px;
+	}
+
+      .header {
+        width: 100%;
+        position: fixed;
+        top: 0;
+        text-align: center;
+        z-index: 1;
+      }
+
+      .header-content {
+        background-color: #000b69;
+        color: #ffffff;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .header-content a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 24px;
+      }
+
+      .header-content p {
+        margin: 0;
+      }
+
+      .admin-back-btn {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .admin-back-btn button {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: #ffffff;
+        background-color: #28a745;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0;
+      }
+
+      .admin-back-btn button:hover {
+        background-color: #218838;
+      }
+
+      .tips {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .tips p {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        color: #ffffff;
+        background-color: #007bff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0;
+      }
+
+      .tips p:hover {
+        background-color: #0056b3;
+      }
+
+      .tiptext {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #555;
+        padding: 10px;
+        z-index: 1;
+        right: 0;
+        top: 40px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      article {
+        overflow: hidden;
+        background-color: #f8d7da;
+        height: 30px;
+      }
+
+      .loop_wrap {
+        display: flex;
+        width: 100%;
+        height: 30px;
+        overflow: hidden;
+      }
+
+      .loop_wrap div {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-size: 16px;
+        overflow: hidden;
+      }
+
+      .loop_wrap div:nth-child(odd) {
+        animation: loop linear infinite;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header-content">
+        {% if is_admin_user %}
+        <div class="admin-back-btn">
+          <button onclick="redirectToNextPage('/admin/')">Admin Dashboard</button>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('main.personal') }}">Sojo Bus</a>
+        <div class="tips">
+          <p onclick="redirectToNextPage('{{url_for('main.tips')}}')">利用案内</p>
+        </div>
+      </div>
+      <article>
+        <div class="loop_wrap">
+          <div>
+            {{ text | e }}
+          </div>
+        </div>
+      </article>
+    </header>
+
+    <main>
+      <div class="container"> 
+        <div class="name top">情{{ name | e }}</div>
+        <div class="name end">{{ user_full_name | e }}さん</div>
+        <a class="atagu h3">次のバス状況</a>
+        {% if (current | length) == 0 %}
+        <p>運行データがありません</p>
+        {% else %}
+        <table>
+          <tr>
+            <th>出発時刻</th>
+            <th>号車</th>
+            <th>残席</th>
+          </tr>
+          {% for i in current %}
+          <tr>
+            <td>{{ i["departure_time"] | e }}発</td>
+            <td>{{ i["busid"] | e }}</td>
+            {% if i["available_seats"] > 10 %}
+            <td>{{ i["available_seats"] | e }}</td>
+            {% elif i["available_seats"] == -1 %}
+            <td>キャンセル待ち</td>
+            {% elif i["available_seats"] > 5 %}
+            <td class="nokori10">{{ i["available_seats"] | e }}</td>
+            {% else %}
+            <td class="nokori5">{{ i["available_seats"] | e }}</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </table>
+        <div style="text-align: right; margin-top: 5px;">
+          <div id="update-time-display" style="font-size: 12px; color: #666;">
+          </div>
+        </div>
+        <a class="atagu h3">あなたの予約状況</a>
+        {% if (personal_data | length) == 0 %}
+        <p>予約データがありません</p>
+        {% else %}
+        <table>
+          <tr>
+            <th>出発時刻</th>
+            <th>号車</th>
+            <th>座席</th>
+          </tr>
+          {% for j in personal_data %}
+          {% if j["seat_number"] != "キャンセル待ち" %}
+          <tr>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["departure_time"] | e }}発</td>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["busid"] | e }}</td>
+            <td onclick="redirectToNextPage('{{ url_for('main.checknumber', seatnumber=j["seat_number"]) }}')">{{ j["seat_number"] | e }}番</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td>{{ j["departure_time"] | e }}発</td>
+            <td>{{ j["busid"] | e }}</td>
+            <td>{{ j["seat_number"] | e }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </table>
+        {% endif %}
+          <div class="btn-group">
+            <button type="submit" class="btn btn-danger btn-lg mr-3" onclick="redirectToNextPage('{{url_for('cancel.cancelcheck')}}')">予約取消</button>
+            <button type="submit" class="btn btn-primary btn-lg" onclick="redirectToNextPage('{{url_for('booking.choice')}}')">新規予約</button>
+          </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div id="line"></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+      // WebSocket接続
+      const socket = io();
+      
+      function redirectToNextPage(nextPageURL) {
+        window.location.href = nextPageURL;
+      }
+
+      // WebSocket接続時の処理
+      socket.on('connect', function() {
+        console.log('WebSocket接続しました');
+        socket.emit('join_bus_updates');
+        updateConnectionStatus(true);
+      });
+
+      socket.on('disconnect', function() {
+        console.log('WebSocket切断しました');
+        updateConnectionStatus(false);
+      });
+
+      // 接続状態の表示を更新
+      function updateConnectionStatus(connected) {
+        if (connected) {
+          updateLastUpdateTime();
+        }
+      }
+
+      // 最終更新時刻を表示する関数
+      function updateLastUpdateTime() {
+        const now = new Date();
+        const updateTime = now.toLocaleTimeString('ja-JP');
+        const updateDisplay = document.getElementById('update-time-display');
+        if (updateDisplay) {
+          updateDisplay.textContent = `最終更新: ${updateTime}`;
+        }
+      }
+
+      // バスデータの更新を受信
+      socket.on('bus_data_update', function(data) {
+        console.log('バスデータ更新を受信:', data);
+        updateBusTable(data);
+      });
+
+      // バステーブルを更新する関数
+      function updateBusTable(busData) {
+        const tableRows = document.querySelectorAll('table:first-of-type tbody tr:not(:first-child)');
+        const tableBody = document.querySelector('table:first-of-type tbody') || document.querySelector('table:first-of-type');
+        
+        if (!tableBody) return;
+
+        // 既存のデータ行を削除（ヘッダー以外）
+        tableRows.forEach(row => row.remove());
+
+        // 新しいデータで更新
+        busData.slice(0, 10).forEach(bus => {
+          const row = document.createElement('tr');
+          
+          const timeCell = document.createElement('td');
+          timeCell.textContent = bus.departure_time + '発';
+          
+          const busIdCell = document.createElement('td');
+          busIdCell.textContent = bus.busid;
+          
+          const seatCell = document.createElement('td');
+          if (bus.available_seats === -1 || bus.status >= 1) {
+            seatCell.textContent = 'キャンセル待ち';
+          } else if (bus.available_seats > 10) {
+            seatCell.textContent = bus.available_seats;
+          } else if (bus.available_seats > 5) {
+            seatCell.textContent = bus.available_seats;
+            seatCell.className = 'nokori10';
+          } else {
+            seatCell.textContent = bus.available_seats;
+            seatCell.className = 'nokori5';
+          }
+          
+          row.appendChild(timeCell);
+          row.appendChild(busIdCell);
+          row.appendChild(seatCell);
+          
+          tableBody.appendChild(row);
+        });
+
+        // 最終更新時刻を表示
+        updateLastUpdateTime();
+      }
+
+      // 定期的にデータを要求（フォールバック）
+      setInterval(function() {
+        socket.emit('request_bus_data');
+      }, 30000); // 30秒ごと
+
+      function setAnimation() {
+        const loopElement = document.querySelector('.loop_wrap div:nth-child(odd)');
+        const screenWidth = window.innerWidth;
+        const textWidth = loopElement.scrollWidth;
+
+        // Calculate animation duration based on screen width (adjust the factor as needed)
+        const animationDuration = Math.max(10, (textWidth + screenWidth) / 100); // Duration in seconds
+
+        // Set keyframes dynamically
+        const keyframes = `
+          @keyframes loop {
+            0% { transform: translateX(${screenWidth}px); }
+            100% { transform: translateX(-${textWidth}px); }
+          }
+        `;
+
+        // Remove any existing keyframes style
+        const existingStyle = document.getElementById('dynamic-keyframes');
+        if (existingStyle) {
+          existingStyle.parentNode.removeChild(existingStyle);
+        }
+
+        // Add the new keyframes style
+        const style = document.createElement('style');
+        style.id = 'dynamic-keyframes';
+        style.innerHTML = keyframes;
+        document.head.appendChild(style);
+
+        // Update the animation duration based on the new keyframes
+        loopElement.style.animation = `loop ${animationDuration}s linear infinite`;
+      }
+
+      // Initial call
+      setAnimation();
+
+      // Recalculate animation on window resize
+      window.addEventListener('resize', setAnimation);
+    </script>
+
+  </body>
+</html>
+

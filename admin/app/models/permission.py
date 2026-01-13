@@ -9,59 +9,59 @@ class Permission(db.Model):
     __tablename__ = 'permissions'
     
     id = db.Column(db.Integer, primary_key=True)
-    permission_name = db.Column(db.String(50), unique=True, nullable=False)  # 権限名
-    description = db.Column(db.Text)  # 権限の説明
-    resource = db.Column(db.String(50), nullable=False)  # リソース名
-    action = db.Column(db.String(20), nullable=False)  # アクション (read, write, delete)
-    is_active = db.Column(db.Boolean, default=True)
+    resource = db.Column(db.String(100), nullable=False)  # リソース名
+    action = db.Column(db.String(50), nullable=False)  # アクション (read, write, delete)
+    role = db.Column(db.String(20), nullable=False)  # ロール (admin, normal, guest)
+    is_allowed = db.Column(db.Boolean, default=True, nullable=False)  # 許可するかどうか
     created_at = db.Column(db.DateTime, default=now_jst)
+    updated_at = db.Column(db.DateTime, default=now_jst, onupdate=now_jst)
     
     def __repr__(self):
-        return f'<Permission {self.permission_name}>'
+        return f'<Permission {self.resource}.{self.action} for {self.role}>'
 
 # Blueprint for Permission API
 permission_bp = Blueprint("permission_api", __name__, url_prefix="/api/permissions")
 
 @permission_bp.route("", methods=["GET"])
-@require_permission("admin_permission", "read")
+@require_permission("permission", "read")
 def get_permissions():
     """権限一覧を取得"""
     permissions = Permission.query.all()
     return jsonify([{
         "id": p.id,
-        "permission_name": p.permission_name,
-        "description": p.description,
         "resource": p.resource,
         "action": p.action,
-        "is_active": p.is_active,
-        "created_at": p.created_at.isoformat() if p.created_at else None
+        "role": p.role,
+        "is_allowed": p.is_allowed,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "updated_at": p.updated_at.isoformat() if p.updated_at else None
     } for p in permissions])
 
 @permission_bp.route("", methods=["POST"])
-@require_permission("admin_permission", "create")
+@require_permission("permission", "create")
 def create_permission():
     """権限を作成"""
     data = request.get_json()
     
-    if not data or not all(k in data for k in ["permission_name", "resource", "action"]):
-        return jsonify({"error": "Missing required fields"}), 400
+    if not data or not all(k in data for k in ["resource", "action", "role"]):
+        return jsonify({"error": "Missing required fields: resource, action, role"}), 400
     
     try:
         permission = Permission(
-            permission_name=data["permission_name"],
-            description=data.get("description"),
             resource=data["resource"],
             action=data["action"],
-            is_active=data.get("is_active", True)
+            role=data["role"],
+            is_allowed=data.get("is_allowed", True)
         )
         db.session.add(permission)
         db.session.commit()
         
         return jsonify({
             "id": permission.id,
-            "permission_name": permission.permission_name,
             "resource": permission.resource,
             "action": permission.action,
+            "role": permission.role,
+            "is_allowed": permission.is_allowed,
             "message": "Permission created successfully"
         }), 201
         

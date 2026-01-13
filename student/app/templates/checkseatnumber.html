@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/bnum.css')}}">
+  <title>Sojo Bus</title>
+  <style>
+    #myDiv{
+      display : none;
+    }
+  </style>
+</head>
+
+<body>
+  <header id = "myDiv" class="header">
+    <div class="header-content">
+      <a href="{{url_for('main.personal')}}" class="header-title">Sojo Bus</a>
+    </div>
+  </header>
+  <div class="container">
+    <table>
+      {% for seat in seat %}
+        {% if loop.index == 1 %}
+          <tr>
+            <td>
+              {% if seat == '0' %}
+              <div class="seat">
+              {% else %}
+              <div class="reserved">
+              {% endif %}
+              {{loop.index}}
+              <div class="senaka"></div></div>
+            </td>
+            <td>
+              <div class="hidden"></div>
+            </td>
+            <td>
+              <div class="hidden"></div>
+            </td>
+            <td>
+              <div class="hidden border border-dark">運転席</div>
+            </td>
+          </tr>
+	{% elif loop.index == 2 %}
+	  <tr>
+            <td>
+              {% if seat == '0' %}
+              <div class="seat">
+              {% else %}
+              <div class="reserved">
+              {% endif %}
+              {{loop.index}}<div class="senaka"></div></div>
+            </td>
+	    <td>
+	    	<p>補助席<br>↓</p>
+	    </td>
+        {% elif loop.index == 8 or loop.index == 12 or loop.index == 16 or loop.index == 20 or loop.index == 24 %}
+          <tr>
+            <td>
+              {% if seat == '0' %}
+              <div class="seat">
+              {% else %}
+              <div class="reserved">
+              {% endif %}
+              {{loop.index}}<div class="senaka"></div></div>
+            </td>
+        {% elif loop.index == 3 or loop.index == 5 or loop.index == 6 or loop.index == 9 or loop.index == 10 or
+        loop.index == 13 or loop.index == 14 or loop.index == 17 or loop.index == 18 or loop.index == 21 or loop.index == 22 or loop.index == 25 or loop.index == 26 %}
+          <td>
+            {% if seat == '0' %}
+              <div class="seat">
+            {% else%}
+              <div class="reserved">
+            {% endif %}
+            {{loop.index}}<div class="senaka"></div></div>
+          </td>
+        {% elif loop.index == 4 %}
+          <td>
+            {% if seat == '0' %}
+            <div class="seat">
+            {% else%}
+            <div class="reserved">
+            {% endif %}
+            {{loop.index}}<div class="senaka"></div></div>
+          </td>
+          </tr>
+          <tr>
+          <td>
+            <div class="hidden">搭乗口</div>
+          </td>
+        {% elif loop.index == 7 or loop.index == 11 or loop.index == 15 or loop.index == 19 or loop.index == 23 or loop.index == 27 %}
+          <td>
+            {% if seat == '0' %}
+              <div class="seat">
+            {% else%}
+             <div class="reserved">
+            {% endif%}
+            {{loop.index}}<div class="senaka"></div></div>
+          </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+    <div class="btn-group d-flex justify-content-center">
+      <form id="back-form" action="/personal">
+        <button type="submit" class="btn btn-secondary">戻る</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div id=line></div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script>
+    /*let activeButton = null;
+
+    var seats = document.querySelectorAll('.seat, .reserved');
+    for (var i = 0; i < seats.length; i++) {
+      seats[i].addEventListener('click', function () {
+        var selectedSeat = document.querySelector('.selected');
+        if (selectedSeat) {
+          selectedSeat.classList.remove('selected');
+        }
+        this.classList.add('selected');
+
+        document.getElementById('selected-seat').textContent = this.id;
+        document.getElementById('selected-userid').textContent = this.classList.contains('reserved') ? this.classList[1] : "None";
+
+        var myDiv = document.getElementById("myDiv");
+
+        if(myDiv.style.display === "none"){
+          my.Div.style.display = "block";
+        }
+        else {
+          myDiv.style.display = "none";
+        }
+      });
+    }*/
+
+  </script>
+
+</body>
+</html>
+

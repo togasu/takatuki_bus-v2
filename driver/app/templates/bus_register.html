@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="10;url={{ url_for('main.top') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Sojo Bus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bus-register.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Unten Bus Registration</h1>
+        <div>
+            <p>{{ bus_id }}号車</p>
+            <p>出発時刻: {{ departure_time }}発</p>
+            {% if auth_code %}
+            <div class="auth-code-section">
+                <h2>認証システム用コード</h2>
+                <p class="auth-code">{{ auth_code }}</p>
+                <p class="auth-instruction">このコードを認証システムに入力してください</p>
+            </div>
+            {% endif %}
+            <p id="countdown">1000秒で元のページに戻ります</p>
+            <p>元のページは<a href="/driver">ここ</a>から</p>
+        </div>
+    </div>
+
+    <script>
+        var countdownElement = document.getElementById('countdown');
+        var countdown = 1000;
+
+        function updateCountdown() {
+            countdown--;
+            countdownElement.textContent = countdown + '秒で元のページに戻ります';
+
+            if (countdown <= 0) {
+                clearInterval(timer);
+            }
+        }
+
+        var timer = setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>

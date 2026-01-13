@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユーザー一覧 - Sojo Bus Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .status-badge {
+            font-size: 0.85em;
+        }
+        .role-badge {
+            font-size: 0.85em;
+        }
+        .table-actions {
+            white-space: nowrap;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Sojo Bus Admin</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/dashboard">
+                    <i class="fas fa-home"></i> ダッシュボード
+                </a>
+                <a class="nav-link" href="/admin/logout">
+                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="mb-0">
+                        <i class="fas fa-users"></i> ユーザー一覧
+                    </h1>
+                    <a href="/admin/create" class="btn btn-success">
+                        <i class="fas fa-plus"></i> 新規作成
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ユーザータイプ切り替えタブ -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link {% if user_type != 'driver' %}active{% endif %}" 
+                   href="/admin/users?user_type=admin">
+                    <i class="fas fa-user-shield"></i> 管理者ユーザー
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if user_type == 'driver' %}active{% endif %}" 
+                   href="/admin/users?user_type=driver">
+                    <i class="fas fa-id-card"></i> ドライバーユーザー
+                </a>
+            </li>
+        </ul>
+
+        <!-- フィルター・検索セクション -->
+        <div class="filter-section">
+            <form method="GET" action="/admin/users">
+                <input type="hidden" name="user_type" value="{{ user_type }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">検索</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ search_query }}" 
+                               placeholder="{% if user_type == 'driver' %}ユーザー名または運転手番号{% else %}ユーザー名またはメールアドレス{% endif %}">
+                    </div>
+                    {% if user_type != 'driver' %}
+                    <div class="col-md-3">
+                        <label for="role" class="form-label">権限レベル</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="">すべて</option>
+                            <option value="guest" {% if role_filter == 'guest' %}selected{% endif %}>ゲスト</option>
+                            <option value="normal" {% if role_filter == 'normal' %}selected{% endif %}>通常</option>
+                            <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>管理者</option>
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="col-md-3"></div>
+                    {% endif %}
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">ステータス</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">すべて</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>有効</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>無効</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> 検索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- ユーザー一覧テーブル -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ユーザー名</th>
+                                <th>{% if user_type == 'driver' %}運転手番号{% else %}メールアドレス{% endif %}</th>
+                                <th>{% if user_type != 'driver' %}権限レベル{% else %}種別{% endif %}</th>
+                                <th>ステータス</th>
+                                <th>最終ログイン</th>
+                                <th>作成日時</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if users %}
+                                {% for user in users %}
+                                <tr id="user-row-{{ user.id }}">
+                                    <td>{{ user.id }}</td>
+                                    <td>
+                                        <strong>{{ user.username }}</strong>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger role-badge">管理者</span>
+                                        {% elif user.role == 'normal' %}
+                                        <span class="badge bg-primary role-badge">通常</span>
+                                        {% elif user.role == 'driver' %}
+                                        <span class="badge bg-info role-badge">ドライバー</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary role-badge">ゲスト</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                        <span class="badge bg-success status-badge">有効</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary status-badge">無効</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.last_login %}
+                                            {% if user.last_login is string %}
+                                                {{ user.last_login[:16] }}
+                                            {% else %}
+                                                {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">未ログイン</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.created_at %}
+                                            {% if user.created_at is string %}
+                                                {{ user.created_at[:16] }}
+                                            {% else %}
+                                                {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-sm btn-warning" 
+                                                onclick="toggleUserStatus({{ user.id }}, '{{ user.username }}', {{ 'true' if user.is_active else 'false' }}, '{{ user.user_type }}')">
+                                            <i class="fas fa-toggle-{{ 'off' if user.is_active else 'on' }}"></i>
+                                            {% if user.is_active %}無効化{% else %}有効化{% endif %}
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" 
+                                                onclick="deleteUser({{ user.id }}, '{{ user.username }}', '{{ user.user_type }}')">
+                                            <i class="fas fa-trash"></i> 削除
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle"></i> ユーザーが見つかりませんでした
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <p class="text-muted">
+                <i class="fas fa-info-circle"></i> 
+                合計: <strong>{{ users|length }}</strong> ユーザー
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleUserStatus(userId, username, isActive, userType) {
+            const action = isActive ? '無効化' : '有効化';
+            if (!confirm(`ユーザー「${username}」を${action}しますか?`)) {
+                return;
+            }
+
+            fetch(`/admin/users/${userId}/toggle-status?user_type=${userType}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました: ' + (data.message || '不明なエラー'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('通信エラーが発生しました');
+            });
+        }
+
+        function deleteUser(userId, username, userType) {
+            if (!confirm(`ユーザー「${username}」を削除しますか?\n\nこの操作は取り消せません。`)) {
+                return;
+            }
+
+            if (!confirm('本当に削除しますか?')) {
+                return;
+            }
+
+            fetch(`/admin/users/${userId}/delete?user_type=${userType}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました: ' + (data.message || '不明なエラー'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('通信エラーが発生しました');
+            });
+        }
+    </script>
+</body>
+</html>

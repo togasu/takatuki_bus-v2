@@ -7,5 +7,6 @@ gevent-websocket
 eventlet
 psycopg2-binary
 redis
+requests
 uwsgi
 bcrypt

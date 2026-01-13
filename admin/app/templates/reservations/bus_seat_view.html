@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/header_footer.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/bnum.css')}}">
+  <style>
+    /* スマホ対応のレスポンシブスタイル */
+    body {
+      font-size: 14px;
+    }
+
+    .container {
+      padding: 10px;
+      max-width: 100%;
+    }
+
+    /* 座席情報パネル */
+    #seat-info-panel {
+      position: sticky;
+      top: 60px;
+      z-index: 100;
+      margin-bottom: 15px;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    #seat-info-panel h5 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    #seat-info-panel p {
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    /* テーブルのスマホ対応 */
+    table {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      transform-origin: center top;
+    }
+
+    td {
+      padding: 2px;
+    }
+
+    /* 座席のサイズ調整 */
+    .seat,
+    .reserved,
+    .approved {
+      min-width: 40px;
+      min-height: 40px;
+      font-size: 16px;
+      line-height: 40px;
+      border-radius: 8px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .senaka {
+      pointer-events: none;
+    }
+
+    /* 更新ボタン */
+    .btn-lg {
+      font-size: 16px;
+      padding: 12px 20px;
+      margin-top: 15px;
+      touch-action: manipulation;
+    }
+
+    /* タブレット対応 */
+    @media (min-width: 576px) {
+      body {
+        font-size: 16px;
+      }
+
+      .seat,
+      .reserved,
+      .approved {
+        min-width: 50px;
+        min-height: 50px;
+        font-size: 18px;
+        line-height: 50px;
+      }
+
+      #seat-info-panel p {
+        font-size: 14px;
+      }
+    }
+
+    /* PC対応 */
+    @media (min-width: 768px) {
+      .container {
+        max-width: 800px;
+      }
+
+      .seat,
+      .reserved,
+      .approved {
+        min-width: 60px;
+        min-height: 60px;
+        font-size: 20px;
+        line-height: 60px;
+      }
+
+      #seat-info-panel {
+        font-size: 15px;
+      }
+
+      #seat-info-panel p {
+        font-size: 15px;
+      }
+    }
+
+    /* 横向き対応 */
+    @media (max-width: 767px) and (orientation: landscape) {
+      #seat-info-panel {
+        position: relative;
+        top: 0;
+        margin-bottom: 10px;
+      }
+
+      table {
+        transform: scale(0.85);
+      }
+
+      .btn-lg {
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+    }
+
+    /* 小さいスマホ対応 */
+    @media (max-width: 375px) {
+      .seat,
+      .reserved,
+      .approved {
+        min-width: 35px;
+        min-height: 35px;
+        font-size: 14px;
+        line-height: 35px;
+      }
+
+      #seat-info-panel {
+        padding: 8px;
+      }
+
+      #seat-info-panel h5 {
+        font-size: 14px;
+      }
+
+      #seat-info-panel p {
+        font-size: 11px;
+      }
+    }
+
+    /* タッチデバイス用のホバー効果無効化 */
+    @media (hover: none) {
+      .seat:hover,
+      .reserved:hover,
+      .approved:hover {
+        transform: none;
+      }
+
+      .seat:active,
+      .reserved:active,
+      .approved:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
+    }
+  </style>
+  <title>Sojo Bus - 座席表</title>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="{{url_for('index.index')}}" class="header-title">Sojo Bus</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- 座席情報表示エリア -->
+      <div id="seat-info-panel" class="alert alert-info mb-4">
+        <h5>座席情報</h5>
+        <div id="seat-info-content">
+          <p id="seat-number" class="mb-1"><strong>座席番号:</strong> <span>-</span></p>
+          <p id="student-id" class="mb-1"><strong>学籍番号:</strong> <span>-</span></p>
+          <p id="user-name" class="mb-1"><strong>予約者:</strong> <span>-</span></p>
+          <p id="reserved-time" class="mb-1"><strong>予約日時:</strong> <span>-</span></p>
+          <p id="approval-status" class="mb-0"><strong>承認状態:</strong> <span>-</span></p>
+        </div>
+      </div>
+
+      <!-- 選択中の座席一覧 -->
+      <div id="selected-seats-panel" class="alert alert-success mb-4" style="display: none;">
+        <h5>選択中の座席</h5>
+        <p id="selected-seats-list" class="mb-2">なし</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openReserveModal()">予約する</button>
+        <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="clearSelectedSeats()">選択をクリア</button>
+      </div>
+
+      <table>
+        {# 座席番号のマッピング定義 #}
+        {% set seat_labels = {
+          1: '1A',
+          2: '2A', 3: '2B', 4: '2C', 5: '2S',
+          6: '3A', 7: '3B',
+          8: '4A', 9: '4S', 10: '4B', 11: '4C',
+          12: '5A', 13: '5S', 14: '5B', 15: '5C',
+          16: '6A', 17: '6S', 18: '6B', 19: '6C',
+          20: '7A', 21: '7S', 22: '7B', 23: '7C',
+          24: '8A', 25: '8S', 26: '8B', 27: '8C'
+        } %}
+        
+        {# バスの座席レイアウトを生成 #}
+        {% for seat in reservedtf %}
+          {# 座席の状態を設定 #}
+          {% set is_available = (seat == '0') %}
+          {% set is_reserved = (seat == '1') %}
+          {% set is_my_reservation = not is_available and not is_reserved %}
+          
+          {# 補助席の判定 #}
+          {% set is_auxiliary = loop.index in [5, 9, 13, 17, 21] %}
+          
+          {# 新しい行を開始する座席番号 #}
+          {% set row_start_seats = [1, 2, 8, 12, 16, 20, 24] %}
+          
+          {# 行を閉じる座席番号 #}
+          {% set row_end_seats = [4, 7, 11, 15, 19, 23, 27] %}
+          
+          {# 座席のクラスを決定 #}
+          {% if is_available %}
+            {% set seat_class = 'seat' %}
+            {% set seat_symbol = '○' %}
+          {% elif is_reserved %}
+            {% set seat_class = 'reserved' %}
+            {% set seat_symbol = '×' %}
+          {% else %}
+            {% set seat_class = 'reserved me' %}
+            {% set seat_symbol = '×' %}
+          {% endif %}
+          
+          {# 補助席の場合はクラスを追加 #}
+          {% if is_auxiliary and is_available %}
+            {% set seat_class = seat_class + ' auxiliary' %}
+          {% endif %}
+
+          {# 座席1: 運転席横の特殊行 #}
+          {% if loop.index == 1 %}
+            <tr>
+              <td>
+                <div class="{{ seat_class }}" id="{{ loop.index }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+              <td><div class="hidden"></div></td>
+              <td><div class="hidden"></div></td>
+              <td><div class="hidden">運転席</div></td>
+            </tr>
+          
+          {# 座席2: 補助席ラベル付き #}
+          {% elif loop.index == 2 %}
+            <tr>
+              <td>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+              <td><p>補助席<br>↓</p></td>
+          
+          {# 座席4: 搭乗口との間で行を閉じる #}
+          {% elif loop.index == 4 %}
+              <td>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+            </tr>
+            <tr>
+              <td><div class="hidden">搭乗口</div></td>
+          
+          {# 行の開始座席 (8, 12, 16, 20, 24) #}
+          {% elif loop.index in [8, 12, 16, 20, 24] %}
+            <tr>
+              <td>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+          
+          {# 行の終了座席 (7, 11, 15, 19, 23, 27) #}
+          {% elif loop.index in [7, 11, 15, 19, 23, 27] %}
+              <td>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+            </tr>
+          
+          {# その他の通常座席 #}
+          {% else %}
+              <td>
+                <div id="{{ loop.index }}" class="{{ seat_class }}" data-seat-label="{{ seat_labels[loop.index] }}">{{ seat_symbol }}<div class="seat-number">{{ seat_labels[loop.index] }}</div><div class="senaka"></div></div>
+              </td>
+          {% endif %}
+
+        {% endfor %}
+      </table>
+      <!-- 選択済み座席を保持する隠しフィールド（JSの参照用） -->
+      <input type="hidden" id="selected_seat" name="selected_seat" value="">
+      
+      <!-- 予約モーダル -->
+      <div class="modal fade" id="reserveModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">予約情報入力</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-info">
+                <strong>管理者として予約</strong>
+                <p class="mb-0">選択した座席を管理者アカウントで予約します。</p>
+              </div>
+              <div class="form-group">
+                <label>選択座席</label>
+                <p id="modal-selected-seats" class="form-control-plaintext font-weight-bold"></p>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+              <button type="button" class="btn btn-primary" onclick="submitReservation()">予約を確定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <button type="button" class="btn btn-success btn-lg" style="width: 100%; max-width: 500px;" onclick="location.reload()">更新</button>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div id=line></div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script>
+    // グローバル変数の定義
+    const isPrivilegedUser = {{ 'true' if is_privileged_user else 'false' }};
+    const busId = {{ bus_id }};
+    const seats = document.getElementsByClassName('seat');
+    const reservedSeats = document.getElementsByClassName('reserved');
+    
+    // 座席情報をJavaScriptで利用可能にする
+    const seatStatusData = {{ seat_status | tojson | safe }};
+    console.log('Seat status data:', seatStatusData);
+
+    // 選択座席を管理する配列
+    let selectedSeats = [];
+
+    /**
+     * すべての補助席以外の席が予約済みかどうかを確認する関数
+     * @returns {boolean} すべての通常席が予約済みの場合true
+     */
+    function areAllSeatsReserved() {
+      for (let i = 0; i < seats.length; i++) {
+        const isAuxiliary = seats[i].classList.contains('auxiliary');
+        const isAvailable = seats[i].textContent.trim() === '○';
+        
+        if (!isAuxiliary && isAvailable) {
+          return false; // 選択可能な通常席が見つかった
+        }
+      }
+      return true; // すべての通常席が予約済み
+    }
+
+    /**
+     * 予約者情報を表示する関数（admin/driverのみ）
+     * @param {string} seatNumber - 座席番号
+     */
+    async function showReservationInfo(seatNumber) {
+      if (!isPrivilegedUser) return;
+
+      // まずローカルのseat_statusからデータを取得
+      const seatInfo = seatStatusData.find(s => s.seat_number === parseInt(seatNumber));
+      
+      if (seatInfo && seatInfo.reserved) {
+        // ローカルデータがあればそれを使用
+        updateSeatInfoPanel(seatNumber, seatInfo);
+        return;
+      }
+
+      // ローカルデータがない場合はAPIから取得
+      try {
+        const response = await fetch(`/reservations/api/seat-info/${busId}/${seatNumber}`);
+        const data = await response.json();
+
+        if (response.ok && data.reserved) {
+          // 情報パネルを更新
+          updateSeatInfoPanel(seatNumber, data);
+        } else {
+          updateSeatInfoPanel(seatNumber, { reserved: false });
+        }
+      } catch (error) {
+        console.error('座席情報取得エラー:', error);
+        updateSeatInfoPanel(seatNumber, { reserved: false });
+      }
+    }
+
+    /**
+     * 座席情報パネルを表示/更新する関数
+     * @param {string} seatNumber - 座席番号
+     * @param {object} data - 座席データ
+     */
+    function updateSeatInfoPanel(seatNumber, data) {
+      const panel = document.getElementById('seat-info-panel');
+      
+      // 座席番号を表示（座席ラベルを使用）
+      const seatElement = document.getElementById(seatNumber);
+      const seatLabel = seatElement ? seatElement.getAttribute('data-seat-label') : seatNumber;
+      document.querySelector('#seat-number span').textContent = seatLabel;
+
+      console.log('Updating seat info panel:', seatNumber, data);
+
+      if (data && data.reserved) {
+        // 予約済み座席の情報を表示
+        document.querySelector('#student-id span').textContent = data.student_id || '不明';
+        document.querySelector('#user-name span').textContent = data.display_name || data.user_id || '不明';
+        
+        // 予約日時のフォーマット
+        let reservedTimeText = '-';
+        if (data.reserved_time) {
+          try {
+            const date = new Date(data.reserved_time);
+            reservedTimeText = date.toLocaleString('ja-JP');
+          } catch (e) {
+            reservedTimeText = data.reserved_time;
+          }
+        }
+        document.querySelector('#reserved-time span').textContent = reservedTimeText;
+        
+        document.querySelector('#approval-status span').textContent = 
+          data.approved === 1 || data.approved === true ? '承認済み' : '未承認';
+        panel.classList.remove('alert-info');
+        panel.classList.add('alert-warning');
+      } else {
+        // 利用可能な座席
+        document.querySelector('#student-id span').textContent = '-';
+        document.querySelector('#user-name span').textContent = '利用可能';
+        document.querySelector('#reserved-time span').textContent = '-';
+        document.querySelector('#approval-status span').textContent = '-';
+        panel.classList.remove('alert-warning');
+        panel.classList.add('alert-info');
+      }
+      
+    }
+
+    /**
+     * 座席選択時の処理（複数選択対応）
+     */
+    function handleSeatSelection() {
+      // 補助席の選択制限チェック
+      if (this.classList.contains('auxiliary') && !areAllSeatsReserved()) {
+        showToast('補助席は、他のすべての席が予約済みの時のみ選択できます。', 'warning');
+        return;
+      }
+
+      const seatId = parseInt(this.id || this.getAttribute('id'));
+      const seatLabel = this.getAttribute('data-seat-label') || seatId;
+      
+      // 既に選択済みの場合は選択解除
+      if (this.classList.contains('selected')) {
+        this.classList.remove('selected');
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+      } else {
+        // 新しく選択
+        this.classList.add('selected');
+        selectedSeats.push(seatId);
+      }
+      
+      // 選択座席パネルを更新
+      updateSelectedSeatsPanel();
+      
+      // 座席情報パネルを更新
+      if (selectedSeats.length > 0) {
+        updateSeatInfoPanel(seatId, { reserved: false });
+      }
+    }
+
+    /**
+     * トースト通知を表示（スマホ対応）
+     */
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast-notification toast-${type}`;
+      toast.textContent = message;
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: ${type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+        font-size: 14px;
+        max-width: 90%;
+        text-align: center;
+        animation: slideUp 0.3s ease-out;
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // アニメーション用のスタイルを追加
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideUp {
+        from {
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(-50%) translateY(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideDown {
+        from {
+          transform: translateX(-50%) translateY(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    /**
+     * 選択座席パネルを更新
+     */
+    function updateSelectedSeatsPanel() {
+      const panel = document.getElementById('selected-seats-panel');
+      const listElement = document.getElementById('selected-seats-list');
+      
+      if (selectedSeats.length > 0) {
+        selectedSeats.sort((a, b) => a - b);
+        // 座席ラベルを取得して表示
+        const seatLabels = selectedSeats.map(seatId => {
+          const element = document.getElementById(seatId);
+          return element ? element.getAttribute('data-seat-label') : seatId;
+        });
+        listElement.textContent = seatLabels.join(', ');
+        panel.style.display = 'block';
+      } else {
+        listElement.textContent = 'なし';
+        panel.style.display = 'none';
+      }
+    }
+
+    /**
+     * 選択座席をクリア
+     */
+    function clearSelectedSeats() {
+      // すべての選択を解除
+      document.querySelectorAll('.seat.selected').forEach(seat => {
+        seat.classList.remove('selected');
+      });
+      selectedSeats = [];
+      updateSelectedSeatsPanel();
+    }
+
+    /**
+     * 予約モーダルを開く
+     */
+    function openReserveModal() {
+      if (selectedSeats.length === 0) {
+        showToast('座席を選択してください', 'warning');
+        return;
+      }
+      
+      const modalSeatsElement = document.getElementById('modal-selected-seats');
+      selectedSeats.sort((a, b) => a - b);
+      // 座席ラベルを取得して表示
+      const seatLabels = selectedSeats.map(seatId => {
+        const element = document.getElementById(seatId);
+        return element ? element.getAttribute('data-seat-label') : seatId;
+      });
+      modalSeatsElement.textContent = seatLabels.join(', ');
+      
+      $('#reserveModal').modal('show');
+    }
+
+    /**
+     * 予約を送信（管理者として）
+     */
+    async function submitReservation() {
+      if (selectedSeats.length === 0) {
+        showToast('座席を選択してください', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/admin/reservations/api/reserve', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            bus_id: busId,
+            seat_numbers: selectedSeats
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          $('#reserveModal').modal('hide');
+          showToast(result.message || '予約が完了しました', 'success');
+          
+          // 2秒後にページをリロード
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showToast(result.message || '予約に失敗しました', 'warning');
+        }
+      } catch (error) {
+        console.error('予約エラー:', error);
+        showToast('予約処理中にエラーが発生しました', 'warning');
+      }
+    }
+
+    /**
+     * イベントリスナーの設定
+     */
+    function initializeEventListeners() {
+      // 通常席のクリックイベント
+      Array.from(seats).forEach(seat => {
+        seat.addEventListener('click', handleSeatSelection);
+        // タッチデバイス用の追加イベント
+        seat.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          handleSeatSelection.call(this);
+        }, { passive: false });
+      });
+
+      // 予約済み座席のクリックイベント（admin/driverのみ）
+      if (isPrivilegedUser) {
+        Array.from(reservedSeats).forEach(seat => {
+          seat.addEventListener('click', function() {
+            const seatId = this.id || this.getAttribute('id');
+            if (seatId) {
+              showReservationInfo(seatId);
+            }
+          });
+          // タッチデバイス用の追加イベント
+          seat.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const seatId = this.id || this.getAttribute('id');
+            if (seatId) {
+              showReservationInfo(seatId);
+            }
+          }, { passive: false });
+        });
+      }
+    }
+
+    /**
+     * ページ表示時の処理（ブラウザキャッシュ対策）
+     */
+    window.onpageshow = function(event) {
+      if (event.persisted) {
+        window.location.href = "{{ url_for('index.index') }}";
+      }
+    };
+
+    // イベントリスナーの初期化
+    initializeEventListeners();
+  </script>
+
+</body>
+</html>
+

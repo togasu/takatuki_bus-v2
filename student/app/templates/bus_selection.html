@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/header_footer.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/choice.css')}}">
+    <title>Sojo Bus</title>
+    <style>
+      body {
+        background: #ffffff;
+        min-height: 100vh;
+        padding-bottom: 180px;
+      }
+
+      .container {
+        margin-top: 90px;
+        max-width: 900px;
+      }
+
+      .page-title {
+        color: #2d3436;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 30px;
+        animation: fadeInDown 0.6s ease-out;
+      }
+
+      .bus-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out backwards;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .bus-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+      }
+
+      .bus-card:hover::before {
+        left: 100%;
+      }
+
+      .bus-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+      }
+
+      .bus-card:active {
+        transform: translateY(-2px);
+      }
+
+      .bus-card.waiting {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      }
+
+      .bus-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .bus-icon {
+        display: none;
+      }
+
+      .waiting .bus-icon {
+        display: none;
+      }
+
+      .bus-time {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2d3436;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .time-icon {
+        font-size: 1.5rem;
+      }
+
+      .bus-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .bus-number {
+        display: inline-flex;
+        align-items: center;
+        background: #f1f3f5;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #495057;
+        gap: 6px;
+      }
+
+      .seats-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .seats-badge {
+        background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 8px rgba(0,184,148,0.3);
+      }
+
+      .waiting-badge {
+        background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+        box-shadow: 0 4px 8px rgba(255,118,117,0.3);
+      }
+
+      .seats-icon {
+        font-size: 1.1rem;
+      }
+
+      .no-bus-alert {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .no-bus-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #d63031;
+      }
+
+      .no-bus-text {
+        font-size: 1.3rem;
+        color: #2d3436;
+        line-height: 1.8;
+        margin: 0;
+      }
+
+      .back-button {
+        background: #6c757d;
+        color: white;
+        border: 2px solid #6c757d;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        width: 100%;
+        max-width: 300px;
+        margin: 40px auto 40px;
+        display: block;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .back-button:hover {
+        background: #5a6268;
+        border-color: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      }
+
+      .back-button:active {
+        transform: translateY(0);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* スマホ対応 */
+      @media (max-width: 768px) {
+        .container {
+          margin-top: 70px;
+          padding: 15px;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+          margin-bottom: 20px;
+        }
+
+        .bus-card {
+          padding: 16px;
+          border-radius: 12px;
+          margin-bottom: 12px;
+        }
+
+        .bus-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 20px;
+        }
+
+        .bus-time {
+          font-size: 1.4rem;
+        }
+
+        .time-icon {
+          font-size: 1.2rem;
+        }
+
+        .bus-info {
+          gap: 10px;
+        }
+
+        .bus-number {
+          font-size: 0.85rem;
+          padding: 5px 10px;
+        }
+
+        .seats-badge {
+          font-size: 0.9rem;
+          padding: 6px 12px;
+        }
+
+        .no-bus-alert {
+          padding: 30px 20px;
+        }
+
+        .no-bus-icon {
+          font-size: 3rem;
+          margin-bottom: 15px;
+        }
+
+        .no-bus-text {
+          font-size: 1.1rem;
+        }
+
+        .back-button {
+          padding: 12px 24px;
+          font-size: 1.1rem;
+          max-width: 100%;
+          margin-top: 20px;
+        }
+      }
+
+      @media (max-width: 375px) {
+        .bus-time {
+          font-size: 1.3rem;
+        }
+
+        .bus-number {
+          font-size: 0.8rem;
+        }
+
+        .seats-badge {
+          font-size: 0.85rem;
+        }
+      }
+
+      /* タッチデバイス用 */
+      @media (hover: none) {
+        .bus-card:hover {
+          transform: none;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .bus-card:active {
+          transform: scale(0.98);
+          opacity: 0.9;
+        }
+
+        .back-button:hover {
+          background: #6c757d;
+          transform: none;
+        }
+
+        .back-button:active {
+          background: #5a6268;
+          opacity: 0.9;
+        }
+      }
+
+      /* 遅延アニメーション */
+      {% for i in range(10) %}
+      .bus-card:nth-child({{ i + 1 }}) {
+        animation-delay: {{ i * 0.1 }}s;
+      }
+      {% endfor %}
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <a href="{{url_for('main.personal')}}" class="header-title">Sojo Bus</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1 class="page-title">{{day}}のバス一覧</h1>
+
+      <div class="bus-list">
+        {% if bus_data|length == 0 %}
+          <div class="no-bus-alert">
+            <div class="no-bus-icon">😢</div>
+            <p class="no-bus-text">
+              {{ day }} {{ time }}以降には<br>{{ yukisaki }}バスが運行されていません。
+            </p>
+          </div>
+        {% else %}
+          {% for data in bus_data %}
+            {% if data['status'] == 0 %}
+              <div class="bus-card" data-url="{{ url_for('booking.seat', bus_id=data['id']) }}">
+                <div class="bus-card-header">
+                  <div class="bus-icon">🚌</div>
+                  <div class="bus-time">
+                    <span class="time-icon">🕐</span>
+                    {{ data['departure_time'] }}発
+                  </div>
+                </div>
+                <div class="bus-info">
+                  <div class="bus-number">
+                    <span>🚍</span>
+                    {{ data['busid'] }}号車
+                  </div>
+                  <div class="seats-info">
+                    <span class="seats-badge">
+                      <span class="seats-icon">💺</span>
+                      空席 {{ data['busseat'] }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="bus-card waiting" data-url="{{ url_for('booking.seat', bus_id=data['id']) }}">
+                <div class="bus-card-header">
+                  <div class="bus-icon">🚌</div>
+                  <div class="bus-time">
+                    <span class="time-icon">🕐</span>
+                    {{ data['departure_time'] }}発
+                  </div>
+                </div>
+                <div class="bus-info">
+                  <div class="bus-number">
+                    <span>🚍</span>
+                    {{ data['busid'] }}号車
+                  </div>
+                  <div class="seats-info">
+                    <span class="seats-badge waiting-badge">
+                      <span class="seats-icon">⏳</span>
+                      キャンセル待ち
+                    </span>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <button class="back-button redirect-btn" type="button" data-url="{{ url_for('booking.choice') }}">
+        ← 戻る
+      </button>
+    </main>
+
+    <footer class="footer">
+      <div id=line></div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+      // data-url属性を使用して適切にリダイレクトする
+      document.addEventListener('DOMContentLoaded', function() {
+        const redirectBtns = document.querySelectorAll('.redirect-btn');
+        const busCards = document.querySelectorAll('.bus-card');
+        
+        // ボタンのクリックイベント
+        redirectBtns.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+              window.location.href = url;
+            }
+          });
+        });
+
+        // バスカードのクリックイベント
+        busCards.forEach(function(card) {
+          card.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+              // クリックアニメーション
+              this.style.transform = 'scale(0.98)';
+              setTimeout(() => {
+                window.location.href = url;
+              }, 150);
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

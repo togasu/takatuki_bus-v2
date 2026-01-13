@@ -1,0 +1,70 @@
+/* QA.html専用スタイル */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333333;
+}
+
+main {
+    margin-top: 80px;
+    padding: 20px;
+    text-align: center;
+    justify-content: center;
+}
+
+.main {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 30px;
+}
+
+.qa-item {
+    background: white;
+    margin-bottom: 20px;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.qa-item h3 {
+    color: #1976D2;
+    font-size: 20px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.qa-item p {
+    color: #555;
+    font-size: 18px;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.header-title-sojobus {
+    color: #333333;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.header-title-sojobus:hover {
+    color: #333333;
+}
+
+.nav-items__item a {
+    color: #333333;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.nav-items__item a:hover {
+    color: #333333;
+}

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計情報 - Sojo Bus Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .stats-card {
+            transition: transform 0.2s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .realtime-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .nav-tabs .nav-link {
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 2px solid #0d6efd;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .error-message {
+            display: none;
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+        }
+        .granularity-controls {
+            margin-bottom: 15px;
+        }
+        .realtime-badge {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/">
+                <i class="fas fa-arrow-left me-2"></i>Sojo Bus Admin
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-chart-bar"></i> 統計情報
+                </span>
+                <span class="badge realtime-badge" id="realtime-status">リアルタイム更新中</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- リアルタイム統計カード -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-tachometer-alt"></i> リアルタイム統計</h2>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-primary">アクティブ予約</h5>
+                        <h2 id="active-reservations" class="text-primary">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-warning">承認待ち</h5>
+                        <h2 id="pending-reservations" class="text-warning">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-info">今日のバス</h5>
+                        <h2 id="total-buses-today" class="text-info">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-success">現在の乗客</h5>
+                        <h2 id="current-passengers" class="text-success">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-danger">今日のキャンセル</h5>
+                        <h2 id="cancellations-today" class="text-danger">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-secondary">システム状態</h5>
+                        <span id="system-status" class="badge bg-success">正常</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計タブ -->
+        <ul class="nav nav-tabs" id="statisticsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="user-registrations-tab" data-bs-toggle="tab" 
+                        data-bs-target="#user-registrations" type="button" role="tab">
+                    <i class="fas fa-user-plus"></i> 登録者推移
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bus-reservations-tab" data-bs-toggle="tab" 
+                        data-bs-target="#bus-reservations" type="button" role="tab">
+                    <i class="fas fa-calendar-alt"></i> 予約時間統計
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bus-boardings-tab" data-bs-toggle="tab" 
+                        data-bs-target="#bus-boardings" type="button" role="tab">
+                    <i class="fas fa-bus"></i> 乗車時刻統計
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cancellations-tab" data-bs-toggle="tab" 
+                        data-bs-target="#cancellations" type="button" role="tab">
+                    <i class="fas fa-times-circle"></i> キャンセル統計
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="statisticsTabContent">
+            <!-- 登録者推移タブ -->
+            <div class="tab-pane fade show active" id="user-registrations" role="tabpanel">
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-user-plus"></i> 学期期間中における登録者の推移</h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="exportData('user_registrations')">
+                                <i class="fas fa-download"></i> CSV出力
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="registration-start-date">開始日:</label>
+                                <input type="date" id="registration-start-date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="registration-end-date">終了日:</label>
+                                <input type="date" id="registration-end-date" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mb-3" onclick="loadUserRegistrations()">
+                            <i class="fas fa-sync"></i> 更新
+                        </button>
+                        <div class="loading-spinner" id="registration-loading">
+                            <i class="fas fa-spinner fa-spin"></i> データを読み込み中...
+                        </div>
+                        <div class="error-message" id="registration-error"></div>
+                        <div class="chart-container">
+                            <canvas id="userRegistrationsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 予約時間統計タブ -->
+            <div class="tab-pane fade" id="bus-reservations" role="tabpanel">
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-calendar-alt"></i> バス予約時間統計</h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="exportData('bus_reservations')">
+                                <i class="fas fa-download"></i> CSV出力
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="granularity-controls">
+                            <label>表示単位:</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="reservation-granularity" id="res-1min" value="1min" checked>
+                                <label class="btn btn-outline-primary" for="res-1min">1分単位</label>
+                                
+                                <input type="radio" class="btn-check" name="reservation-granularity" id="res-1hour" value="1hour">
+                                <label class="btn btn-outline-primary" for="res-1hour">1時間単位</label>
+                                
+                                <input type="radio" class="btn-check" name="reservation-granularity" id="res-1day" value="1day">
+                                <label class="btn btn-outline-primary" for="res-1day">1日単位</label>
+                                
+                                <input type="radio" class="btn-check" name="reservation-granularity" id="res-1week" value="1week">
+                                <label class="btn btn-outline-primary" for="res-1week">週単位</label>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="reservation-date">対象日:</label>
+                                <input type="date" id="reservation-date" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mb-3" onclick="loadBusReservations()">
+                            <i class="fas fa-sync"></i> 更新
+                        </button>
+                        <div class="loading-spinner" id="reservation-chart-loading">
+                            <i class="fas fa-spinner fa-spin"></i> データを読み込み中...
+                        </div>
+                        <div class="error-message" id="reservation-chart-error"></div>
+                        <div class="chart-container">
+                            <canvas id="busReservationsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 乗車時刻統計タブ -->
+            <div class="tab-pane fade" id="bus-boardings" role="tabpanel">
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-bus"></i> バス乗車時刻統計</h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="exportData('bus_boardings')">
+                                <i class="fas fa-download"></i> CSV出力
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="granularity-controls">
+                            <label>表示単位:</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="boarding-granularity" id="board-1min" value="1min" checked>
+                                <label class="btn btn-outline-primary" for="board-1min">1分単位</label>
+                                
+                                <input type="radio" class="btn-check" name="boarding-granularity" id="board-1hour" value="1hour">
+                                <label class="btn btn-outline-primary" for="board-1hour">1時間単位</label>
+                                
+                                <input type="radio" class="btn-check" name="boarding-granularity" id="board-1day" value="1day">
+                                <label class="btn btn-outline-primary" for="board-1day">1日単位</label>
+                                
+                                <input type="radio" class="btn-check" name="boarding-granularity" id="board-1week" value="1week">
+                                <label class="btn btn-outline-primary" for="board-1week">週単位</label>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="boarding-date">対象日:</label>
+                                <input type="date" id="boarding-date" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mb-3" onclick="loadBusBoardings()">
+                            <i class="fas fa-sync"></i> 更新
+                        </button>
+                        <div class="loading-spinner" id="boarding-loading">
+                            <i class="fas fa-spinner fa-spin"></i> データを読み込み中...
+                        </div>
+                        <div class="error-message" id="boarding-error"></div>
+                        <div class="chart-container">
+                            <canvas id="busBoardingsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- キャンセル統計タブ -->
+            <div class="tab-pane fade" id="cancellations" role="tabpanel">
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-times-circle"></i> キャンセル時刻統計</h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="exportData('cancellations')">
+                                <i class="fas fa-download"></i> CSV出力
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="granularity-controls">
+                            <label>表示単位:</label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="cancel-granularity" id="cancel-1min" value="1min" checked>
+                                <label class="btn btn-outline-primary" for="cancel-1min">1分単位</label>
+                                
+                                <input type="radio" class="btn-check" name="cancel-granularity" id="cancel-1hour" value="1hour">
+                                <label class="btn btn-outline-primary" for="cancel-1hour">1時間単位</label>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="cancel-date">対象日:</label>
+                                <input type="date" id="cancel-date" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mb-3" onclick="loadCancellations()">
+                            <i class="fas fa-sync"></i> 更新
+                        </button>
+                        <div class="loading-spinner" id="cancel-loading">
+                            <i class="fas fa-spinner fa-spin"></i> データを読み込み中...
+                        </div>
+                        <div class="error-message" id="cancel-error"></div>
+                        <div class="chart-container">
+                            <canvas id="cancellationsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // グローバル変数
+        let userRegistrationsChart = null;
+        let busReservationsChart = null;
+        let busBoardingsChart = null;
+        let cancellationsChart = null;
+        let realtimeInterval = null;
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 今日の日付を設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reservation-date').value = today;
+            document.getElementById('boarding-date').value = today;
+            document.getElementById('cancel-date').value = today;
+
+            // 学期期間のデフォルト設定
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            let startDate, endDate;
+            
+            if (currentDate.getMonth() >= 3) { // 4月以降
+                startDate = `${currentYear}-04-01`;
+                endDate = `${currentYear + 1}-01-31`;
+            } else { // 1-3月
+                startDate = `${currentYear - 1}-04-01`;
+                endDate = `${currentYear}-01-31`;
+            }
+            
+            document.getElementById('registration-start-date').value = startDate;
+            document.getElementById('registration-end-date').value = endDate;
+
+            // 初期データ読み込み
+            loadUserRegistrations();
+            startRealtimeUpdates();
+
+            // タブ変更時のイベント
+            document.getElementById('bus-reservations-tab').addEventListener('shown.bs.tab', function() {
+                if (!busReservationsChart) {
+                    loadBusReservations();
+                }
+            });
+
+            document.getElementById('bus-boardings-tab').addEventListener('shown.bs.tab', function() {
+                if (!busBoardingsChart) {
+                    loadBusBoardings();
+                }
+            });
+
+            document.getElementById('cancellations-tab').addEventListener('shown.bs.tab', function() {
+                if (!cancellationsChart) {
+                    loadCancellations();
+                }
+            });
+
+            // 粒度変更イベント
+            document.querySelectorAll('input[name="reservation-granularity"]').forEach(radio => {
+                radio.addEventListener('change', loadBusReservations);
+            });
+
+            document.querySelectorAll('input[name="boarding-granularity"]').forEach(radio => {
+                radio.addEventListener('change', loadBusBoardings);
+            });
+
+            document.querySelectorAll('input[name="cancel-granularity"]').forEach(radio => {
+                radio.addEventListener('change', loadCancellations);
+            });
+        });
+
+        // リアルタイム更新開始
+        function startRealtimeUpdates() {
+            loadRealtimeData();
+            realtimeInterval = setInterval(loadRealtimeData, 30000); // 30秒間隔
+        }
+
+        // リアルタイムデータ読み込み
+        function loadRealtimeData() {
+            fetch('/admin/statistics/realtime')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Realtime data error:', data.error);
+                        return;
+                    }
+
+                    // 各要素を更新
+                    document.getElementById('active-reservations').textContent = data.active_reservations || '-';
+                    document.getElementById('pending-reservations').textContent = data.pending_reservations || '-';
+                    document.getElementById('total-buses-today').textContent = data.total_buses_today || '-';
+                    document.getElementById('current-passengers').textContent = data.current_passengers || '-';
+                    document.getElementById('cancellations-today').textContent = data.cancellations_today || '-';
+                    
+                    const statusElement = document.getElementById('system-status');
+                    const status = data.system_status || 'operational';
+                    statusElement.textContent = status === 'operational' ? '正常' : '異常';
+                    statusElement.className = status === 'operational' ? 'badge bg-success' : 'badge bg-danger';
+                })
+                .catch(error => {
+                    console.error('Error loading realtime data:', error);
+                });
+        }
+
+        // ユーザー登録統計読み込み
+        function loadUserRegistrations() {
+            const startDate = document.getElementById('registration-start-date').value;
+            const endDate = document.getElementById('registration-end-date').value;
+            
+            showLoading('registration-loading');
+            hideError('registration-error');
+
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+
+            fetch(`/admin/statistics/user-registrations?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading('registration-loading');
+                    
+                    if (data.error) {
+                        showError('registration-error', data.error);
+                        return;
+                    }
+
+                    if (userRegistrationsChart) {
+                        userRegistrationsChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('userRegistrationsChart').getContext('2d');
+                    userRegistrationsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: data.chart_data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    position: 'left'
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false,
+                                    },
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `登録者推移 (${data.start_date} - ${data.end_date})`
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    hideLoading('registration-loading');
+                    showError('registration-error', 'データの読み込みに失敗しました: ' + error.message);
+                });
+        }
+
+        // バス予約統計読み込み
+        function loadBusReservations() {
+            const date = document.getElementById('reservation-date').value;
+            const granularity = document.querySelector('input[name="reservation-granularity"]:checked').value;
+            
+            showLoading('reservation-chart-loading');
+            hideError('reservation-chart-error');
+
+            const params = new URLSearchParams();
+            if (date) params.append('date', date);
+            params.append('granularity', granularity);
+
+            fetch(`/admin/statistics/bus-reservations?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading('reservation-chart-loading');
+                    
+                    if (data.error) {
+                        showError('reservation-chart-error', data.error);
+                        return;
+                    }
+
+                    if (busReservationsChart) {
+                        busReservationsChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('busReservationsChart').getContext('2d');
+                    busReservationsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: data.chart_data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: data.chart_title
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    hideLoading('reservation-chart-loading');
+                    showError('reservation-chart-error', 'データの読み込みに失敗しました: ' + error.message);
+                });
+        }
+
+        // バス乗車統計読み込み
+        function loadBusBoardings() {
+            const date = document.getElementById('boarding-date').value;
+            const granularity = document.querySelector('input[name="boarding-granularity"]:checked').value;
+            
+            showLoading('boarding-loading');
+            hideError('boarding-error');
+
+            const params = new URLSearchParams();
+            if (date) params.append('date', date);
+            params.append('granularity', granularity);
+
+            fetch(`/admin/statistics/bus-boardings?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading('boarding-loading');
+                    
+                    if (data.error) {
+                        showError('boarding-error', data.error);
+                        return;
+                    }
+
+                    if (busBoardingsChart) {
+                        busBoardingsChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('busBoardingsChart').getContext('2d');
+                    busBoardingsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: data.chart_data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: data.chart_title
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    hideLoading('boarding-loading');
+                    showError('boarding-error', 'データの読み込みに失敗しました: ' + error.message);
+                });
+        }
+
+        // キャンセル統計読み込み
+        function loadCancellations() {
+            const date = document.getElementById('cancel-date').value;
+            const granularity = document.querySelector('input[name="cancel-granularity"]:checked').value;
+            
+            showLoading('cancel-loading');
+            hideError('cancel-error');
+
+            const params = new URLSearchParams();
+            if (date) params.append('date', date);
+            params.append('granularity', granularity);
+
+            fetch(`/admin/statistics/cancellations?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading('cancel-loading');
+                    
+                    if (data.error) {
+                        showError('cancel-error', data.error);
+                        return;
+                    }
+
+                    if (cancellationsChart) {
+                        cancellationsChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('cancellationsChart').getContext('2d');
+                    cancellationsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: data.chart_data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: data.chart_title
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    hideLoading('cancel-loading');
+                    showError('cancel-error', 'データの読み込みに失敗しました: ' + error.message);
+                });
+        }
+
+        // CSV出力
+        function exportData(dataType) {
+            let params = new URLSearchParams();
+            
+            switch(dataType) {
+                case 'user_registrations':
+                    const startDate = document.getElementById('registration-start-date').value;
+                    const endDate = document.getElementById('registration-end-date').value;
+                    if (startDate) params.append('start_date', startDate);
+                    if (endDate) params.append('end_date', endDate);
+                    break;
+                    
+                case 'bus_reservations':
+                    const resDate = document.getElementById('reservation-date').value;
+                    const resGranularity = document.querySelector('input[name="reservation-granularity"]:checked').value;
+                    if (resDate) params.append('date', resDate);
+                    params.append('granularity', resGranularity);
+                    break;
+                    
+                case 'bus_boardings':
+                    const boardDate = document.getElementById('boarding-date').value;
+                    const boardGranularity = document.querySelector('input[name="boarding-granularity"]:checked').value;
+                    if (boardDate) params.append('date', boardDate);
+                    params.append('granularity', boardGranularity);
+                    break;
+                    
+                case 'cancellations':
+                    const cancelDate = document.getElementById('cancel-date').value;
+                    const cancelGranularity = document.querySelector('input[name="cancel-granularity"]:checked').value;
+                    if (cancelDate) params.append('date', cancelDate);
+                    params.append('granularity', cancelGranularity);
+                    break;
+            }
+            
+            const url = `/admin/statistics/export/${dataType}?${params.toString()}`;
+            window.open(url, '_blank');
+        }
+
+        // ユーティリティ関数
+        function showLoading(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function hideError(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // ページを離れる際のクリーンアップ
+        window.addEventListener('beforeunload', function() {
+            if (realtimeInterval) {
+                clearInterval(realtimeInterval);
+            }
+        });
+    </script>
+</body>
+</html>

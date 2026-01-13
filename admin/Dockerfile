@@ -19,11 +19,15 @@ COPY app /app/app
 COPY app_run.py /app/
 COPY uwsgi.ini /app/
 COPY init_migration.py /app/
+COPY auto_fix_tables.py /app/
+COPY create_test_admin.py /app/
+COPY start_admin.sh /app/
 
 # ディレクトリの作成と権限設定
 RUN mkdir -p /app/logs /app/migrations && \
     chown -R uwsgi:uwsgi /app && \
-    chmod -R 755 /app
+    chmod -R 755 /app && \
+    chmod +x /app/start_admin.sh
 
 # Flask-Migrate用の環境変数
 ENV FLASK_APP=app_run.py
@@ -31,5 +35,5 @@ ENV FLASK_APP=app_run.py
 # 非rootで実行
 USER uwsgi
 
-# マイグレーション初期化とサービス起動
-CMD ["sh", "-c", "python init_migration.py && uwsgi --ini uwsgi.ini"]
+# 柔軟な起動スクリプト使用
+CMD ["/app/start_admin.sh"]

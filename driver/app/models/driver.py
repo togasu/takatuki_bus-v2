@@ -1,133 +1,89 @@
 from app.database import db
 from datetime import datetime
-from flask import Blueprint, request, jsonify
-from app.auth import admin_required
 from app.utils.now_jst import now_jst
 from app.utils.auth_utils import PasswordManager
+import hashlib
+import bcrypt
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Driver(db.Model):
-    """ドライバーテーブル"""
+    """ドライバーテーブル - ドライバーサービス固有のテーブル"""
     __tablename__ = 'drivers'
     
     id = db.Column(db.Integer, primary_key=True)
-    driver_id = db.Column(db.String(20), unique=True, nullable=False)  # ドライバーID
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
-    license_number = db.Column(db.String(50), unique=True, nullable=False)  # 運転免許証番号
-    license_expiry = db.Column(db.Date, nullable=False)  # 免許証有効期限
-    hire_date = db.Column(db.Date, nullable=False)  # 雇用日
-    password_hash = db.Column(db.String(255))  # パスワードハッシュ
-    password_salt = db.Column(db.String(255))  # パスワードsalt
+    username = db.Column(db.String(80), unique=True, nullable=False)  # ユーザー名
+    number = db.Column(db.Integer, unique=True, nullable=False)  # 運転手番号
+    password = db.Column(db.String, unique=False, nullable=False)  # パスワード(暗号化)
+    salt = db.Column(db.String, unique=False, nullable=False)  # パスワードの暗号化に使用するsalt
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=now_jst)
     updated_at = db.Column(db.DateTime, default=now_jst, onupdate=now_jst)
     
     def __repr__(self):
-        return f'<Driver {self.driver_id}: {self.name}>'
+        return f'<Driver {self.username}: {self.number}>'
     
     def set_password(self, password: str):
         """パスワードを設定（ハッシュ化とsalt生成）"""
         if password:
             salt, password_hash = PasswordManager.hash_password(password)
-            self.password_salt = salt
-            self.password_hash = password_hash
+            self.salt = salt
+            self.password = password_hash
     
-    def check_password(self, password: str) -> bool:
-        """パスワード検証"""
-        if not self.password_hash or not self.password_salt:
-            # パスワードが設定されていない場合は、driver_idのみで認証（デモ用）
-            return bool(password)
-        return PasswordManager.verify_password(password, self.password_salt, self.password_hash)
+    def verify_password(self, password: str) -> bool:
+        """パスワード検証（bcrypt使用）"""
+        if not self.password or not self.salt:
+            return False
+        
+        try:
+            # bcrypt形式のハッシュを検証
+            # stored_passwordにはすでにsaltが含まれているため、stored_saltは使用しない
+            stored_hash_bytes = self.password.encode('utf-8')
+            provided_bytes = password.encode('utf-8')
+            return bcrypt.checkpw(provided_bytes, stored_hash_bytes)
+        except Exception as e:
+            logger.error(f"Password verification error for {self.username}: {e}")
+            return False
 
-# Blueprint for Driver API
-driver_bp = Blueprint("driver_api", __name__, url_prefix="/api/drivers")
+class QA(db.Model):
+    """Q&Aを格納するテーブル"""
+    __tablename__ = 'qa'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), unique=False, nullable=False)  # 質問
+    answer = db.Column(db.String(255), unique=False, nullable=False)  # 回答
+    createuser = db.Column(db.String(80), unique=False, nullable=False)  # 作成者
+    createdate = db.Column(db.DateTime, nullable=False, default=now_jst)  # 作成日時
 
-@driver_bp.route("", methods=["GET"])
-@admin_required
-def get_drivers():
-    """ドライバー一覧を取得"""
-    drivers = Driver.query.all()
-    return jsonify([{
-        "id": d.id,
-        "driver_id": d.driver_id,
-        "name": d.name,
-        "email": d.email,
-        "phone": d.phone,
-        "license_number": d.license_number,
-        "license_expiry": d.license_expiry.isoformat() if d.license_expiry else None,
-        "hire_date": d.hire_date.isoformat() if d.hire_date else None,
-        "is_active": d.is_active,
-        "created_at": d.created_at.isoformat() if d.created_at else None
-    } for d in drivers])
+# Hashテーブルは削除（Redis使用）
 
-@driver_bp.route("", methods=["POST"])
-@admin_required
-def create_driver():
-    """ドライバーを作成"""
-    data = request.get_json()
-    
-    required_fields = ["driver_id", "name", "email", "phone", "license_number", "license_expiry", "hire_date"]
-    if not data or not all(k in data for k in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
-    
-    try:
-        driver = Driver(
-            driver_id=data["driver_id"],
-            name=data["name"],
-            email=data["email"],
-            phone=data["phone"],
-            license_number=data["license_number"],
-            license_expiry=datetime.strptime(data["license_expiry"], "%Y-%m-%d").date(),
-            hire_date=datetime.strptime(data["hire_date"], "%Y-%m-%d").date(),
-            is_active=data.get("is_active", True)
-        )
-        db.session.add(driver)
-        db.session.commit()
-        
-        return jsonify({
-            "id": driver.id,
-            "driver_id": driver.driver_id,
-            "name": driver.name,
-            "message": "Driver created successfully"
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+# バスの情報を格納するテーブル
+class Bus(db.Model):
+    __bind_key__ = "db3"
+    id = db.Column(db.Integer, primary_key=True)
+    busid = db.Column(db.Integer, nullable=False)
+    departure_time = db.Column(db.DateTime, nullable=False)
+    seats = db.Column(db.Integer, nullable=False)
+    ud = db.Column(db.Integer, nullable=False)  # 上りなら0、下りなら1
+    bookable_time = db.Column(db.Integer, nullable=False)  # デフォルト0,予約可能時間に合わせて変更
+    status = db.Column(db.Integer, nullable=False)
 
-@driver_bp.route("/<int:driver_id>", methods=["PUT"])
-@admin_required
-def update_driver(driver_id):
-    """ドライバー情報を更新"""
-    driver = Driver.query.get_or_404(driver_id)
-    data = request.get_json()
-    
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
-    
-    try:
-        if "name" in data:
-            driver.name = data["name"]
-        if "email" in data:
-            driver.email = data["email"]
-        if "phone" in data:
-            driver.phone = data["phone"]
-        if "license_expiry" in data:
-            driver.license_expiry = datetime.strptime(data["license_expiry"], "%Y-%m-%d").date()
-        if "is_active" in data:
-            driver.is_active = data["is_active"]
-        
-        driver.updated_at = now_jst()
-        db.session.commit()
-        
-        return jsonify({
-            "id": driver.id,
-            "driver_id": driver.driver_id,
-            "name": driver.name,
-            "message": "Driver updated successfully"
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+class Seat(db.Model):
+    __bind_key__ = "db3"
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, nullable=False)
+    bus_id = db.Column(db.Integer, nullable=False) # Bus.idを入れている
+    reservations = db.relationship('Reservation', backref='seat', lazy=True)
+
+class Reservation(db.Model):
+    __bind_key__ = "db3"
+    __tablename__ = 'Reservation' #テーブル名を指定
+    id = db.Column(db.Integer, primary_key=True)
+    seat_number = db.Column(db.Integer, db.ForeignKey('seat.number'), nullable=False)
+    bus_id = db.Column(db.Integer, db.ForeignKey('bus.id'), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
+    approved = db.Column(db.Integer, nullable=False) # 0なら未認証(デフォルト)、1なら認証済み
+    reserved_time = db.Column(db.DateTime)
+
+

@@ -42,11 +42,51 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to create student: {e}")
             return None
     
+    def get_student_by_id(self, student_id):
+        """特定の学生情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/students/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get student {student_id}: {e}")
+            return None
+    
+    def update_student(self, student_id, student_data):
+        """学生情報を更新"""
+        try:
+            response = requests.put(
+                f'http://student:5000/api/students/{student_id}',
+                json=student_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update student {student_id}: {e}")
+            return None
+    
+    def delete_student(self, student_id):
+        """学生を削除"""
+        try:
+            response = requests.delete(
+                f'http://student:5000/api/students/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete student {student_id}: {e}")
+            return None
+    
     def get_buses(self):
         """バス一覧を取得"""
         try:
             response = requests.get(
-                'http://student:5000/api/buses',
+                'http://student:5000/api/management/buses',
                 headers=self.headers,
                 timeout=30
             )
@@ -55,12 +95,33 @@ class AdminAPIClient:
             current_app.logger.error(f"Failed to get buses: {e}")
             return None
     
-    def get_drivers(self):
+    def create_bus(self, bus_data):
+        """バスを作成"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/management/buses',
+                json=bus_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 201 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to create bus: {e}")
+            return None
+    
+    def get_drivers(self, is_active=None, search_query=None):
         """ドライバー一覧を取得"""
         try:
+            params = {}
+            if is_active is not None:
+                params['is_active'] = 'true' if is_active else 'false'
+            if search_query:
+                params['search'] = search_query
+            
             response = requests.get(
                 'http://driver:5000/api/drivers',
                 headers=self.headers,
+                params=params,
                 timeout=30
             )
             return response.json() if response.status_code == 200 else None
@@ -81,6 +142,666 @@ class AdminAPIClient:
         except Exception as e:
             current_app.logger.error(f"Failed to create driver: {e}")
             return None
+    
+    def get_driver_by_id(self, driver_id):
+        """特定のドライバー情報を取得"""
+        try:
+            response = requests.get(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver {driver_id}: {e}")
+            return None
+    
+    def update_driver(self, driver_id, driver_data):
+        """ドライバー情報を更新"""
+        try:
+            response = requests.put(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                json=driver_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update driver {driver_id}: {e}")
+            return None
+    
+    def delete_driver(self, driver_id):
+        """ドライバーを削除"""
+        try:
+            response = requests.delete(
+                f'http://driver:5000/api/drivers/{driver_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete driver {driver_id}: {e}")
+            return None
+    
+    def toggle_driver_status(self, driver_id):
+        """ドライバーのアクティブ状態を切り替え"""
+        try:
+            response = requests.post(
+                f'http://driver:5000/api/drivers/{driver_id}/toggle-status',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to toggle driver status {driver_id}: {e}")
+            return None
+    
+    # Driver Device管理API
+    def get_driver_devices(self, driver_id=None, is_active=None):
+        """ドライバーデバイス一覧を取得"""
+        try:
+            params = {}
+            if driver_id is not None:
+                params['driver_id'] = driver_id
+            if is_active is not None:
+                params['is_active'] = 'true' if is_active else 'false'
+            
+            response = requests.get(
+                'http://driver:5000/api/driver-devices',
+                headers=self.headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                current_app.logger.info(f"Driver devices response type: {type(data)}")
+                return data
+            else:
+                current_app.logger.error(f"Failed to get driver devices: HTTP {response.status_code}")
+                return None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver devices: {e}", exc_info=True)
+            return None
+    
+    def get_driver_device_by_id(self, device_id):
+        """特定のドライバーデバイス情報を取得"""
+        try:
+            response = requests.get(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to get driver device {device_id}: {e}")
+            return None
+    
+    def create_driver_device(self, device_data):
+        """ドライバーデバイスを作成"""
+        try:
+            response = requests.post(
+                'http://driver:5000/api/driver-devices',
+                json=device_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 201 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to create driver device: {e}")
+            return None
+    
+    def update_driver_device(self, device_id, device_data):
+        """ドライバーデバイス情報を更新"""
+        try:
+            response = requests.put(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                json=device_data,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to update driver device {device_id}: {e}")
+            return None
+    
+    def toggle_driver_device_status(self, device_id):
+        """ドライバーデバイスのアクティブ状態を切り替え"""
+        try:
+            response = requests.post(
+                f'http://driver:5000/api/driver-devices/{device_id}/toggle-status',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to toggle driver device status {device_id}: {e}")
+            return None
+    
+    def delete_driver_device(self, device_id):
+        """ドライバーデバイスを削除"""
+        try:
+            response = requests.delete(
+                f'http://driver:5000/api/driver-devices/{device_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete driver device {device_id}: {e}")
+            return None
+
+    # 学生管理API
+    def get_all_students(self, page=1, per_page=20):
+        """全学生一覧を取得"""
+        try:
+            params = {'page': page, 'per_page': per_page}
+            response = requests.get(
+                'http://student:5000/api/management/all_students',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for get all students: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error("Connection timeout for get all students")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error("Connection error for get all students")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to get all students: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def search_student(self, student_id=None, username=None):
+        """学生を検索"""
+        try:
+            params = {}
+            if student_id:
+                params['student_id'] = student_id
+            elif username:
+                params['username'] = username
+            
+            response = requests.get(
+                'http://student:5000/api/management/search_student',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to search student: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def delete_student_account(self, student_id):
+        """学生アカウントを削除"""
+        try:
+            response = requests.delete(
+                'http://student:5000/api/management/delete_student',
+                json={'student_id': student_id},
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def clear_student_penalty(self, student_id):
+        """学生のペナルティを解除"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/management/clear_penalty',
+                json={'student_id': student_id},
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # レスポンスの状態コードをチェック
+            if response.status_code == 404:
+                return {'success': False, 'message': 'ペナルティ解除APIが見つかりません'}
+            elif response.status_code == 400:
+                return {'success': False, 'message': 'リクエストデータが不正です'}
+            elif response.status_code == 500:
+                return {'success': False, 'message': '学生サービス側でエラーが発生しました'}
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for clear penalty {student_id}: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+                
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error(f"Connection timeout for clear penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error(f"Connection error for clear penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to clear penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+    
+    def apply_student_penalty(self, student_id, reason=None, end_time=None):
+        """学生にペナルティを付与（拡張版）"""
+        try:
+            payload = {'student_id': student_id}
+            if reason:
+                payload['reason'] = reason
+            if end_time:
+                payload['end_time'] = end_time.isoformat() if hasattr(end_time, 'isoformat') else end_time
+            
+            response = requests.post(
+                'http://student:5000/api/management/apply_penalty',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            # レスポンスの状態コードをチェック
+            if response.status_code == 404:
+                return {'success': False, 'message': 'ペナルティ付与APIが見つかりません（学生サービスの設定を確認してください）'}
+            elif response.status_code == 400:
+                return {'success': False, 'message': 'リクエストデータが不正です'}
+            elif response.status_code == 500:
+                return {'success': False, 'message': '学生サービス側でエラーが発生しました'}
+            
+            # JSONレスポンスのパースを試行
+            try:
+                return response.json()
+            except ValueError as json_error:
+                current_app.logger.error(f"JSON parse error for student {student_id}: {json_error}")
+                current_app.logger.error(f"Response status: {response.status_code}")
+                current_app.logger.error(f"Response content: {response.text[:200]}")
+                return {
+                    'success': False, 
+                    'message': f'学生サービスから無効なレスポンスが返されました（ステータス: {response.status_code}）'
+                }
+                
+        except requests.exceptions.ConnectTimeout:
+            current_app.logger.error(f"Connection timeout for apply penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスへの接続がタイムアウトしました'}
+        except requests.exceptions.ConnectionError:
+            current_app.logger.error(f"Connection error for apply penalty: {student_id}")
+            return {'success': False, 'message': '学生サービスに接続できませんでした'}
+        except Exception as e:
+            current_app.logger.error(f"Failed to apply penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_student_reservations(self, student_id):
+        """学生の予約情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/student_reservations/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else response.json()
+        except Exception as e:
+            current_app.logger.error(f"Failed to get reservations for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def clear_student_penalty_with_time(self, student_id, clear_time=None):
+        """学生のペナルティを解除（時間指定可能）"""
+        try:
+            payload = {'student_id': student_id}
+            if clear_time:
+                payload['clear_time'] = clear_time.isoformat() if hasattr(clear_time, 'isoformat') else clear_time
+            
+            response = requests.post(
+                'http://student:5000/api/management/clear_penalty',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to clear penalty for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_student_penalty_details(self, student_id):
+        """学生のペナルティ詳細情報を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/penalty_details/{student_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get penalty details for student {student_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def create_reservations(self, bus_id, seat_numbers, user_id):
+        """管理者用：複数座席の予約を作成"""
+        try:
+            payload = {
+                'bus_id': bus_id,
+                'seat_numbers': seat_numbers,
+                'user_id': user_id
+            }
+            
+            response = requests.post(
+                'http://student:5000/api/management/reservations',
+                json=payload,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to create reservations: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    # 統計情報取得API
+    def get_user_registration_statistics(self, start_date=None, end_date=None):
+        """ユーザー登録統計を取得"""
+        try:
+            params = {}
+            if start_date:
+                params['start_date'] = start_date
+            if end_date:
+                params['end_date'] = end_date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/user_registrations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get user registration statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_reservation_statistics(self, date=None, granularity='1min'):
+        """バス予約統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/bus_reservations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus reservation statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_cancellation_statistics(self, date=None, granularity='1min'):
+        """キャンセル統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/cancellations',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get cancellation statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_boarding_statistics(self, date=None, granularity='1min'):
+        """バス乗車統計を取得"""
+        try:
+            params = {'granularity': granularity}
+            if date:
+                params['date'] = date
+                
+            response = requests.get(
+                'http://student:5000/api/statistics/bus_boardings',
+                params=params,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus boarding statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_real_time_statistics(self):
+        """リアルタイム統計を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/statistics/realtime',
+                headers=self.headers,
+                timeout=10
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get real-time statistics: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    # 学期管理関連のメソッド
+    def get_semesters(self):
+        """学期一覧を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/semester/list',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get semesters: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_active_semester(self):
+        """アクティブな学期を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/semester/active',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get active semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def create_semester(self, semester_data):
+        """学期を作成"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/create',
+                json=semester_data,
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to create semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def switch_semester(self, switch_data):
+        """学期を切り替え"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/switch',
+                json=switch_data,
+                headers=self.headers,
+                timeout=60  # 学期切り替えは時間がかかる可能性があるため長めに設定
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to switch semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def auto_semester_check(self):
+        """自動学期チェック"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/auto-check',
+                headers=self.headers,
+                timeout=60
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to auto check semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def migrate_users(self, migrate_data):
+        """ユーザーを移行"""
+        try:
+            response = requests.post(
+                'http://student:5000/api/semester/migrate-users',
+                json=migrate_data,
+                headers=self.headers,
+                timeout=60
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to migrate users: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def delete_semester(self, semester_id):
+        """学期を削除"""
+        try:
+            response = requests.delete(
+                f'http://student:5000/api/semester/delete/{semester_id}',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete semester: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    # 予約管理関連のメソッド
+    def get_buses_with_reservations(self):
+        """予約があるバス一覧を取得"""
+        try:
+            response = requests.get(
+                'http://student:5000/api/management/buses/with_reservations',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get buses with reservations: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
+
+    def get_bus_seat_status(self, bus_id):
+        """特定バスの座席予約状況を取得"""
+        try:
+            response = requests.get(
+                f'http://student:5000/api/management/buses/{bus_id}/seats',
+                headers=self.headers,
+                timeout=30
+            )
+            
+            try:
+                return response.json()
+            except ValueError:
+                return {'success': False, 'message': f'無効なレスポンス（ステータス: {response.status_code}）'}
+                
+        except Exception as e:
+            current_app.logger.error(f"Failed to get bus seat status for bus {bus_id}: {e}")
+            return {'success': False, 'message': f'通信エラー: {str(e)}'}
 
 # シングルトンインスタンス
 admin_api = AdminAPIClient()

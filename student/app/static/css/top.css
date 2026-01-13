@@ -1,7 +1,4 @@
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif;
     align-items: center;
     justify-content: center;
     background-image: url("https://www.kansai-u.ac.jp/Fc_inf/news/data/illum1.jpg");
@@ -78,8 +75,9 @@ body {
 }
 
 h1 {
-    margin-bottom: 30px;
-    font-size: 28px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-size: 20px;
 }
 
 h2 {
@@ -95,3 +93,4 @@ h2 {
         width: 470px;
     }
 }
+

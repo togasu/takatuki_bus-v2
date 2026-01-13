@@ -1,0 +1,113 @@
+/* date_select.html専用スタイル */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333333;
+}
+
+main {
+    margin-top: 80px;
+    padding: 20px;
+    text-align: center;
+    justify-content: center;
+}
+
+.maincontainer {
+    text-align: center;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.maincontainer > p {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #d32f2f;
+}
+
+.btn-group {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-date,
+.btn-confirm,
+.btn-destination {
+    background-color: #6c757d;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 18px 32px;
+    margin: 8px;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 20px;
+    min-height: 56px;
+    min-width: 180px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-date:active,
+.btn-confirm:active,
+.btn-destination:active {
+    background-color: #5a6268;
+    transform: scale(0.97);
+}
+
+.selected-values {
+    margin-top: 30px;
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.selected-values p {
+    font-size: 20px;
+    margin: 12px 0;
+    line-height: 1.6;
+}
+
+.btn-back,
+.btn-confirm {
+    padding: 18px 32px;
+    margin-top: 20px;
+    font-size: 20px;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 18px 32px;
+    font-size: 20px;
+    min-height: 56px;
+    cursor: pointer;
+}
+
+.container {
+    margin-top: 24px;
+}
+
+.row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}

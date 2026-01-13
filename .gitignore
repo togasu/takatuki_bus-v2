@@ -12,6 +12,7 @@ __pycache__/
 # ログファイル
 logs/
 *.log
+logs/*.log
 
 # データベースの永続化データ
 postgres_data/
@@ -26,6 +27,9 @@ env/
 .vscode/
 .idea/
 *.swp
+
+# メモファイル
+memo.md
 
 # OSごとの不要ファイル
 .DS_Store
@@ -49,3 +53,21 @@ nginx/html/
 certs/
 *.crt
 *.key
+
+# DBファイル
+
+# Ignore the entire instance directory and all its contents
+# Use both the directory and glob pattern to be explicit and compatible
+/instance/
+/instance/**
+
+*.sqlite3
+*.db
+*.sqlite
+*.bak
+*.backup
+*.sql
+*.dump
+*.sql.gz
+*.db-journal
+*.sqlite-wal

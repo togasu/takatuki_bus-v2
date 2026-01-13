@@ -7,76 +7,54 @@ import sys
 import os
 sys.path.insert(0, '/app')
 
-from werkzeug.security import generate_password_hash
-import psycopg2
-from psycopg2 import sql
-
 def create_test_driver():
     """テスト用ドライバーを作成"""
     try:
-        # データベース接続設定
-        db_config = {
-            'host': os.getenv('POSTGRES_HOST', 'postgres'),
-            'database': os.getenv('POSTGRES_DB', 'mydb'),
-            'user': os.getenv('POSTGRES_USER', 'user'),
-            'password': os.getenv('POSTGRES_PASSWORD', 'pass')
-        }
+        from app import create_app
+        from app.models import Driver
+        from app.database import db
         
-        # データベースに直接接続
-        conn = psycopg2.connect(**db_config)
-        cur = conn.cursor()
+        app = create_app()
         
-        # driversテーブルが存在しない場合は作成
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS drivers (
-                id SERIAL PRIMARY KEY,
-                driver_id VARCHAR(80) UNIQUE NOT NULL,
-                name VARCHAR(120) NOT NULL,
-                email VARCHAR(120) UNIQUE NOT NULL,
-                phone VARCHAR(20),
-                license_number VARCHAR(50),
-                license_expiry DATE,
-                hire_date DATE,
-                password_hash VARCHAR(255) NOT NULL,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
-            )
-        """)
-        
-        # 既存のドライバーをチェック
-        cur.execute("SELECT driver_id FROM drivers WHERE driver_id = %s", ('driver_test',))
-        existing = cur.fetchone()
-        
-        if not existing:
-            # テスト用ドライバーを作成
-            password_hash = generate_password_hash('driver123')
+        with app.app_context():
+            # テストドライバーの情報
+            test_drivers = [
+                {'username': 'driver1', 'number': 1, 'password': 'driver123'},
+                {'username': 'driver2', 'number': 2, 'password': 'driver123'},
+                {'username': 'driver3', 'number': 3, 'password': 'driver123'},
+            ]
             
-            cur.execute("""
-                INSERT INTO drivers (driver_id, name, email, phone, license_number, license_expiry, hire_date, password_hash, is_active, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
-            """, (
-                'driver_test',
-                'テストドライバー', 
-                'driver@test.com',
-                '090-1234-5678',
-                'TEST-123456789',  # 免許証番号
-                '2026-12-31',       # 免許証有効期限
-                '2024-01-01',       # 雇用日
-                password_hash,
-                True
-            ))
+            for driver_data in test_drivers:
+                # 既存のドライバーをチェック
+                existing = Driver.query.filter_by(username=driver_data['username']).first()
+                
+                if existing:
+                    print(f"Driver {driver_data['username']} already exists, updating password...")
+                    existing.set_password(driver_data['password'])
+                    db.session.commit()
+                    print(f"✅ Updated driver: {driver_data['username']}")
+                else:
+                    # 新しいドライバーを作成
+                    driver = Driver()
+                    driver.username = driver_data['username']
+                    driver.number = driver_data['number']
+                    driver.set_password(driver_data['password'])
+                    
+                    db.session.add(driver)
+                    db.session.commit()
+                    print(f"✅ Created driver: {driver_data['username']} (number: {driver_data['number']})")
             
-            conn.commit()
-            print("Test driver created: driver_test / driver123")
-        else:
-            print("Test driver already exists")
-            
-        cur.close()
-        conn.close()
-        
+            # 作成されたドライバーを確認
+            all_drivers = Driver.query.all()
+            print(f"\n📊 Total drivers in database: {len(all_drivers)}")
+            for driver in all_drivers:
+                print(f"  - {driver.username} (number: {driver.number}, active: {driver.is_active})")
+                
     except Exception as e:
         print(f"Error creating test driver: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__":
     create_test_driver()

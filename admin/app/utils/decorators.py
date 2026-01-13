@@ -191,3 +191,77 @@ def safe_api_route(required_fields=None, require_auth=False, max_requests=None):
         
         return decorated_function
     return decorator
+
+def admin_required(f):
+    """管理者権限が必要なルートに使用するデコレータ"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            from flask import session, request, redirect, url_for
+            
+            print(f"[admin_required] Checking authentication for {request.endpoint}")
+            print(f"[admin_required] Flask session: {dict(session)}")
+            print(f"[admin_required] Cookies: {dict(request.cookies)}")
+            
+            # 1. まずFlaskの標準セッションをチェック
+            user_id = session.get('user_id')
+            user_role = session.get('role', '')
+            
+            print(f"[admin_required] Initial check - user_id: {user_id}, role: {user_role}")
+            
+            # 2. セッション情報が不完全な場合、クッキーベースセッションをチェックして補完
+            if not user_id or not user_role:
+                session_token = request.cookies.get('admin_session_token')
+                print(f"[admin_required] Checking session token for missing info: {session_token}")
+                
+                if session_token:
+                    try:
+                        from ..utils.auth_utils import SessionManager
+                        session_manager = SessionManager()
+                        session_data = session_manager.validate_session(session_token)
+                        print(f"[admin_required] Session validation result: {session_data}")
+                        
+                        if session_data and 'user_id' in session_data:
+                            user_id = session_data['user_id']
+                            user_data = session_data.get('user_data', {})
+                            user_role = user_data.get('role', '')
+                            
+                            # セッション情報をFlaskセッションにも設定（一貫性のため）
+                            session['user_id'] = user_id
+                            session['role'] = user_role
+                            session['username'] = user_data.get('username', '')
+                            
+                            print(f"[admin_required] User authenticated via cookie: {user_data.get('username')}")
+                            print(f"[admin_required] Updated session - user_id: {user_id}, role: {user_role}")
+                    except Exception as e:
+                        print(f"[admin_required] Error validating session token: {e}")
+                        session_token = None
+            
+            # 3. ユーザー認証チェック
+            if not user_id:
+                print(f"[admin_required] No user_id found, redirecting to login")
+                return redirect(url_for('index.login'))
+            
+            # 4. 管理者権限チェック
+            print(f"[admin_required] Final check - user_id: {user_id}, role: {user_role}")
+            if user_role not in ['admin', 'super_admin']:
+                print(f"[admin_required] Access denied for role: '{user_role}'")
+                return create_error_response(
+                    "管理者権限が必要です",
+                    403,
+                    "Admin Access Required"
+                )
+            
+            print(f"[admin_required] Access granted for user_id: {user_id}, role: {user_role}")
+            return f(*args, **kwargs)
+            
+        except Exception as e:
+            ErrorLogger.log_error(e)
+            print(f"[admin_required] Exception occurred: {e}")
+            return create_error_response(
+                "認証処理でエラーが発生しました",
+                500,
+                "Authentication Error"
+            )
+    
+    return decorated_function

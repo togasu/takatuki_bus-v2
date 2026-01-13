@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開発モード - 手動IDM入力</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .dev-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .bus-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .bus-info p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .bus-info strong {
+            color: #667eea;
+        }
+        .input-group {
+            margin: 30px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            box-sizing: border-box;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        .quick-idm {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+        .quick-idm p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .quick-btn {
+            background: #e9ecef;
+            color: #495057;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .quick-btn:hover {
+            background: #dee2e6;
+        }
+        .note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dev-badge">🔧 開発モード</div>
+        <h1>手動IDM入力</h1>
+        
+        <div class="bus-info">
+            <p><strong>バスID:</strong> {{ number }}</p>
+            <p><strong>出発時刻:</strong> {{ date }}</p>
+        </div>
+
+        <form method="POST" action="/dev/submit-idm">
+            <div class="input-group">
+                <label for="idm">IDM (16桁の16進数)</label>
+                <input 
+                    type="text" 
+                    id="idm" 
+                    name="idm" 
+                    placeholder="例: 0123456789ABCDEF"
+                    maxlength="16"
+                    pattern="[0-9A-Fa-f]{16}"
+                    required
+                    autofocus
+                >
+            </div>
+            <button type="submit" class="btn-submit">認証する</button>
+        </form>
+
+        <div class="quick-idm">
+            <p>テスト用IDM（クイック入力）</p>
+            <button class="quick-btn" onclick="setIDM('0123456789ABCDEF')">テストカード1</button>
+            <button class="quick-btn" onclick="setIDM('FEDCBA9876543210')">テストカード2</button>
+            <button class="quick-btn" onclick="setIDM('1111111111111111')">テストカード3</button>
+        </div>
+
+        <div class="note">
+            <strong>注意:</strong> この画面は開発モード専用です。本番環境では使用できません。
+        </div>
+    </div>
+
+    <script>
+        function setIDM(idm) {
+            document.getElementById('idm').value = idm;
+        }
+
+        // 入力時に自動的に大文字化
+        document.getElementById('idm').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>

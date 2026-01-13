@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bnum.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="info-container">
+        <div class="reservation-info">
+            <h2>予約者情報</h2>
+            <p id="reservation-details">座席をクリックして予約者情報を表示</p>
+	    <button id="confirm-reservation">乗車登録</button>
+        </div>
+        <div class="bus-info">
+            <h2>バス情報</h2>
+            <p>発車時刻: {{bus.departure_time}}</p>
+            <p>行き先: {{yukisaki}}</p>
+        </div>
+    </div>
+    <div class="bus-seats">
+        <h1>バスの座席表</h1>
+        {% for seat in seats %}
+        {% if seat.number == 1 %}
+        <div class="row">
+            <div class="seat dark" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            <div class="auxiliary-seat none" data-seat=""></div> <!-- 補助席 -->
+            <div class="seat none"></div>
+            <div class="seat none"></div>
+        </div>
+        {% elif seat.number == 2 %}
+        <div class="row">
+            <div class="seat dark" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            <div class="auxiliary-seat none"></div> <!-- 補助席 -->
+        {% elif seat.number == 3 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 4 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% elif seat.number == 5 %}
+        <div class="row">
+            <div class="aisle">入口</div> <!-- 入口を追加 -->
+            {% if seat.reserved == 0%}
+            <div class="auxiliary-seat">{{ seat.number }}</div> <!-- 補助席 -->
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="auxiliary-seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="auxiliary-seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 6 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 7 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% elif seat.number == 8 %}
+        <div class="row">
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 9 %}
+            {% if seat.reserved == 0%}
+            <div class="auxiliary-seat" data-seat="{{seat.number}}">{{ seat.number }}</div> <!-- 補助席 -->
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="auxiliary-seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% else %}
+                <div class="auxiliary-seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 10 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 11 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% elif seat.number == 12 %}
+        <div class="row">
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 13 %}
+            {% if seat.reserved == 0%}
+            <div class="auxiliary-seat" data-seat="{{ seat.number }}">{{ seat.number }}</div> <!-- 補助席 -->
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="auxiliary-seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% else %}
+                <div class="auxiliary-seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 14 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 15 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div> 
+        {% elif seat.number == 16 %}
+        <div class="row">
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 17 %}
+            {% if seat.reserved == 0%}
+            <div class="auxiliary-seat" data-seat="{{ seat.number }}">{{ seat.number }}</div> <!-- 補助席 -->
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="auxiliary-seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% else %}
+                <div class="auxiliary-seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 18 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 19 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% elif seat.number == 20 %}
+        <div class="row">
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 21 %}
+            {% if seat.reserved == 0%}
+            <div class="auxiliary-seat" data-seat="{{ seat.number }}">{{ seat.number }}</div> <!-- 補助席 -->
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="auxiliary-seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% else %}
+                <div class="auxiliary-seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div> <!-- 補助席 -->
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 22 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 23 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% elif seat.number == 24 %}
+        <div class="row">
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 25 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 26 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        {% elif seat.number == 27 %}
+            {% if seat.reserved == 0%}
+            <div class="seat" data-seat="{{ seat.number }}">{{ seat.number }}</div>
+            {% else %}
+                {% if seat.approved == 0%}
+                <div class="seat occupied" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% else %}
+                <div class="seat approved" data-seat="{{ seat.number }}" data-name="{{seat.username}}">{{ seat.number }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <button id="refresh-button"><i class="fas fa-sync-alt"></i></button>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.querySelectorAll('.seat, .auxiliary-seat').forEach(seat => {
+            seat.addEventListener('click', function() {
+                const seatNumber = this.getAttribute('data-seat');
+                const seatName = this.getAttribute('data-name') || '未予約';
+
+                // 座席の選択状態を切り替え
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                } else {
+                    this.classList.add('selected');
+                }
+
+                // 予約情報を表示
+                if (this.classList.contains('approved') || this.classList.contains('occupied')) {
+                    document.getElementById('reservation-details').innerText = `${seatNumber}の予約者: ${seatName}`;
+                } else if (this.classList.contains('dark')) {
+                    document.getElementById('reservation-details').innerText = `${seatNumber}の予約者: 使用不可`;
+                } else {
+                    document.getElementById('reservation-details').innerText = `${seatNumber}の予約者: 未予約`;
+                }
+            });
+        });
+
+        document.getElementById('confirm-reservation').addEventListener('click', function() {
+            const selectedSeats = document.querySelectorAll('.seat.selected, .auxiliary-seat.selected');
+            if (selectedSeats.length > 0) {
+                let seats = [];
+                selectedSeats.forEach(seat => {
+                    seats.push(seat.getAttribute('data-seat'));
+                    seat.classList.remove('selected');
+                    seat.classList.add('occupied');
+                    seat.setAttribute('data-name', '予約者名'); // ここで予約者名を設定
+                });
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/yoyaku/bus/{{bus.id}}/reserve';
+                selectedSeats.forEach(seat => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'seat_numbers';
+                    input.value = seat.getAttribute('data-seat');
+                    form.appendChild(input);
+                });
+                document.body.appendChild(form);
+                form.submit();
+                alert(`予約が確定しました: ${seats.join(', ')}`);
+                document.getElementById('reservation-details').innerText = '座席をクリックして予約者情報を表示';
+            } else {
+                alert('予約する座席を選択してください。');
+            }
+        });
+        document.getElementById('refresh-button').addEventListener('click', function() {
+            window.location.href = '/yoyaku/bus/{{bus.id}}'; // Replace with the actual URL
+        });
+
+        document.addEventListener('touchstart', function() {
+            document.getElementById('refresh-button').classList.add('show');
+        });
+
+        document.addEventListener('touchend', function() {
+            setTimeout(function() {
+                document.getElementById('refresh-button').classList.remove('show');
+            }, 3000); // 3秒後にボタンを隠す
+        });
+    </script>
+{% endblock %}

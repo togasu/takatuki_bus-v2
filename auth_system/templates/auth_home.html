@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1080, initial-scale=1.0">
+    <title>バス利用認証</title>
+
+    <style>
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        body {
+            margin: 0;
+            width: 1080px;
+            height: 1080px;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: grid;
+            width: 1080px;
+            height: 1080px;
+            grid-template-columns: repeat(20, 54px);
+            grid-template-rows: repeat(20, 54px);
+        }
+
+        .header {
+            grid-column: 1 / 21;
+            grid-row: 1 / 5;
+            background-color: #212166;
+            color: white;
+            text-align: center;
+            font-size: 96px;
+            line-height: 216px;
+        }
+
+        .footer {
+            grid-column: 1 / 21;
+            grid-row: 17 / 21;
+            background-color: #212166;
+        }
+
+        .content {
+            grid-column: 3 / 19;
+            grid-row: 6 / 14;
+            text-align: center;
+            font-size: 72px;
+        }
+
+        .blink {
+            animation: blink 2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">Sojo Bus</div>
+
+    <div class="content">
+        <p>学生証または定期券を<br>かざしてください</p>
+        <p class="blink">{{ date }} 発<br>{{ number }} 号車</p>
+        <p id="status">待機中...</p>
+    </div>
+
+    <div class="footer"></div>
+</div>
+
+<script>
+async function pollNfcStatus() {
+    try {
+        const res = await fetch("/auth/nfc-status");
+        const data = await res.json();
+
+        if (data.status === "detected") {
+            window.location.href = "/result/" + data.idm;
+            return;
+        }
+
+        if (data.status === "failed") {
+            window.location.href = "/auth/wait";
+            return;
+        }
+
+    } catch (e) {
+        console.error(e);
+    }
+
+    setTimeout(pollNfcStatus, 1000); // 1秒ごとに確認
+}
+
+pollNfcStatus();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/top.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ipad-optimize.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='js/top.js') }}"></script>
+  <link rel="icon" href="{{ url_for('static', filename='images/bus.ico') }}">
+    <title>Sojo Bus</title>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header__inner">
+        <h1 class="header__title header-title">
+          <img class="buspng" src="{{ url_for('static', filename='images/bus.png') }}" alt="Sojo Bus" class="header-title__logo">
+          <a class="header-title-sojobus" href="/driver">sojo bus</a>
+        </h1>
+
+        <nav class="header__nav nav" id="js-nav">
+          <ul class="nav__items nav-items">
+            <li class="nav-items__item"><a href="/driver/bus">バス運行便登録</a></li>
+            <li class="nav-items__item"><a href="/driver/yoyaku">予約確認</a></li>
+            <li class="nav-items__item"><a href="/driver/message/send">問題発生</a></li>
+            <li class="nav-items__item"><a href="/driver/tips">利用方法</a></li>
+          </ul>
+        </nav>
+
+        <button class="header__hamburger hamburger" id="js-hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+      <div>
+        <p>© 2024 Versear　© 2024 Sojobus</p>
+      </div>
+    </footer>
+  </div>
+  {% block scripts %}{% endblock %}
+  {% block styles %}{% endblock %}
+</body>
+</html>

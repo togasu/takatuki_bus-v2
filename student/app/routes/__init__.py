@@ -1,11 +1,21 @@
-import os
-import importlib
+from .auth import auth_bp
+from .main import main_bp
+from .booking import booking_bp
+from .cancel import cancel_bp
+from .management_api import management_api_bp
+from .statistics_api import statistics_api_bp
+from .semester_api import semester_api_bp
+from .ws import ws_bp
+from .seat_info import seat_info_bp
 
 def register_blueprints(app):
-    package_dir = os.path.dirname(__file__)
-    for filename in os.listdir(package_dir):
-        if filename.endswith(".py") and filename not in ("__init__.py",):
-            module_name = f"app.routes.{filename[:-3]}"
-            module = importlib.import_module(module_name)
-            if hasattr(module, "bp"):
-                app.register_blueprint(module.bp)
+    """全てのブループリントを登録"""
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(booking_bp)
+    app.register_blueprint(cancel_bp)
+    app.register_blueprint(management_api_bp)
+    app.register_blueprint(statistics_api_bp)
+    app.register_blueprint(semester_api_bp)
+    app.register_blueprint(ws_bp)
+    app.register_blueprint(seat_info_bp)

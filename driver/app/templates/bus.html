@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bus.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="bus-schedule">
+        <h3>運行便設定 - {{ number }}号車</h3>
+        <p class="info-text">次の5便の中から運行する便を選択してください</p>
+        
+        {% if bus_date %}
+        <ul class="bus-list">
+            {% for bus in bus_date %}
+            <li class="bus-item">
+                <a href="bus/register?id={{ bus.id }}">
+                    <button class="bus-button">
+                        <div class="bus-info">
+                            <span class="departure-time">{{ bus.departure_time }}</span>
+                            <span class="bus-number">{{ bus.busid }}号車</span>
+                        </div>
+                        <div class="bus-details">   
+                            <span class="direction">{{ '高槻駅' if bus.ud == 1 else '高槻キャンパス' }}</span>
+                            <span class="seats">座席数: {{ bus.seats }}</span>
+                        </div>
+                    </button>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="no-buses">
+            <p>🚌 現在、選択可能な運行便はありません</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="datetime" id="datetime">
+    <p id="current-date"></p>
+    <p id="current-time"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateDateTime() {
+        const now = new Date();
+        const date = now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const time = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('current-date').textContent = ` ${date}`;
+        document.getElementById('current-time').textContent = ` ${time}`;
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+</script>
+{% endblock %}

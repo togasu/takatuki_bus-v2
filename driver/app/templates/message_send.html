@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="message-page">
+    <h2 class="page-title">管理者へメッセージを送る</h2>
+    
+    {% if success %}
+    <div class="alert alert-success">
+        <p>✓ メッセージを送信しました</p>
+        <p><a href="/driver/message/sent">送信済みメッセージを確認</a></p>
+    </div>
+    {% endif %}
+    
+    {% if message %}
+    <div class="alert alert-danger">
+        <p>{{ message }}</p>
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="/driver/message/send" class="message-form">
+        <div class="form-group">
+            <label for="subject">件名 <span class="required">*</span></label>
+            <input type="text" id="subject" name="subject" class="form-control" required maxlength="200" placeholder="例: バス〇〇番について">
+        </div>
+        
+        <div class="form-group">
+            <label for="priority">優先度</label>
+            <select id="priority" name="priority" class="form-control">
+                <option value="normal">通常</option>
+                <option value="urgent">緊急</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="message_text">メッセージ <span class="required">*</span></label>
+            <textarea id="message_text" name="message_text" class="form-control" required rows="8" placeholder="メッセージを入力してください"></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">送信</button>
+            <a href="/driver/top" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.message-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.message-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .message-form {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

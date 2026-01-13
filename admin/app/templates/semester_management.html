@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block title %}学期管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">学期管理</h2>
+            
+            <!-- 現在の学期状況 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">現在の学期状況</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadCurrentStatus()">
+                        <i class="fas fa-sync"></i> 更新
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="current_status">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">読み込み中...</span>
+                            </div>
+                            <span class="ms-2">学期状況を読み込み中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自動学期チェック -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">自動学期チェック</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">現在の日付に基づいて、学期の自動切り替えが必要かどうかをチェックします。</p>
+                    <button type="button" class="btn btn-primary" onclick="autoSemesterCheck()">
+                        <i class="fas fa-magic"></i> 自動学期チェック実行
+                    </button>
+                </div>
+            </div>
+
+            <!-- 学期一覧と管理 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">学期一覧</h5>
+                    <button type="button" class="btn btn-success" onclick="showCreateSemesterModal()">
+                        <i class="fas fa-plus"></i> 新しい学期を作成
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="semesters_table_container">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">読み込み中...</span>
+                            </div>
+                            <p class="mt-2">学期一覧を読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ユーザー移行管理 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">ユーザー移行管理</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="user_migration_status">
+                                <div class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">読み込み中...</span>
+                                    </div>
+                                    <span class="ms-2">ユーザー数を確認中...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-warning" onclick="confirmUserMigration()">
+                                <i class="fas fa-exchange-alt"></i> 手動ユーザー移行実行
+                            </button>
+                            <small class="d-block text-muted mt-2">
+                                現在のUserテーブルのデータをLastSemester_userテーブルに移行し、Userテーブルをクリアします。
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 学期作成モーダル -->
+<div class="modal fade" id="createSemesterModal" tabindex="-1" aria-labelledby="createSemesterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createSemesterModalLabel">新しい学期の作成</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createSemesterForm">
+                    <div class="mb-3">
+                        <label for="semester_name" class="form-label">学期名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="semester_name" placeholder="例: 2024年春学期" required>
+                        <div class="form-text">学期を識別するための名前を入力してください。</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">開始日 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="end_date" class="form-label">終了日 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="make_active">
+                            <label class="form-check-label" for="make_active">
+                                作成後すぐにアクティブにする
+                            </label>
+                            <div class="form-text text-warning">
+                                チェックすると、既存のアクティブな学期は無効になります。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>注意:</strong>
+                            <ul class="mb-0">
+                                <li>学期期間は既存の学期と重複しないようにしてください。</li>
+                                <li>通常は春学期（4月-8月）と秋学期（9月-1月）の設定を推奨します。</li>
+                            </ul>
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-success" onclick="createSemester()">
+                    <i class="fas fa-plus"></i> 学期を作成
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 学期切り替え確認モーダル -->
+<div class="modal fade" id="switchSemesterModal" tabindex="-1" aria-labelledby="switchSemesterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="switchSemesterModalLabel">学期切り替え確認</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">⚠️ 重要な操作です</h6>
+                    <p>この操作により、以下の処理が実行されます：</p>
+                    <ul>
+                        <li>現在のUserテーブルのデータがLastSemester_userテーブルに移行されます</li>
+                        <li>Userテーブルがクリアされます</li>
+                        <li>指定した学期がアクティブになります</li>
+                    </ul>
+                    <p class="mb-0"><strong>この操作は取り消せません。</strong></p>
+                </div>
+                
+                <p><strong>切り替え先学期:</strong> <span id="target_semester_name"></span></p>
+                <p><strong>期間:</strong> <span id="target_semester_period"></span></p>
+                
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="migrate_users_check" checked>
+                        <label class="form-check-label" for="migrate_users_check">
+                            ユーザーデータを移行する
+                        </label>
+                        <div class="form-text">
+                            チェックを外すと、学期のアクティベーションのみ行い、ユーザー移行は実行されません。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-danger" onclick="executeSemesterSwitch()" id="confirm_switch_btn">
+                    <i class="fas fa-exchange-alt"></i> 学期切り替えを実行
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ユーザー移行確認モーダル -->
+<div class="modal fade" id="userMigrationModal" tabindex="-1" aria-labelledby="userMigrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userMigrationModalLabel">ユーザー移行確認</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">⚠️ データ移行操作</h6>
+                    <p>この操作により、現在のUserテーブルのデータがLastSemester_userテーブルに移行され、Userテーブルがクリアされます。</p>
+                    <p class="mb-0"><strong>この操作は取り消せません。</strong></p>
+                </div>
+                
+                <div id="migration_preview">
+                    <!-- JavaScriptで動的に設定 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                <button type="button" class="btn btn-warning" onclick="executeUserMigration()">
+                    <i class="fas fa-exchange-alt"></i> ユーザー移行を実行
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let semesterData = [];
+let targetSemesterId = null;
+
+// ページ読み込み時に初期化
+document.addEventListener('DOMContentLoaded', function() {
+    loadCurrentStatus();
+    loadSemesters();
+    loadUserMigrationStatus();
+});
+
+function loadCurrentStatus() {
+    fetch('/admin/semester_management/api/active-semester', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        displayCurrentStatus(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('current_status').innerHTML = `
+            <div class="alert alert-danger">
+                現在の学期状況の取得に失敗しました: ${error.message}
+            </div>
+        `;
+    });
+}
+
+function displayCurrentStatus(data) {
+    const container = document.getElementById('current_status');
+    
+    if (data.success && data.semester) {
+        const semester = data.semester;
+        const today = new Date().toISOString().split('T')[0];
+        const isCurrentPeriod = today >= semester.start_date && today <= semester.end_date;
+        
+        container.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>アクティブな学期</h6>
+                    <p class="mb-1"><strong>${semester.name}</strong></p>
+                    <p class="text-muted mb-0">期間: ${semester.start_date} ～ ${semester.end_date}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>状態</h6>
+                    ${isCurrentPeriod ? 
+                        '<span class="badge bg-success">現在の期間内</span>' : 
+                        '<span class="badge bg-warning">期間外</span>'
+                    }
+                    <p class="text-muted mb-0 mt-1">現在の日付: ${today}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <h6>⚠️ アクティブな学期がありません</h6>
+                <p class="mb-0">学期を作成するか、既存の学期をアクティブにしてください。</p>
+            </div>
+        `;
+    }
+}
+
+function loadSemesters() {
+    fetch('/admin/semester_management/api/semesters', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            semesterData = data.semesters;
+            displaySemesters(data.semesters);
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('semesters_table_container').innerHTML = `
+            <div class="alert alert-danger">
+                学期一覧の取得に失敗しました: ${error.message}
+            </div>
+        `;
+    });
+}
+
+function displaySemesters(semesters) {
+    const container = document.getElementById('semesters_table_container');
+    
+    if (semesters.length === 0) {
+        container.innerHTML = '<p class="text-muted">登録されている学期はありません。</p>';
+        return;
+    }
+    
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>学期名</th>
+                        <th>期間</th>
+                        <th>状態</th>
+                        <th>作成日</th>
+                        <th>アクション</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    semesters.forEach(semester => {
+        const isCurrentPeriod = today >= semester.start_date && today <= semester.end_date;
+        
+        let statusBadges = [];
+        if (semester.is_active) {
+            statusBadges.push('<span class="badge bg-primary">アクティブ</span>');
+        }
+        if (isCurrentPeriod) {
+            statusBadges.push('<span class="badge bg-success">現在期間</span>');
+        }
+        if (statusBadges.length === 0) {
+            statusBadges.push('<span class="badge bg-secondary">非アクティブ</span>');
+        }
+        
+        html += `
+            <tr>
+                <td><strong>${semester.name}</strong></td>
+                <td>${semester.start_date} ～ ${semester.end_date}</td>
+                <td>${statusBadges.join(' ')}</td>
+                <td>${formatDateTime(semester.created_at)}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        ${!semester.is_active ? 
+                            `<button class="btn btn-sm btn-outline-primary" onclick="confirmSemesterSwitch(${semester.id}, '${semester.name}', '${semester.start_date}', '${semester.end_date}')" title="この学期に切り替え">
+                                切り替え
+                            </button>` : 
+                            `<button class="btn btn-sm btn-outline-secondary" disabled title="既にアクティブです">
+                                アクティブ
+                            </button>`
+                        }
+                        ${!semester.is_active ? 
+                            `<button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteSemester(${semester.id}, '${semester.name}')" title="この学期を削除">
+                                削除
+                            </button>` : ''
+                        }
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function loadUserMigrationStatus() {
+    // ユーザー数の情報を取得（実際のAPIがあれば使用）
+    // ここでは仮の表示を行う
+    document.getElementById('user_migration_status').innerHTML = `
+        <div class="row">
+            <div class="col-6">
+                <div class="text-center">
+                    <h6 class="text-primary">現在のユーザー数</h6>
+                    <span class="fs-4 fw-bold text-primary" id="current_user_count">-</span>
+                    <div class="small text-muted">Userテーブル</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="text-center">
+                    <h6 class="text-secondary">前学期ユーザー数</h6>
+                    <span class="fs-4 fw-bold text-secondary" id="last_semester_user_count">-</span>
+                    <div class="small text-muted">LastSemester_userテーブル</div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-2 text-center">
+            <small class="text-muted">※ 正確な数値はstudentサービスから取得されます</small>
+        </div>
+    `;
+}
+
+function showCreateSemesterModal() {
+    // フォームをリセット
+    document.getElementById('createSemesterForm').reset();
+    
+    // デフォルト値を設定（現在の年度に基づく）
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    
+    if (currentMonth >= 9) {
+        // 秋学期中なら次の春学期を提案
+        document.getElementById('semester_name').value = `${currentYear + 1}年春学期`;
+        document.getElementById('start_date').value = `${currentYear + 1}-04-01`;
+        document.getElementById('end_date').value = `${currentYear + 1}-08-31`;
+    } else if (currentMonth >= 4) {
+        // 春学期中なら次の秋学期を提案
+        document.getElementById('semester_name').value = `${currentYear}年秋学期`;
+        document.getElementById('start_date').value = `${currentYear}-09-01`;
+        document.getElementById('end_date').value = `${currentYear + 1}-01-31`;
+    } else {
+        // 1-3月なら現在年の春学期を提案
+        document.getElementById('semester_name').value = `${currentYear}年春学期`;
+        document.getElementById('start_date').value = `${currentYear}-04-01`;
+        document.getElementById('end_date').value = `${currentYear}-08-31`;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('createSemesterModal'));
+    modal.show();
+}
+
+function createSemester() {
+    const form = document.getElementById('createSemesterForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        name: document.getElementById('semester_name').value.trim(),
+        start_date: document.getElementById('start_date').value,
+        end_date: document.getElementById('end_date').value,
+        is_active: document.getElementById('make_active').checked
+    };
+    
+    // バリデーション
+    if (!data.name || !data.start_date || !data.end_date) {
+        showAlert('すべての必須項目を入力してください。', 'warning');
+        return;
+    }
+    
+    if (data.start_date >= data.end_date) {
+        showAlert('終了日は開始日より後に設定してください。', 'warning');
+        return;
+    }
+    
+    fetch('/admin/semester_management/api/create-semester', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('学期を作成しました。', 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createSemesterModal'));
+            modal.hide();
+            // 学期一覧と現在の状況を再読み込み
+            loadSemesters();
+            loadCurrentStatus();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('学期作成中にエラーが発生しました。', 'danger');
+    });
+}
+
+function confirmSemesterSwitch(semesterId, semesterName, startDate, endDate) {
+    targetSemesterId = semesterId;
+    document.getElementById('target_semester_name').textContent = semesterName;
+    document.getElementById('target_semester_period').textContent = `${startDate} ～ ${endDate}`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('switchSemesterModal'));
+    modal.show();
+}
+
+function executeSemesterSwitch() {
+    if (!targetSemesterId) return;
+    
+    const migrateUsers = document.getElementById('migrate_users_check').checked;
+    
+    const data = {
+        semester_id: targetSemesterId,
+        migrate_users: migrateUsers
+    };
+    
+    // ボタンを無効化して処理中であることを示す
+    const btn = document.getElementById('confirm_switch_btn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>処理中...';
+    
+    fetch('/admin/semester_management/api/switch-semester', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('学期切り替えが完了しました。', 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('switchSemesterModal'));
+            modal.hide();
+            // 学期一覧と現在の状況を再読み込み
+            loadSemesters();
+            loadCurrentStatus();
+            loadUserMigrationStatus();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('学期切り替え中にエラーが発生しました。', 'danger');
+    })
+    .finally(() => {
+        // ボタンを元に戻す
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+function autoSemesterCheck() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>チェック中...';
+    
+    fetch('/admin/semester_management/api/auto-check', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(`自動学期チェック完了: ${data.message}`, 'success');
+            // 学期一覧と現在の状況を再読み込み
+            loadSemesters();
+            loadCurrentStatus();
+            loadUserMigrationStatus();
+        } else {
+            showAlert(`自動学期チェック: ${data.message}`, 'warning');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('自動学期チェック中にエラーが発生しました。', 'danger');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+function confirmUserMigration() {
+    document.getElementById('migration_preview').innerHTML = `
+        <p><strong>実行される処理:</strong></p>
+        <ul>
+            <li>現在のUserテーブルのデータをLastSemester_userテーブルに移行</li>
+            <li>Userテーブルをクリア</li>
+            <li>移行履歴を記録</li>
+        </ul>
+        <p class="text-muted">※ 学期のアクティベーション変更は行われません</p>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('userMigrationModal'));
+    modal.show();
+}
+
+function executeUserMigration() {
+    fetch('/admin/semester_management/api/migrate-users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({}),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert(`ユーザー移行が完了しました。移行されたユーザー数: ${data.migrated_count || 0}`, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('userMigrationModal'));
+            modal.hide();
+            loadUserMigrationStatus();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('ユーザー移行中にエラーが発生しました。', 'danger');
+    });
+}
+
+function confirmDeleteSemester(semesterId, semesterName) {
+    if (!confirm(`学期「${semesterName}」を削除しますか？\n\nこの操作は取り消せません。`)) {
+        return;
+    }
+    
+    fetch(`/admin/semester_management/api/delete-semester/${semesterId}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showAlert('学期を削除しました。', 'success');
+            loadSemesters();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('学期削除中にエラーが発生しました。', 'danger');
+    });
+}
+
+function formatDateTime(datetime) {
+    if (!datetime) return '-';
+    return new Date(datetime).toLocaleString('ja-JP');
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // 5秒後に自動で閉じる
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/QA.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="main">
+      <section>
+          <h2>よくある質問</h2>
+          {% for i in QA %}
+          <div class="qa-item">
+              <h3>Q： {{ i['question'] }}</h3>
+              <p>A：{{ i['answer'] }}</p>
+          </div>
+          {% endfor %}
+          <!-- Add more Q&A items as needed -->
+      </section>
+    </div>
+{% endblock %}

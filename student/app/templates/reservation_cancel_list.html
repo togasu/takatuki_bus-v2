@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/header_footer.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/choice.css')}}">
+    <title>Sojo Bus</title>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <a href="{{url_for('main.personal')}}" class="header-title">Sojo Bus</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="row">
+        <div class="col-md-12">
+          {% for data in bus_data %}
+            {% if data['int'] %}
+            <button class="btn btn-primary mb-2 btn-block btn-round redirect-btn" data-url="{{ url_for('cancel.cancel', bus_id=data['id']) }}">
+              {{ data['departure_time']  }}発 {{ data['busid'] }}号車 {{ data['busseat'] }}番席
+            </button>
+            {% else %}
+            <button class="btn btn-primary mb-2 btn-block btn-round redirect-btn" data-url="{{ url_for('cancel.cancel', bus_id=data['id']) }}">
+              {{ data['departure_time']  }}発 {{ data['busid'] }}号車 {{ data['busseat'] }}
+            </button>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-12">
+          <button class="btn btn-secondary btn-block redirect-btn" type="button" data-url="{{ url_for('main.personal') }}">戻る</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div id=line></div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+      // data-url属性を使用して適切にリダイレクトする
+      document.addEventListener('DOMContentLoaded', function() {
+        const redirectBtns = document.querySelectorAll('.redirect-btn');
+        redirectBtns.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+              window.location.href = url;
+            }
+          });
+        });
+      });
+    </script>
+    </script>
+  </body>
+</html>
+

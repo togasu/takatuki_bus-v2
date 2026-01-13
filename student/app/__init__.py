@@ -1,122 +1,172 @@
-from flask import Flask, request
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO
-from flask_session import Session
-import os
+import configparser
 import logging
-import psycopg2
-from psycopg2 import sql
-import redis
-
-socketio = SocketIO(cors_allowed_origins="*", async_mode="gevent")
 
 def create_app():
     app = Flask(__name__)
     
-    # シンプルなセッション設定（一時的にRedisセッションを無効化）
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
-    # Redis設定は後で使用するために保持
-    app.config['REDIS_HOST'] = os.getenv('REDIS_HOST', 'redis')
-    app.config['REDIS_PORT'] = int(os.getenv('REDIS_PORT', '6379'))
+    # 設定のインポート
+    from . import config
     
-    # flask-sessionを一時的に無効化
-    # Session(app)
-
-    # ログ設定
-    log_dir = "/app/logs"
-    os.makedirs(log_dir, exist_ok=True)
-    logging.basicConfig(
-        filename=os.path.join(log_dir, "access.log"),
-        level=logging.INFO,
-        format="%(asctime)s - %(message)s",
-    )
-
-    @app.before_request
-    def log_request_info():
-        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-        path = request.path
-        logging.info(f"IP: {ip} - Path: {path}")
-
+    # Flask設定
+    app.secret_key = config.SECRET_KEY
+    app.config['ENV'] = config.FLASK_ENV
+    app.config['DEBUG'] = config.FLASK_DEBUG
+    
+    # 設定ファイルの読み込み（オプション）
+    config_ini = configparser.ConfigParser()
+    try:
+        config_ini.read('setting.ini', encoding='utf-8')
+    except Exception as e:
+        print(f"設定ファイルの読み込みに失敗しました: {e}")
+    
+    # Redis設定の初期化
+    from .utils.redis_token import RedisTokenManager
+    
+    # Redisトークンマネージャーの初期化
+    try:
+        token_manager = RedisTokenManager(
+            redis_host=config.REDIS_HOST,
+            redis_port=config.REDIS_PORT,
+            redis_db=config.REDIS_DB,
+            token_expire_minutes=config.SESSION_TIMEOUT_MINUTES
+        )
+        # グローバルに設定
+        app.token_manager = token_manager
+    except Exception as e:
+        print(f"Redis接続に失敗しました: {e}")
+        app.token_manager = None
+    
     # DB設定
-    app.config["POSTGRES_HOST"] = os.getenv("POSTGRES_HOST", "postgres")
-    app.config["POSTGRES_DB"] = os.getenv("POSTGRES_DB", "mydb")
-    app.config["POSTGRES_USER"] = os.getenv("POSTGRES_USER", "user")
-    app.config["POSTGRES_PASSWORD"] = os.getenv("POSTGRES_PASSWORD", "pass")
-    app.config["REDIS_HOST"] = os.getenv("REDIS_HOST", "redis")
-
-    # データベース初期化
-    from app.database import init_db
-    init_db(app)
-
-    # マイグレーション実行
-    with app.app_context():
-        perform_migration(app)
-
-    # モデルをインポート（マイグレーションで必要）
-    from app import models
-
-    # モデルに定義されたBlueprintを自動登録
-    models.register_model_blueprints(app)
-
-    from app import routes
-    routes.register_blueprints(app)
-
-    # エラーハンドラーを登録
-    from app.utils.error_handlers import register_error_handlers
+    try:
+        app.config["POSTGRES_HOST"] = config.POSTGRES_HOST
+        app.config["POSTGRES_DB"] = config.POSTGRES_DB
+        app.config["POSTGRES_USER"] = config.POSTGRES_USER
+        app.config["POSTGRES_PASSWORD"] = config.POSTGRES_PASSWORD
+    except Exception as e:
+        print(f"データベース設定に失敗しました: {e}")
+        return None
+    
+    # メール設定
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USERNAME'] = 'kutc.shuttlebus@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'ecoz ugco asco xnbe'
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_DEFAULT_SENDER'] = 'kutc.shuttlebus@gmail.com'
+    
+    # 拡張機能の初期化
+    try:
+        from .database import init_db
+        db = init_db(app)
+        
+        mail = Mail(app)
+        
+        limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
+        
+        # SocketIO初期化
+        socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+        app.socketio = socketio
+        
+        # WebSocketイベントハンドラー登録
+        from .routes.ws import register_socketio_events
+        register_socketio_events(socketio)
+        
+    except Exception as e:
+        print(f"拡張機能の初期化に失敗しました: {e}")
+        return None
+    
+    # ロガー設定
+    logger = logging.getLogger('sojo-bus-log')
+    logger.setLevel(10)
+    sh = logging.StreamHandler()
+    logger.addHandler(sh)
+    fh = logging.FileHandler('sojo-bus.log')
+    logger.addHandler(fh)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    sh.setFormatter(formatter)
+    fh.setFormatter(formatter)
+    logger.info('starting student bus server')
+    
+    # Jinjaフィルターの設定
+    try:
+        from .utils.datetime_utils import string_to_datetime, datetime_format
+        app.jinja_env.filters['string_to_datetime'] = string_to_datetime
+        app.jinja_env.filters['datetime_format'] = datetime_format
+    except Exception as e:
+        print(f"Jinjaフィルターの設定に失敗しました: {e}")
+    
+    # ブループリントの登録
+    try:
+        from .routes import register_blueprints
+        register_blueprints(app)
+    except Exception as e:
+        print(f"ブループリントの登録に失敗しました: {e}")
+        return None
+    
+    # エラーハンドラーの登録
     register_error_handlers(app)
-
-    socketio.init_app(app)
+    
+    # データベースの初期化
+    try:
+        with app.app_context():
+            db.create_all()
+    except Exception as e:
+        print(f"データベースの初期化に失敗しました: {e}")
+        # データベースエラーでもアプリケーションは起動させる
+    
     return app
 
-def perform_migration(app):
-    """マイグレーションを実行"""
-    try:
-        # データベース接続テスト
-        conn = psycopg2.connect(
-            host=app.config["POSTGRES_HOST"],
-            database=app.config["POSTGRES_DB"],
-            user=app.config["POSTGRES_USER"],
-            password=app.config["POSTGRES_PASSWORD"]
-        )
-        cursor = conn.cursor()
-        
-        # テーブルの存在確認
-        cursor.execute("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'students'
-            );
-        """)
-        table_exists = cursor.fetchone()[0]
-        
-        if table_exists:
-            # テーブルが既に存在する場合はエラー
-            logging.error("Student service: Database tables already exist. Migration aborted.")
-            raise Exception("Database tables already exist. Please check if migration is needed.")
+def register_error_handlers(app):
+    """エラーハンドラーの登録"""
+    from flask import render_template, request
+    
+    @app.errorhandler(400)
+    def bad_request(error):
+        if request.cookies.get('username') is not None:
+            username = "jimu"
+        elif request.cookies.get('student_id') is not None:
+            username = "student"
         else:
-            # テーブルが存在しない場合はマイグレーションディレクトリの確認
-            logging.info("Student service: No existing tables found. Checking migration directory...")
-            
-            if os.path.exists('migrations/env.py'):
-                # マイグレーションファイルが存在する場合はマイグレーション実行
-                logging.info("Student service: Migration files found. Performing migration...")
-                from flask_migrate import upgrade
-                upgrade()
-                logging.info("Student service: Migration completed successfully.")
-            else:
-                # マイグレーションファイルが存在しない場合は警告
-                logging.warning("Student service: No migration files found. Tables need to be created manually or migration needs to be initialized.")
-                # テーブルを直接作成
-                from app.database import db
-                db.create_all()
-                logging.info("Student service: Tables created directly using SQLAlchemy.")
-            
-        cursor.close()
-        conn.close()
-        
-    except psycopg2.Error as e:
-        logging.error(f"Student service: Database connection error: {e}")
-        raise
-    except Exception as e:
-        logging.error(f"Student service: Migration error: {e}")
-        raise
+            username = None
+        return render_template('400.html', username=username), 400
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        if request.cookies.get('username') is not None:
+            username = "jimu"
+        elif request.cookies.get('student_id') is not None:
+            username = "student"
+        else:
+            username = None
+        return render_template('404.html', username=username), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        if request.cookies.get('username') is not None:
+            username = "jimu"
+        elif request.cookies.get('student_id') is not None:
+            username = "student"
+        else:
+            username = None
+        return render_template('405.html', username=username), 405
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        if request.cookies.get('username') is not None:
+            username = "jimu"
+        elif request.cookies.get('student_id') is not None:
+            username = "student"
+        else:
+            username = None
+        return render_template('500.html', username=username), 500
+
+    @app.errorhandler(429)
+    def ratelimit_error(e):
+        return render_template("top.html", message="制限回数を超過しました.10分待ってください")

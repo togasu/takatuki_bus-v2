@@ -1,21 +1,91 @@
 .header {
-  background-color: #000b69;
-  color: #ffffff;
-  padding: 10px;
-  text-align: center;
   width: 100%;
-  top: 0;
   position: fixed;
+  top: 0;
+  left: 0;
+  text-align: center;
   z-index: 1;
 }
 
-.header a {
-  color: #fff;
-  text-decoration: none;
+.header-content {
+  background-color: #000b69;
+  color: #ffffff;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-.header p {
-    margin: 0;
+.header-content a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 24px;
+}
+
+.header-content p {
+  margin: 0;
+}
+
+.tips {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tips p {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #007bff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.tips p:hover {
+  background-color: #0056b3;
+}
+
+.tiptext {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  border: 1px solid #555;
+  padding: 10px;
+  z-index: 1;
+  right: 0;
+  top: 40px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+article {
+  overflow: hidden;
+  background-color: #f8d7da;
+  height: 30px;
+}
+
+.loop_wrap {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  overflow: hidden;
+}
+
+.loop_wrap div {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.loop_wrap div:nth-child(odd) {
+  animation: loop linear infinite;
 }
 
 .footer {
@@ -25,6 +95,7 @@
   text-align: center;
   position: fixed;
   bottom: 0;
+  left: 0;
   width: 100%;
 }
 
@@ -36,6 +107,6 @@
 }
 
 main {
-  margin-top: 50px;
+  margin-top: 90px;
   margin-bottom: 70px;
 } 

@@ -1,12 +1,13 @@
 """
 エラーハンドリング用のユーティリティモジュール
 """
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, render_template
 import logging
 import traceback
 from werkzeug.exceptions import HTTPException
 import psycopg2
 import redis
+from app.utils.helper_functions import get_authenticated_user
 
 class ErrorLogger:
     """エラーログを記録するクラス"""
@@ -205,3 +206,47 @@ class SafeExecutor:
                 500,
                 "Processing Error"
             )
+
+
+def topview_with_message(message):
+    """認証済みユーザー向けのトップページビューを返す"""
+    from app.services import DriverService
+    
+    user = get_authenticated_user()
+    if not user:
+        return render_template('login.html')
+    
+    firstbus, secondbus = DriverService.create_driver_buses_info(user)
+    return render_template('top.html', firstbus=firstbus, secoundbus=secondbus, message=message)
+
+
+def register_driver_error_handlers(app):
+    """ドライバーシステム用のエラーハンドラーを登録"""
+    
+    @app.errorhandler(400)
+    def bad_request(e):
+        user = get_authenticated_user()
+        if user:
+            return topview_with_message('想定しない動作が行われました')
+        return render_template('login.html')
+
+    @app.errorhandler(404)
+    def not_found(e):
+        user = get_authenticated_user()
+        if user:
+            return topview_with_message('ページが見つかりません')
+        return render_template('login.html')
+
+    @app.errorhandler(405)
+    def not_allowed(e):
+        user = get_authenticated_user()
+        if user:
+            return topview_with_message('値がありません')
+        return render_template('login.html')
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        user = get_authenticated_user()
+        if user:
+            return topview_with_message('サーバー内部エラー')
+        return render_template('login.html')

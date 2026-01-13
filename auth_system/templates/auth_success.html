@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1080, initial-scale=1.0">
+    <title>バスの利用認証システム予約完了</title>
+
+    <style>
+        body{
+            margin: 0px;
+            padding: 0px;
+            border: 0px;
+            width: 1080px;
+            height: 1080px;
+        }
+
+        .container{
+            display: grid;
+            width: 1080px;
+            height: 1080px;
+            grid-template-columns: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+            grid-template-rows: 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px 54px;
+        }
+
+        .header{
+            grid-column: 1 / 21;
+            grid-row: 1 / 5;
+            background-color: #212166;
+        }
+
+        .footer{
+            grid-column: 1 / 21;
+            grid-row: 17 / 21;
+            background-color: #212166;
+        }
+
+        .text_success{
+            grid-column: 3 / 19;
+            grid-row: 5 / 10;
+            font-size: 70px;
+            text-align: center;
+        }
+
+        .text{
+            grid-column: 3 / 19;
+            grid-row: 8 / 12;
+            font-size: 70px;
+            text-align: center;
+        }
+
+        .seat{
+            grid-column: 3 / 19;
+            grid-row: 8 / 12;
+            font-size: 70px;
+            text-align: center;
+        }
+
+        .title{
+            color: #fff;
+            text-align: center;
+            font-size: 96px;
+            position: relative;
+            top: -20px;
+        }
+
+        .line{
+            background-color: #fffdfd;
+            position: relative;
+            height: 10px;
+            top: -75px
+        }
+
+        .back_text{
+            font-size: 94px;
+            text-align: center;
+            position: relative;
+            top: -80px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <p class="title">Sojo Bus</p>
+        </div>
+        <div class="footer"></div>
+        <div class="text_success">
+            <p>予約確認できました！</p>
+        </div>
+        <div class="text">
+            <p>あなたの予約席は<br><br>です。</p>
+        </div>
+        <div class="seat">
+            <p><br>席{{ seat_number }}</p>
+        </div>
+    </div>
+    <div class="line"></div>
+
+    <script>
+        function moveToAnotherPage(){
+            setTimeout(function() {
+                window.location.href = "/";
+            },3000);
+        }
+
+        moveToAnotherPage();
+    </script>
+</body>
+</html>

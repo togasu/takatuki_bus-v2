@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/top-page.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main">
+  {% if message %}
+  <div class="error-message">{{message}}</div>
+  {% endif %}
+  
+  <div class="datetime-card">
+    <div class="date" id="date"></div>
+    <div class="time" id="time"></div>
+  </div>
+
+  <div class="bus-info-grid">
+    <div class="bus-card bus-card--primary">
+      <div class="bus-card__header">
+        <div class="bus-card__label">先発</div>
+      </div>
+      {% if firstbus %}
+      <div class="bus-card__content">
+        <div class="bus-card__destination">{{firstbus.destination}}</div>
+        <div class="bus-card__time-wrapper">
+          <div class="bus-card__time">{{firstbus.time}}</div>
+          <div class="bus-card__date">{{firstbus.date}}</div>
+        </div>
+        <div class="bus-card__number">{{firstbus.bus_number}}号車</div>
+      </div>
+      {% else %}
+      <div class="bus-card__empty">
+        <div class="empty-state">運行予定なし</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="bus-card bus-card--secondary">
+      <div class="bus-card__header">
+        <div class="bus-card__label">次発</div>
+      </div>
+      {% if secondbus %}
+      <div class="bus-card__content">
+        <div class="bus-card__destination">{{secondbus.destination}}</div>
+        <div class="bus-card__time-wrapper">
+          <div class="bus-card__time">{{secondbus.time}}</div>
+          <div class="bus-card__date">{{secondbus.date}}</div>
+        </div>
+        <div class="bus-card__number">{{secondbus.bus_number}}号車</div>
+      </div>
+      {% else %}
+      <div class="bus-card__empty">
+        <div class="empty-state">運行予定なし</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function updateDateTime() {
+    const now = new Date();
+    const date = now.toLocaleDateString('ja-JP');
+    const time = now.toLocaleTimeString('ja-JP');
+
+    document.getElementById('date').textContent = date;
+    document.getElementById('time').textContent = time;
+  }
+
+  // ページが読み込まれたときに日時を更新
+  document.addEventListener('DOMContentLoaded', (event) => {
+    updateDateTime();
+    // 1秒ごとに日時を更新
+    setInterval(updateDateTime, 1000);
+  });
+</script>
+{% endblock %}

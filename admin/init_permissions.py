@@ -154,6 +154,46 @@ def init_permissions():
                 "description": "システム設定の全操作",
                 "resource": "system",
                 "action": "all"
+            },
+            
+            # ドライバーデバイス管理権限
+            {
+                "permission_name": "driver_device_create",
+                "description": "ドライバーデバイスの登録",
+                "resource": "driver_device",
+                "action": "create"
+            },
+            {
+                "permission_name": "driver_device_read",
+                "description": "ドライバーデバイス情報の読み取り",
+                "resource": "driver_device",
+                "action": "read"
+            },
+            {
+                "permission_name": "driver_device_update",
+                "description": "ドライバーデバイス情報の更新",
+                "resource": "driver_device",
+                "action": "update"
+            },
+            {
+                "permission_name": "driver_device_delete",
+                "description": "ドライバーデバイスの削除",
+                "resource": "driver_device",
+                "action": "delete"
+            },
+            
+            # ドライバーメッセージ管理権限
+            {
+                "permission_name": "view_messages",
+                "description": "ドライバーメッセージの閲覧",
+                "resource": "driver_messages",
+                "action": "read"
+            },
+            {
+                "permission_name": "reply_messages",
+                "description": "ドライバーメッセージへの返信",
+                "resource": "driver_messages",
+                "action": "update"
             }
         ]
         
@@ -186,7 +226,9 @@ def get_role_permissions(role):
             "normal_bus_all",
             "normal_seat_all",
             "normal_course_all",
-            "normal_season_all"
+            "normal_season_all",
+            "view_messages",
+            "reply_messages"
         ],
         "admin": [
             "admin_user_create",
@@ -199,7 +241,9 @@ def get_role_permissions(role):
             "admin_seat_all",
             "admin_course_all",
             "admin_season_all",
-            "admin_system_all"
+            "admin_system_all",
+            "view_messages",
+            "reply_messages"
         ]
     }
     return role_permissions.get(role, [])

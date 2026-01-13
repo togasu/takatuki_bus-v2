@@ -123,7 +123,50 @@ def handle_rate_limit_error(error):
     )
 
 def register_error_handlers(app):
-    """Flaskアプリにエラーハンドラーを登録"""
+    """Flaskアプリケーションにエラーハンドラーを登録"""
+    
+    @app.errorhandler(404)
+    def not_found(error):
+        """404エラーハンドラー"""
+        print(f"404 Error - Method: {request.method}, Path: {request.path}")
+        ErrorLogger.log_error(error)
+        return create_error_response(
+            f"エンドポイント '{request.path}' が見つかりません",
+            404,
+            "Not Found"
+        )
+    
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        """405エラーハンドラー"""
+        print(f"405 Error - Method: {request.method}, Path: {request.path}")
+        print(f"Available methods: {error.description if hasattr(error, 'description') else 'Unknown'}")
+        ErrorLogger.log_error(error)
+        return create_error_response(
+            f"メソッド '{request.method}' は '{request.path}' で許可されていません",
+            405,
+            "Method Not Allowed"
+        )
+    
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        """500エラーハンドラー"""
+        ErrorLogger.log_error(error)
+        return create_error_response(
+            "内部サーバーエラーが発生しました",
+            500,
+            "Internal Server Error"
+        )
+    
+    @app.errorhandler(Exception)
+    def handle_unexpected_error(error):
+        """予期しないエラーのハンドラー"""
+        ErrorLogger.log_error(error)
+        return create_error_response(
+            "予期しないエラーが発生しました",
+            500,
+            "Unexpected Error"
+        )
     
     @app.errorhandler(400)
     def bad_request(error):
@@ -137,35 +180,9 @@ def register_error_handlers(app):
     def forbidden(error):
         return handle_authorization_error("アクセスが拒否されました")
     
-    @app.errorhandler(404)
-    def not_found(error):
-        return handle_not_found_error("ページが見つかりません")
-    
-    @app.errorhandler(405)
-    def method_not_allowed(error):
-        return handle_method_not_allowed_error("許可されていないメソッドです")
-    
     @app.errorhandler(429)
     def rate_limit_exceeded(error):
         return handle_rate_limit_error("リクエスト制限に達しました")
-    
-    @app.errorhandler(500)
-    def internal_server_error(error):
-        ErrorLogger.log_error(error)
-        return create_error_response(
-            "内部サーバーエラーが発生しました",
-            500,
-            "Internal Server Error"
-        )
-    
-    @app.errorhandler(503)
-    def service_unavailable(error):
-        ErrorLogger.log_error(error)
-        return create_error_response(
-            "サービスが一時的に利用できません",
-            503,
-            "Service Unavailable"
-        )
     
     @app.errorhandler(psycopg2.Error)
     def handle_postgres_error(error):
@@ -174,15 +191,6 @@ def register_error_handlers(app):
     @app.errorhandler(redis.RedisError)
     def handle_redis_exception(error):
         return handle_redis_error(error)
-    
-    @app.errorhandler(Exception)
-    def handle_unexpected_error(error):
-        ErrorLogger.log_error(error)
-        return create_error_response(
-            "予期しないエラーが発生しました",
-            500,
-            "Unexpected Error"
-        )
 
 class SafeExecutor:
     """安全な実行を提供するクラス"""

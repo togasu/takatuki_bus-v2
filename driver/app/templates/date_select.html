@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/date-select.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="maincontainer">
+    <h2 class="my-4">日付と行き先</h2>
+    <p>{{message}}</p>
+    <div class="btn-group">
+        <button class="btn btn-date" data-category="date">{{today}}</button>
+        <button class="btn btn-date" data-category="date">{{nextday}}</button>
+        <!-- Add more date buttons here -->
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-destination" data-category="destination">高槻キャンパス</button>
+        <button class="btn btn-destination" data-category="destination">高槻駅</button>
+        <!-- Add more destination buttons here -->
+    </div>
+
+    <div class="selected-values">
+        <p><strong>日付:</strong> <span id="selected-date"></span></p>
+        <p><strong>行き先:</strong> <span id="selected-destination"></span></p>
+    </div>
+    <div class="container">
+        <div class="row justify-content-center"> 
+            <form method='post' action="/driver/yoyaku/bus">
+                <input type="hidden" name="selected-date" id="selected-date-hidden">
+                <input type="hidden" name="selected-destination" id="selected-destination-hidden">
+                <button class="btn btn-confirm mr-2" onclick="confirmSelection()">検索</button>
+            </form>
+            <form action="/">
+                <button class="btn btn-secondary btn-block" onclick="goBack()">戻る</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedDate = null;
+    let selectedDestination = null;
+
+    function updateSelection(category, value) {
+        if (category === 'date') {
+            selectedDate = value;
+            document.getElementById('selected-date').innerText = selectedDate;
+            document.getElementById('selected-date-hidden').value = selectedDate;
+        } else if (category === 'destination') {
+            selectedDestination = value;
+            document.getElementById('selected-destination').innerText = selectedDestination;
+            document.getElementById('selected-destination-hidden').value = selectedDestination;
+        }
+    }
+
+    function goBack() {
+        selectedDate = null;
+        selectedDestination = null;
+        document.getElementById('selected-date').innerText = '';
+        document.getElementById('selected-destination').innerText = '';
+    }
+
+    function confirmSelection() {
+        if (selectedDate && selectedDestination) {
+            // Add logic to handle the confirmation, e.g., form submission
+            // alert(`Confirmed\nSelected Date: ${selectedDate}\nSelected Destination: ${selectedDestination}`);
+        } else {
+            alert('日付と行き先を両方選択してください。');
+        }
+    }
+
+    const buttons = document.querySelectorAll('.btn-date, .btn-destination');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const category = button.getAttribute('data-category');
+            const value = button.textContent;
+
+            updateSelection(category, value);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,325 @@
+/* iPad最適化用スタイル */
+
+/* ベースフォントサイズ調整 */
+body {
+  font-size: 18px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  -webkit-touch-callout: none;
+}
+
+/* タッチ可能な要素の最小サイズ確保 */
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ボタンのスタイル統一 */
+button {
+  font-size: 18px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  touch-action: manipulation;
+}
+
+button:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* リンクのタップエリア拡大 */
+a {
+  display: inline-block;
+  padding: 8px;
+  margin: -8px;
+}
+
+/* bus.htmlのボタンスタイル最適化 */
+.bus-button {
+  padding: 24px !important;
+  font-size: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.bus-button:hover,
+.bus-button:active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #f5f5f5 !important;
+}
+
+.bus-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.departure-time {
+  font-size: 28px !important;
+  font-weight: bold;
+  color: #1976D2;
+}
+
+.bus-number {
+  font-size: 20px !important;
+  color: #666;
+}
+
+.bus-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  color: #666;
+}
+
+/* 時刻表示エリアの最適化 */
+.datetime {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 18px;
+  z-index: 998;
+}
+
+.datetime p {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+/* 問題発生ページのボタン最適化 */
+.button-below-header {
+  font-size: 20px !important;
+  padding: 16px 32px !important;
+  margin: 15px !important;
+  min-width: 200px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.button-below-header:active {
+  transform: scale(0.97);
+}
+
+/* フォームコントロールの最適化 */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+  font-size: 18px;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #1976D2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+/* テーブルの最適化 */
+table {
+  font-size: 18px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+td, th {
+  padding: 14px;
+  min-height: 44px;
+}
+
+/* スクロール領域の最適化 */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* リストアイテムの最適化 */
+.bus-list li,
+ul li {
+  margin-bottom: 15px;
+}
+
+/* h2, h3見出しの最適化 */
+h2 {
+  font-size: 28px;
+  margin: 20px 0;
+}
+
+h3 {
+  font-size: 24px;
+  margin: 16px 0;
+}
+
+/* エラーメッセージの最適化 */
+.error {
+  font-size: 20px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+/* info-textの最適化 */
+.info-text {
+  font-size: 18px !important;
+  margin-bottom: 24px !important;
+}
+
+/* no-busesメッセージの最適化 */
+.no-buses {
+  padding: 40px 20px;
+  font-size: 22px;
+}
+
+/* タブレット横向きの最適化 */
+@media screen and (min-width: 768px) and (orientation: landscape) {
+  .main {
+    max-width: 900px;
+  }
+  
+  .bus-button {
+    padding: 28px !important;
+  }
+  
+  .departure-time {
+    font-size: 32px !important;
+  }
+}
+
+/* iPad Pro (12.9インチ)の最適化 */
+@media screen and (min-width: 1024px) {
+  body {
+    font-size: 20px;
+  }
+  
+  .main {
+    max-width: 1000px;
+  }
+  
+  .bus-button {
+    padding: 32px !important;
+  }
+  
+  button {
+    font-size: 20px;
+  }
+  
+  .button-below-header {
+    font-size: 22px !important;
+    padding: 18px 36px !important;
+  }
+}
+
+/* タッチ操作のフィードバック強化 */
+button:active,
+.bus-button:active,
+.button-below-header:active {
+  background-color: #e0e0e0;
+}
+
+/* リンクのアクティブ状態 */
+a:active {
+  opacity: 0.7;
+}
+
+/* フッターの最適化 */
+.footer {
+  height: auto;
+  min-height: 150px;
+  padding: 30px 20px;
+  font-size: 16px;
+}
+
+/* ヘッダータイトルの最適化 */
+.header-title-sojobus {
+  font-size: 24px !important;
+}
+
+.buspng {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+/* メディアクエリ: iPad縦向き */
+@media screen and (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .header {
+    height: 80px;
+  }
+  
+  main {
+    padding-top: 90px;
+  }
+}
+
+/* メディアクエリ: iPad横向き */
+@media screen and (min-width: 1024px) and (orientation: landscape) {
+  .header__nav {
+    position: static;
+    transform: initial;
+    background-color: inherit;
+    height: inherit;
+    display: flex;
+    justify-content: end;
+    width: 60%;
+  }
+  
+  .hamburger {
+    display: none;
+  }
+  
+  .nav__items {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: initial;
+    justify-content: space-between;
+  }
+  
+  .nav-items {
+    position: inherit;
+    top: 0;
+    left: 0;
+    transform: translate(0, 0);
+  }
+  
+  .nav-items__item a {
+    margin-bottom: 0;
+    padding: 10px 20px;
+  }
+}
+
+/* スムーズスクロール */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 選択可能なテキストの制限 */
+.header,
+.nav,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}

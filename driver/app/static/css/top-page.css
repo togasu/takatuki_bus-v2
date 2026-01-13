@@ -1,0 +1,288 @@
+/* top.html専用スタイル - 超モダンデザイン */
+
+.main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  min-height: calc(100vh - 270px);
+}
+
+.error-message {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  padding: 24px 32px;
+  border-radius: 20px;
+  margin-bottom: 32px;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(238, 90, 111, 0.25);
+  animation: slideDown 0.4s ease;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.datetime-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 28px;
+  padding: 48px;
+  margin-bottom: 48px;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.datetime-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.date {
+  font-size: 22px;
+  font-weight: 300;
+  margin-bottom: 12px;
+  opacity: 0.9;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.time {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.bus-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+.bus-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bus-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.3s ease;
+}
+
+.bus-card--primary::before {
+  background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bus-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.bus-card:hover::before {
+  height: 7px;
+}
+
+.bus-card__header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bus-card__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.bus-card__content {
+  padding: 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bus-card__destination {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 24px;
+  line-height: 1.3;
+}
+
+.bus-card__time-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.bus-card__time {
+  font-size: 52px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.bus-card__date {
+  font-size: 20px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.bus-card__number {
+  font-size: 18px;
+  font-weight: 600;
+  color: #475569;
+  padding: 10px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.bus-card__empty {
+  padding: 28px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  font-size: 20px;
+  font-weight: 500;
+  color: #cbd5e1;
+  text-align: center;
+}
+
+/* アニメーション効果 */
+.bus-card__content {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* iPadの縦向き対応 */
+@media screen and (max-width: 768px) {
+  .main {
+    padding: 32px 20px;
+  }
+  
+  .bus-info-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .datetime-card {
+    padding: 40px 28px;
+    border-radius: 24px;
+  }
+  
+  .date {
+    font-size: 20px;
+  }
+  
+  .time {
+    font-size: 52px;
+  }
+  
+  .bus-card {
+    min-height: 240px;
+  }
+  
+  .bus-card__destination {
+    font-size: 24px;
+  }
+  
+  .bus-card__time {
+    font-size: 44px;
+  }
+  
+  .bus-card__date {
+    font-size: 18px;
+  }
+}
+
+/* iPad Pro とタブレット横向き */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .main {
+    max-width: 900px;
+  }
+  
+  .bus-card__time {
+    font-size: 48px;
+  }
+}
+
+/* 大画面対応 */
+@media screen and (min-width: 1025px) {
+  .bus-info-grid {
+    gap: 32px;
+  }
+  
+  .bus-card {
+    min-height: 320px;
+  }
+}
+
+/* タッチデバイス用のアクティブステート */
+@media (hover: none) {
+  .bus-card:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ダークモード対応（将来的な拡張用） */
+@media (prefers-color-scheme: dark) {
+  /* 必要に応じてダークモード対応を追加 */
+}
