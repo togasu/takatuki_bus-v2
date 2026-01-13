@@ -8,6 +8,7 @@ from ..models.seat import Seat
 from ..utils.penalty_manager import PenaltyManager
 from ..decorators import require_service_auth
 from datetime import datetime, timedelta, time
+from zoneinfo import ZoneInfo
 import logging
 
 # ログの設定
@@ -37,12 +38,12 @@ def get_all_students():
             # ペナルティ情報を取得（新スキーマ）
             penalty_status = PenaltyManager.get_student_penalty_status(user.student_id)
             
-            # 現在の予約数を取得
+            # 現在の予約数を取得（JST基準）
             current_reservations_count = db.session.query(Reservation).join(
                 Bus, Reservation.bus_id == Bus.id
             ).filter(
                 Reservation.user_id == user.student_id,  # user.idではなくuser.student_idを使用
-                Bus.departure_time >= datetime.now()
+                Bus.departure_time >= datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
             ).count()
             
             # 未承認予約の数を取得（不乗車カウント）

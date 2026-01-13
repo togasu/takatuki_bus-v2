@@ -5,6 +5,7 @@ import logging
 import os
 from typing import List, Dict, Optional
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger('sojo-bus-log')
 
@@ -26,7 +27,11 @@ class StudentServiceClient:
         })
     
     def get_all_upcoming_buses(self, limit: int = 5) -> List[Dict]:
-        """全ての今後のバス便を取得（departure_timeが現在時刻より後）"""
+        """全ての今後のバス便を取得（departure_timeが現在時刻より後）
+        
+        注意: データベースにはJSTの時刻がタイムゾーン情報なしで保存されているため、
+        比較時もJSTを使用する必要があります。
+        """
         try:
             # まず全バスを取得
             response = self.session.get(f"{self.base_url}/api/management/buses")
@@ -34,16 +39,18 @@ class StudentServiceClient:
             all_buses = response.json()
             
             # フィルタリング: 出発時刻が未来のもの
-            now = datetime.now()
+            # データベースにはJSTがnaiveで保存されているため、JSTで比較
+            now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
             upcoming_buses = [
                 bus for bus in all_buses
                 if bus.get('departure_time')
-                and datetime.fromisoformat(bus['departure_time']) > now
+                and datetime.fromisoformat(bus['departure_time']) > now_jst
             ]
             
             # 出発時刻でソート
             upcoming_buses.sort(key=lambda x: x['departure_time'])
             
+            logger.info(f"Current JST: {now_jst.strftime('%Y-%m-%d %H:%M:%S')}, Found {len(upcoming_buses)} upcoming buses")
             return upcoming_buses[:limit]
         except requests.RequestException as e:
             logger.error(f"Failed to get upcoming buses from student service: {e}")
@@ -63,10 +70,12 @@ class StudentServiceClient:
     def get_buses_by_number_and_time(self, bus_number: int, limit: int = 5) -> List[Dict]:
         """指定した号車番号の今後のバス便を取得"""
         try:
+            # データベースがJSTで保存されているため、JSTを使用
+            now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
             params = {
                 'bus_number': bus_number,
                 'limit': limit,
-                'from_time': datetime.now().isoformat()
+                'from_time': now_jst.isoformat()
             }
             response = self.session.get(f"{self.base_url}/api/buses", params=params)
             response.raise_for_status()

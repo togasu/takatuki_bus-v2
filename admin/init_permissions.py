@@ -180,6 +180,20 @@ def init_permissions():
                 "description": "ドライバーデバイスの削除",
                 "resource": "driver_device",
                 "action": "delete"
+            },
+            
+            # ドライバーメッセージ管理権限
+            {
+                "permission_name": "view_messages",
+                "description": "ドライバーメッセージの閲覧",
+                "resource": "driver_messages",
+                "action": "read"
+            },
+            {
+                "permission_name": "reply_messages",
+                "description": "ドライバーメッセージへの返信",
+                "resource": "driver_messages",
+                "action": "update"
             }
         ]
         
@@ -212,7 +226,9 @@ def get_role_permissions(role):
             "normal_bus_all",
             "normal_seat_all",
             "normal_course_all",
-            "normal_season_all"
+            "normal_season_all",
+            "view_messages",
+            "reply_messages"
         ],
         "admin": [
             "admin_user_create",
@@ -225,7 +241,9 @@ def get_role_permissions(role):
             "admin_seat_all",
             "admin_course_all",
             "admin_season_all",
-            "admin_system_all"
+            "admin_system_all",
+            "view_messages",
+            "reply_messages"
         ]
     }
     return role_permissions.get(role, [])

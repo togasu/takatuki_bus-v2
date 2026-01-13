@@ -23,16 +23,16 @@ def create_debug_buses():
     
     with app.app_context():
         try:
-            # 現在時刻を基準にした出発時刻を設定
+            # 現在時刻を基準にした出発時刻を設定（JST、タイムゾーン情報なし）
             base_time_aware = datetime.now(ZoneInfo("Asia/Tokyo"))
             base_time = base_time_aware.replace(tzinfo=None)  # タイムゾーン情報を削除してnaiveに
             
             print("=" * 60)
             print("⏰ 時刻情報デバッグ")
             print("=" * 60)
-            print(f"📅 タイムゾーン付き: {base_time_aware.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-            print(f"📅 タイムゾーンなし（保存用）: {base_time.strftime('%Y-%m-%d %H:%M:%S')}")
-            print(f"🌍 タイムゾーン: {base_time_aware.tzinfo}")
+            print(f"📅 JST（タイムゾーン付き）: {base_time_aware.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            print(f"📅 データベース保存形式（naive JST）: {base_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"🌍 注意: データベースにはJST時刻がタイムゾーン情報なしで保存されます")
             print("=" * 60)
             
             # デバッグ用バスのデータ（busidは1～4の号車番号）

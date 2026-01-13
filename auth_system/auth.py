@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import os
 import logging
 import threading
@@ -244,7 +245,9 @@ def _get_latest_bus_record():
 def _compute_remaining_seconds(bus_departure_time: datetime) -> int:
     # 元実装と同じ：出発時刻 - now + 5分（=認証猶予）
     # +1秒は元実装の端数調整を踏襲
-    sec = int((bus_departure_time - datetime.now() + timedelta(minutes=5)).total_seconds() + 1)
+    # データベースのbus_departure_timeはJST（naive）なので、JSTで比較
+    now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
+    sec = int((bus_departure_time - now_jst + timedelta(minutes=5)).total_seconds() + 1)
     return max(0, sec)
 
 def nfc_worker_loop():

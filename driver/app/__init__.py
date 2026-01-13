@@ -20,7 +20,11 @@ def create_app():
     try:
         logger.info("=== Driver Service App Creation Started ===")
         
-        app = Flask(__name__, static_url_path='/driver/static')
+        app = Flask(
+            __name__,
+            static_url_path='/driver/static',
+            static_folder='static'
+        )
         logger.info("Flask app instance created with static_url_path='/driver/static'")
 
         # Flask設定

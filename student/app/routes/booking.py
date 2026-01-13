@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from ..models.bus import db, Bus
 from ..models.seat import Seat
 from ..models.reservation import Reservation
@@ -14,8 +15,9 @@ def choice():
     if data['flag'] == False:
         return redirect(url_for('auth.top'))
 
-    today = datetime.date(datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d")
-    nextday = (datetime.now() + timedelta(days=1) + timedelta(hours=1)).strftime("%Y-%m-%d")
+    now_jst = datetime.now(ZoneInfo("Asia/Tokyo"))
+    today = datetime.date(now_jst + timedelta(hours=1)).strftime("%Y-%m-%d")
+    nextday = (now_jst + timedelta(days=1) + timedelta(hours=1)).strftime("%Y-%m-%d")
 
     return render_template('destination_selection.html', today=today, nextday=nextday)
 
@@ -59,7 +61,8 @@ def upchoice(selecteddate):
         time = datetime.strptime(time, '%Y-%m-%d')
         if time == selecteddate:
             dt = bus.departure_time
-            if datetime.now() >= dt:
+            now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
+            if now_jst >= dt:
                 bus_data.remove(bus)
         else:
             bus_data.remove(bus)
@@ -81,7 +84,7 @@ def upchoice(selecteddate):
             }
             bus_info_list.append(bus_info)
 
-    time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
+    time = datetime.now(ZoneInfo("Asia/Tokyo")).time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
     yukisaki = '高槻キャンパス行き'
     return render_template('bus_selection.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
 
@@ -105,7 +108,8 @@ def downchoice(selecteddate):
         time = datetime.strptime(time, '%Y-%m-%d')
         if time == selecteddate:
             dt = bus.departure_time
-            if datetime.now() >= dt:
+            now_jst = datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
+            if now_jst >= dt:
                 bus_data.remove(bus)
         else:
             bus_data.remove(bus)
@@ -127,7 +131,7 @@ def downchoice(selecteddate):
             }
             bus_info_list.append(bus_info)
 
-    time = datetime.now().time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
+    time = datetime.now(ZoneInfo("Asia/Tokyo")).time().strftime('%H:%M')  # 表示時刻変更の場合これを変更
     yukisaki = '高槻駅行き'
     return render_template('bus_selection.html', bus_data=bus_info_list, day=selecteddate, time=time, yukisaki=yukisaki)
 
@@ -260,8 +264,8 @@ def reserve(bus_id):
                 error_message = "別の利用者が登録済みです"
                 return render_template('error.html', error_message=error_message)
 
-            # 予約作成とコミット（ロック内で実行）
-            reservation = Reservation(seat_number=booked, user_id=username, bus_id=bus_id, approved=0, reserved_time=datetime.now())
+            # 予約作成とコミット（ロック内で実行、JST時刻を使用）
+            reservation = Reservation(seat_number=booked, user_id=username, bus_id=bus_id, approved=0, reserved_time=datetime.now(ZoneInfo("Asia/Tokyo")).replace(tzinfo=None))
             db.session.add(reservation)
 
             # メール送信とログ記録
