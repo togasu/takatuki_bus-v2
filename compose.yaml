@@ -1,10 +1,8 @@
-version: "3.9"
-
 services:
   nginx:
     image: nginx:latest
     ports:
-      - "443:443"
+      - "${NGINX_PORT:-443}:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/maintenance.html:/etc/nginx/html/maintenance.html:ro
@@ -14,6 +12,8 @@ services:
       - student
       - admin
       - driver
+    networks:
+      - appnet
 
   student:
     build: ./student
@@ -28,6 +28,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - appnet
 
   admin:
     build: ./admin
@@ -42,6 +44,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - appnet
 
   driver:
     build: ./driver
@@ -56,6 +60,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - appnet
 
   postgres:
     image: postgres:15
@@ -67,6 +73,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - appnet
 
   redis:
     image: redis:7
@@ -74,6 +82,15 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.240.10.0/24
 
 volumes:
   postgres_data:
