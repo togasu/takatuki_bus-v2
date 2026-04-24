@@ -1,18 +1,19 @@
-$certDir = "certs"
-if (-not (Test-Path $certDir)) {
-    New-Item -ItemType Directory -Path $certDir | Out-Null
-}
-
 Write-Host "=== 自己署名証明書を生成します ==="
 
-$subj = "/C=JP/ST=Tokyo/L=Shibuya/O=Example/OU=Dev/CN=localhost"
+New-Item -ItemType Directory -Force -Path ".\certs" | Out-Null
 
-openssl req -x509 -nodes -days 365 `
+docker run --rm -v "${PWD}\certs:/certs" alpine/openssl `
+  req -x509 -nodes -days 365 `
   -newkey rsa:2048 `
-  -keyout "$certDir/server.key" `
-  -out "$certDir/server.crt" `
-  -subj $subj
+  -keyout /certs/server.key `
+  -out /certs/server.crt `
+  -subj "/CN=localhost"
 
-Write-Host "=== 証明書生成完了 ==="
-Write-Host "証明書: $certDir/server.crt"
-Write-Host "秘密鍵: $certDir/server.key"
+if ((Test-Path ".\certs\server.crt") -and (Test-Path ".\certs\server.key")) {
+    Write-Host "=== 証明書生成完了 ==="
+    Write-Host "証明書: certs/server.crt"
+    Write-Host "秘密鍵: certs/server.key"
+} else {
+    Write-Error "証明書生成に失敗しました"
+    exit 1
+}
